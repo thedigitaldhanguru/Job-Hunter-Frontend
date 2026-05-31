@@ -1,26 +1,23 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* MASTER CONTROL PANEL */
+@theme {
+  /* 1. Link your custom font (matches the --font-inter from layout.tsx) */
+  --font-sans: var(--font-inter);
+
+  /* 2. Define your global colors */
+  --color-background: #0a0a0a;     /* bg-background */
+  --color-surface: #171717;        /* bg-surface */
+  --color-surface-hover: #262626;  /* hover:bg-surface-hover */
+  --color-foreground: #ededed;     /* text-foreground */
+  --color-muted: #a3a3a3;          /* text-muted */
+  --color-brand: #3b82f6;          /* bg-brand or text-brand */
+  --color-brand-hover: #2563eb;    /* hover:bg-brand-hover */
+  --color-border: #262626;         /* border-border */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Apply the core colors to the whole page */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }

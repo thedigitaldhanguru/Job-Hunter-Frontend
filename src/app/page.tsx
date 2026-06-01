@@ -18,10 +18,14 @@ export default function Home() {
       setError(null);
       
       try {
-        let url = `http://127.0.0.1:8000/jobs?limit=${LIMIT}&offset=${offset}`;
+        // 1. Define the dynamic base URL
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        
+        // 2. Use the dynamic URL for your routes
+        let url = `${API_BASE_URL}/jobs?limit=${LIMIT}&offset=${offset}`;
         
         if (searchQuery.trim() !== '') {
-          url = `http://127.0.0.1:8000/jobs/search?q=${encodeURIComponent(searchQuery)}`;
+          url = `${API_BASE_URL}/jobs/search?q=${encodeURIComponent(searchQuery)}`;
         }
 
         const res = await fetch(url);
@@ -50,6 +54,7 @@ export default function Home() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery, offset]);
 
+    
   return (
     <main className="min-h-screen p-6 md:p-12 selection:bg-brand/30">
       <div className="max-w-3xl mx-auto space-y-10">

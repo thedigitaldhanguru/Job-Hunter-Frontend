@@ -1,5 +1,9 @@
+'use client';
+
 import Link from 'next/link';
 import { Briefcase } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 
 // Custom SVG components to replace the removed Lucide brand icons
 const TwitterIcon = ({ className }: { className?: string }) => (
@@ -25,6 +29,13 @@ const GithubIcon = ({ className }: { className?: string }) => (
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { status } = useSession();
+  const pathname = usePathname();
+
+  // Hide the footer on the login page (unauthenticated users on root path)
+  if (status === 'unauthenticated' && pathname === '/') {
+    return null;
+  }
 
   return (
     <footer className="bg-white border-t border-slate-200">

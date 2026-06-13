@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Footer from "@/components/Footer"; 
+import SessionWrapper from "@/components/SessionWrapper"; 
 
-// 1. Configure the global font
+// Configure the global font
 const inter = Inter({ 
   subsets: ["latin"],
-  variable: "--font-inter", // We will link this to Tailwind
+  variable: "--font-inter", 
 });
 
 export const metadata: Metadata = {
@@ -20,9 +22,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* 2. Apply the font globally to the entire app */}
-      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
-        {children}
+      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen`}>
+        
+        {/* 2. Wrap everything in the SessionWrapper */}
+        <SessionWrapper>
+          
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
+
+          <Footer />
+          
+        </SessionWrapper>
+
       </body>
     </html>
   );

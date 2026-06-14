@@ -116,8 +116,23 @@ export default function ProfilePage() {
             }
           };
 
-          setData(formattedData);
-          setInitialData(formattedData); 
+          // --- LOCAL DRAFT RESTORATION ---
+          const draftKey = `profile_draft_${email}`;
+          const localDraft = localStorage.getItem(draftKey);
+          if (localDraft) {
+            try {
+              const parsedDraft = JSON.parse(localDraft);
+              setData(parsedDraft);
+              // We intentionally keep initialData as the DB data, so the "Save" button appears
+              setInitialData(formattedData);
+            } catch (e) {
+              setData(formattedData);
+              setInitialData(formattedData);
+            }
+          } else {
+            setData(formattedData);
+            setInitialData(formattedData); 
+          }
         }
       } catch (e) {
         console.error("Failed to fetch profile:", e);
@@ -132,6 +147,13 @@ export default function ProfilePage() {
     };
     fetchProfile();
   }, [session, sessionStatus]); // Re-run if session changes
+
+  // --- LOCAL DRAFT SAVER ---
+  useEffect(() => {
+    if (mounted && session?.user?.email && data !== initialData) {
+      localStorage.setItem(`profile_draft_${session.user.email}`, JSON.stringify(data));
+    }
+  }, [data, mounted, session, initialData]);
 
   // --- 2. SAVE DATA TO FASTAPI ---
   const saveProfile = async () => {
@@ -204,6 +226,7 @@ export default function ProfilePage() {
       });
 
       if (response.ok) {
+        localStorage.removeItem(`profile_draft_${userEmail}`);
         setInitialData(data); 
         alert("Profile Saved Successfully! 🚀");
       } else {

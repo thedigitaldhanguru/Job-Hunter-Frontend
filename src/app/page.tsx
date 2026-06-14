@@ -125,7 +125,15 @@ export default function Home() {
   };
 
   // --- GATEKEEPER ---
-  if (status === "loading") return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+  if (status === "loading") return (
+    <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased relative overflow-hidden flex flex-col">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    </div>
+  );
+  
   if (status === "unauthenticated") return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl font-bold mb-2">Job Hunter Pro</h1>

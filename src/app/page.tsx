@@ -45,7 +45,6 @@ export default function Home() {
             data.location && 
             data.degree && 
             data.university && 
-            data.experience && 
             (data.current_ctc || extended?.preferences?.currentCTC) && 
             (data.expected_ctc || extended?.preferences?.expectedCTC) && 
             (data.resume_url || extended?.resumeUrl);

@@ -164,7 +164,7 @@ export default function ProfilePage() {
     }
 
     // --- STRICT VALIDATION ---
-    const { name, phone, location, degree, university, experience } = data.header;
+    const { name, phone, location, degree, university } = data.header;
     const { currentCTC, expectedCTC } = data.preferences;
     
     const missingFields = [];
@@ -173,7 +173,6 @@ export default function ProfilePage() {
     if (!location) missingFields.push("Location");
     if (!degree) missingFields.push("Degree");
     if (!university) missingFields.push("University");
-    if (!experience) missingFields.push("Experience");
     if (!currentCTC) missingFields.push("Current CTC");
     if (!expectedCTC) missingFields.push("Expected CTC");
     if (!data.resumeUrl) missingFields.push("Resume Upload");

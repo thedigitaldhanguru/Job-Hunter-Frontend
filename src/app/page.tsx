@@ -32,7 +32,7 @@ export default function Home() {
     if (status !== 'authenticated' || !session?.user?.email) {
       return;
     }
-    fetchProfile(session.user.email, session.user.name, session.user.image);
+    fetchProfile(session?.user?.email, session?.user?.name, session?.user?.image);
   }, [session, status, fetchProfile]);
 
   // --- DATA FETCHING ---

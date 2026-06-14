@@ -54,7 +54,7 @@ export default function ProfilePage() {
     }
 
     if (!hasFetched && !isFetching) {
-      fetchProfile(email, session.user.name, session.user.image);
+      fetchProfile(email, session?.user?.name, session?.user?.image);
     }
   }, [session, sessionStatus, hasFetched, isFetching, fetchProfile]);
 

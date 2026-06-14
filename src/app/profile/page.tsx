@@ -141,6 +141,26 @@ export default function ProfilePage() {
       return;
     }
 
+    // --- STRICT VALIDATION ---
+    const { name, phone, location, degree, university, experience } = data.header;
+    const { currentCTC, expectedCTC } = data.preferences;
+    
+    const missingFields = [];
+    if (!name) missingFields.push("Name");
+    if (!phone) missingFields.push("Phone");
+    if (!location) missingFields.push("Location");
+    if (!degree) missingFields.push("Degree");
+    if (!university) missingFields.push("University");
+    if (!experience) missingFields.push("Experience");
+    if (!currentCTC) missingFields.push("Current CTC");
+    if (!expectedCTC) missingFields.push("Expected CTC");
+    if (!data.resumeUrl) missingFields.push("Resume Upload");
+
+    if (missingFields.length > 0) {
+      alert(`Cannot save profile. Please fill out the following required fields:\n\n- ${missingFields.join('\n- ')}`);
+      return;
+    }
+
     setIsSaving(true);
     setEditMode({});
 

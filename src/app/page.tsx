@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { JobListing } from '@/types/job';
-import { Search, Briefcase, Building2, Loader2, ExternalLink, MapPin } from 'lucide-react';
+import { Search, Briefcase, Building2, Loader2, ExternalLink, MapPin, User } from 'lucide-react';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
 import { API_BASE_URL } from '@/lib/config';
@@ -18,7 +19,53 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
+  const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const LIMIT = 20;
+
+  // --- PROFILE CHECK ---
+  useEffect(() => {
+    if (status !== 'authenticated' || !session?.user?.email) {
+      setProfileLoading(false);
+      return;
+    }
+
+    const checkProfile = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/profile/${session.user.email}`);
+        if (res.ok) {
+          const data = await res.json();
+          let extended = data.extended_profile;
+          if (typeof extended === 'string') {
+            try { extended = JSON.parse(extended); } catch (e) { extended = {}; }
+          }
+          
+          const isComplete = 
+            data.phone && 
+            data.location && 
+            data.degree && 
+            data.university && 
+            data.experience && 
+            (data.current_ctc || extended?.preferences?.currentCTC) && 
+            (data.expected_ctc || extended?.preferences?.expectedCTC) && 
+            (data.resume_url || extended?.resumeUrl);
+
+          if (!isComplete) {
+            setShowOnboardingPopup(true);
+          }
+        } else if (res.status === 404) {
+          // No profile exists at all
+          setShowOnboardingPopup(true);
+        }
+      } catch (err) {
+        console.error("Failed to check profile completion", err);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    
+    checkProfile();
+  }, [status, session]);
 
   // --- DATA FETCHING ---
   useEffect(() => {
@@ -94,6 +141,30 @@ export default function Home() {
       
       <Navbar />
       
+      {/* ONBOARDING MODAL */}
+      {showOnboardingPopup && !profileLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
+          <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 sm:p-10 max-w-lg w-full text-center space-y-6 animate-fade-in-up">
+            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2 border border-blue-100 shadow-inner">
+              <User className="w-10 h-10 text-blue-600" />
+            </div>
+            <div className="space-y-3">
+              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome to Job Hunter!</h2>
+              <p className="text-slate-500 font-medium text-lg leading-relaxed">
+                To start applying for jobs and matching with top employers, you need to complete your profile. It only takes 2 minutes.
+              </p>
+            </div>
+            <Link 
+              href="/profile" 
+              className="block w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98] mt-4"
+            >
+              Complete My Profile
+            </Link>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-5xl mx-auto px-6 pt-12 pb-20 flex flex-col gap-14">
         
         {/* HERO SECTION */}

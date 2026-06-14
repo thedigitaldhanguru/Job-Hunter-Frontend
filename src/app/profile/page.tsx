@@ -8,14 +8,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { API_BASE_URL } from '@/lib/config';
-
-// --- EMPTY TEMPLATE ---
-const EMPTY_PROFILE = {
-  header: { name: '', degree: '', university: '', location: '', experience: '', phone: '', email: '', gender: '', dob: '', avatar: '' },
-  summary: '', resumeName: '', resumeUrl: '', employment: [], internships: [], education: [], skills: [], projects: [], 
-  languages: [], academicAchievements: [], accomplishments: [], exams: [], 
-  preferences: { jobType: '', availability: '', location: '', currentCTC: '', expectedCTC: '' }
-};
+import { useProfileStore, EMPTY_PROFILE } from '@/store/useProfileStore';
 
 const QUICK_LINKS = [
   { label: 'Profile summary', id: 'summary' },
@@ -33,11 +26,10 @@ const QUICK_LINKS = [
 ];
 
 export default function ProfilePage() {
-  // <-- 2. Initialize the NextAuth session hook
   const { data: session, status: sessionStatus } = useSession();
+  const { profileData, hasFetched, isFetching, fetchProfile, setProfileData } = useProfileStore();
 
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [data, setData] = useState(EMPTY_PROFILE);
   const [initialData, setInitialData] = useState(EMPTY_PROFILE); 
   const [editMode, setEditMode] = useState<Record<string, boolean>>({});
@@ -51,102 +43,42 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null); 
 
-  // --- 1. FETCH DATA FROM FASTAPI ---
+  // --- 1. FETCH DATA FROM ZUSTAND STORE ---
   useEffect(() => {
-    const fetchProfile = async () => {
-      // <-- 3. Wait for Auth to load, or stop if no user is logged in
-      if (sessionStatus === 'loading') return;
-      
-      const email = session?.user?.email;
-      if (!email) {
-        setMounted(true);
-        setLoading(false);
-        return;
-      }
+    if (sessionStatus === 'loading') return;
+    
+    const email = session?.user?.email;
+    if (!email) {
+      setMounted(true);
+      return;
+    }
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/profile/${email}`);
-        
-        if (response.ok) {
-          const res = await response.json();
-          
-          let extended = res.extended_profile;
-          while (typeof extended === 'string') {
-            try { 
-              extended = JSON.parse(extended); 
-            } catch (error) { 
-              break; 
-            }
-          }
-          if (!extended || typeof extended !== 'object') {
-            extended = {}; 
-          }
+    if (!hasFetched && !isFetching) {
+      fetchProfile(email, session.user.name, session.user.image);
+    }
+  }, [session, sessionStatus, hasFetched, isFetching, fetchProfile]);
 
-          const formattedData = {
-            header: { 
-              name: res.full_name || session?.user?.name || '', // Uses Google name if blank
-              email: res.email || email, 
-              degree: res.degree || '', 
-              university: res.university || '', 
-              location: res.location || '', 
-              experience: res.experience || '',
-              phone: res.phone || '', 
-              gender: res.gender || '', 
-              dob: res.dob || '', 
-              avatar: res.avatar_url && res.avatar_url !== 'null' ? res.avatar_url : (session?.user?.image || '') 
-            },
-            summary: res.profile_summary || '', 
-            resumeName: extended.resumeName || '',
-            resumeUrl: extended.resumeUrl || res.resume_url || '', 
-            employment: Array.isArray(extended.employment) ? extended.employment : [],
-            internships: Array.isArray(extended.internships) ? extended.internships : [],
-            education: Array.isArray(extended.education) ? extended.education : [],
-            skills: Array.isArray(extended.skills) ? extended.skills : [],
-            projects: Array.isArray(extended.projects) ? extended.projects : [],
-            languages: Array.isArray(extended.languages) ? extended.languages : [],
-            academicAchievements: Array.isArray(extended.academicAchievements) ? extended.academicAchievements : [],
-            accomplishments: Array.isArray(extended.accomplishments) ? extended.accomplishments : [],
-            exams: Array.isArray(extended.exams) ? extended.exams : [],
-            preferences: {
-              jobType: extended.preferences?.jobType || '',
-              availability: extended.preferences?.availability || '',
-              location: extended.preferences?.location || '',
-              currentCTC: res.current_ctc || extended.preferences?.currentCTC || '',
-              expectedCTC: res.expected_ctc || extended.preferences?.expectedCTC || ''
-            }
-          };
-
-          // --- LOCAL DRAFT RESTORATION ---
-          const draftKey = `profile_draft_${email}`;
-          const localDraft = localStorage.getItem(draftKey);
-          if (localDraft) {
-            try {
-              const parsedDraft = JSON.parse(localDraft);
-              setData(parsedDraft);
-              // We intentionally keep initialData as the DB data, so the "Save" button appears
-              setInitialData(formattedData);
-            } catch (e) {
-              setData(formattedData);
-              setInitialData(formattedData);
-            }
-          } else {
-            setData(formattedData);
-            setInitialData(formattedData); 
-          }
+  // Sync Zustand to local draft
+  useEffect(() => {
+    if (hasFetched && session?.user?.email) {
+      const draftKey = `profile_draft_${session.user.email}`;
+      const localDraft = localStorage.getItem(draftKey);
+      if (localDraft) {
+        try {
+          const parsedDraft = JSON.parse(localDraft);
+          setData(parsedDraft);
+          setInitialData(profileData);
+        } catch (e) {
+          setData(profileData);
+          setInitialData(profileData);
         }
-      } catch (e) {
-        console.error("Failed to fetch profile:", e);
-        // Fallback email uses session user
-        const fallbackData = { ...EMPTY_PROFILE, header: { ...EMPTY_PROFILE.header, email: email } };
-        setData(fallbackData);
-        setInitialData(fallbackData);
-      } finally {
-        setMounted(true);
-        setLoading(false);
+      } else {
+        setData(profileData);
+        setInitialData(profileData); 
       }
-    };
-    fetchProfile();
-  }, [session, sessionStatus]); // Re-run if session changes
+      setMounted(true);
+    }
+  }, [hasFetched, profileData, session]);
 
   // --- LOCAL DRAFT SAVER ---
   useEffect(() => {
@@ -227,6 +159,7 @@ export default function ProfilePage() {
       if (response.ok) {
         localStorage.removeItem(`profile_draft_${userEmail}`);
         setInitialData(data); 
+        setProfileData(data); // Sync Zustand to the backend state
         alert("Profile Saved Successfully! 🚀");
       } else {
         alert("Failed to save profile. Check backend logs.");
@@ -464,7 +397,7 @@ export default function ProfilePage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
         
         {/* --- DYNAMIC RENDER: SKELETON OR CONTENT --- */}
-        {(!mounted || sessionStatus === 'loading' || loading) ? (
+        {(!mounted || sessionStatus === 'loading' || isFetching || !hasFetched) ? (
           <SkeletonProfile />
         ) : !session?.user ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">

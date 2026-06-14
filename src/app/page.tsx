@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
 import { API_BASE_URL } from '@/lib/config';
+import { useProfileStore } from '@/store/useProfileStore';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -19,52 +20,20 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
-  const [showOnboardingPopup, setShowOnboardingPopup] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(true);
+  
+  const { isComplete, hasFetched, isFetching, fetchProfile } = useProfileStore();
+  const showOnboardingPopup = hasFetched && !isComplete;
+  const profileLoading = isFetching || !hasFetched;
+
   const LIMIT = 20;
 
   // --- PROFILE CHECK ---
   useEffect(() => {
     if (status !== 'authenticated' || !session?.user?.email) {
-      setProfileLoading(false);
       return;
     }
-
-    const checkProfile = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/profile/${session?.user?.email}`);
-        if (res.ok) {
-          const data = await res.json();
-          let extended = data.extended_profile;
-          if (typeof extended === 'string') {
-            try { extended = JSON.parse(extended); } catch (e) { extended = {}; }
-          }
-          
-          const isComplete = 
-            data.phone && 
-            data.location && 
-            data.degree && 
-            data.university && 
-            (data.current_ctc || extended?.preferences?.currentCTC) && 
-            (data.expected_ctc || extended?.preferences?.expectedCTC) && 
-            (data.resume_url || extended?.resumeUrl);
-
-          if (!isComplete) {
-            setShowOnboardingPopup(true);
-          }
-        } else if (res.status === 404) {
-          // No profile exists at all
-          setShowOnboardingPopup(true);
-        }
-      } catch (err) {
-        console.error("Failed to check profile completion", err);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-    
-    checkProfile();
-  }, [status, session]);
+    fetchProfile(session.user.email, session.user.name, session.user.image);
+  }, [session, status, fetchProfile]);
 
   // --- DATA FETCHING ---
   useEffect(() => {

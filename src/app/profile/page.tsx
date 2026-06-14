@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react'; // <-- 1. Import NextAuth
 import { 
   MapPin, Briefcase, Phone, Mail, 
-  Trash2, FileText, Award, TrendingUp, CheckCircle2, User, Calendar, Camera, Check, Edit2, Plus, Save, Loader2, XCircle
+  Trash2, FileText, Award, TrendingUp, CheckCircle2, User, Calendar, Camera, Check, Edit2, Plus, Save, Loader2, XCircle, Menu
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { API_BASE_URL } from '@/lib/config';
@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const [uploadingType, setUploadingType] = useState<'avatar' | 'resume' | null>(null);
   
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null); 
@@ -523,6 +524,41 @@ export default function ProfilePage() {
                   </button>
                 )}
               </div>
+            </div>
+
+            {/* MOBILE QUICK LINKS HAMBURGER */}
+            <div className="lg:hidden sticky top-[4.5rem] z-30 bg-[#F3F4F6] py-3 -mx-4 px-4 sm:-mx-6 sm:px-6 shadow-[0_10px_10px_-10px_rgba(0,0,0,0.05)] border-b border-slate-200/50">
+              <button 
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors w-full justify-between active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-2">
+                  <Menu className="w-4 h-4 text-slate-500" />
+                  Jump to Section
+                </div>
+                {showMobileMenu ? <XCircle className="w-4 h-4 text-slate-400" /> : <span className="text-xs font-extrabold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{QUICK_LINKS.length}</span>}
+              </button>
+              
+              {/* Dropdown Menu */}
+              {showMobileMenu && (
+                <div className="absolute top-full left-4 right-4 sm:left-6 sm:right-6 mt-2 bg-white border border-slate-200 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2 z-40 max-h-[60vh] overflow-y-auto animate-fade-in">
+                  <h3 className="px-3 pt-2 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Profile Sections</h3>
+                  <div className="grid grid-cols-2 gap-1 mt-1">
+                    {QUICK_LINKS.map(link => (
+                      <button 
+                        key={link.id} 
+                        onClick={() => {
+                          scrollToSection(link.id);
+                          setShowMobileMenu(false);
+                        }}
+                        className="text-left px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition-colors truncate"
+                      >
+                        {link.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ================= 2. MAIN LAYOUT SPLIT ================= */}

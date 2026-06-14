@@ -5,6 +5,7 @@ import { useSession, signIn } from 'next-auth/react';
 import { JobListing } from '@/types/job';
 import { Search, Briefcase, Building2, Loader2, ExternalLink, MapPin, User } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
 import { API_BASE_URL } from '@/lib/config';
@@ -13,6 +14,7 @@ import { useJobsStore } from '@/store/useJobsStore';
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   
   const { 
     jobs, loading, offset, searchQuery, hasFetched, 
@@ -76,8 +78,12 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) {
         const targetUrl = data.redirect_url || job.job_url || job.absolute_url;
-        if (targetUrl) window.open(targetUrl, '_blank');
-        window.location.href = "/applications";
+        if (targetUrl) {
+          window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        }
+        
+        // Use SPA router to navigate without killing the window.open call
+        router.push('/applications');
       }
     } finally {
       setApplyingTo(null);

@@ -1,17 +1,7 @@
 import { create } from 'zustand';
 import { API_BASE_URL } from '@/lib/config';
 
-export interface JobListing {
-  id: number;
-  title: string;
-  company_raw: string;
-  location: string;
-  job_url: string | null;
-  absolute_url: string;
-  salary_source: string | null;
-  company_logo_url: string | null;
-  [key: string]: any;
-}
+import { JobListing } from '@/types/job';
 
 interface JobsStore {
   jobs: JobListing[];

@@ -9,7 +9,7 @@ import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
 import { API_BASE_URL } from '@/lib/config';
 import { useProfileStore } from '@/store/useProfileStore';
-import { useJobsStore, JobListing } from '@/store/useJobsStore';
+import { useJobsStore } from '@/store/useJobsStore';
 
 export default function Home() {
   const { data: session, status } = useSession();

@@ -459,10 +459,10 @@ export default function ProfilePage() {
                     <input type="text" value={data.header?.university || ''} onChange={e => setData({...data, header: {...data.header, university: e.target.value}})} className="w-full text-sm text-slate-500 border-b border-slate-300 outline-none pb-1 bg-transparent focus:border-blue-500 transition-colors" placeholder="University"/>
                   </div>
                 ) : (
-                  <div className="transition-all duration-300">
-                    <h1 className="text-3xl font-bold text-slate-900">{data.header?.name || 'Your Name'}</h1>
-                    <p className="text-base font-semibold text-slate-700 mt-1">{data.header?.degree || 'Add your degree'}</p>
-                    <p className="text-sm text-slate-500 mt-0.5">{data.header?.university || 'Add your university'}</p>
+                  <div className="transition-all duration-300 text-center md:text-left">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{data.header?.name || 'Your Name'}</h1>
+                    <p className="text-sm sm:text-base font-semibold text-slate-700 mt-1">{data.header?.degree || 'Add your degree'}</p>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{data.header?.university || 'Add your university'}</p>
                   </div>
                 )}
 
@@ -831,7 +831,7 @@ export default function ProfilePage() {
       <button 
         onClick={saveProfile}
         disabled={isSaving}
-        className={`fixed bottom-8 right-8 z-50 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-6 rounded-full shadow-xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${showSaveButton ? 'translate-y-0 opacity-100 scale-100 hover:scale-105 active:scale-95' : 'translate-y-24 opacity-0 scale-90 pointer-events-none'}`}
+        className={`fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-6 rounded-full shadow-xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${showSaveButton ? 'translate-y-0 opacity-100 scale-100 hover:scale-105 active:scale-95' : 'translate-y-24 opacity-0 scale-90 pointer-events-none'}`}
       >
         {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5"/>} 
         {isSaving ? 'Saving...' : 'Save Profile'}

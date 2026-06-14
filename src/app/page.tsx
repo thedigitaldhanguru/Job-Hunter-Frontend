@@ -144,13 +144,13 @@ export default function Home() {
               </span>
               Over 10,000+ active roles
             </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] max-w-4xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] max-w-4xl mx-auto">
               Discover your next <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
                 career defining role.
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto mt-6">
+            <p className="text-base sm:text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto mt-6 px-2">
               Skip the noise. We match your unique profile with top-tier companies actively hiring right now.
             </p>
           </div>
@@ -161,12 +161,12 @@ export default function Home() {
             </div>
             <input
               type="text"
-              placeholder="Search by job title, skill, or company..."
+              placeholder="Search jobs, skills, companies..."
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setOffset(0); }}
-              className="flex-1 bg-transparent py-4 outline-none text-slate-900 font-medium placeholder:text-slate-400 text-lg"
+              onChange={(e) => { setOffset(0); setSearchQuery(e.target.value); }}
+              className="flex-1 bg-transparent py-3 sm:py-4 outline-none text-slate-900 font-medium placeholder:text-slate-400 text-base sm:text-lg truncate"
             />
-            <button className="hidden sm:block bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-4 rounded-full transition-colors">
+            <button className="hidden sm:block bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-full transition-colors shrink-0">
               Search
             </button>
           </div>
@@ -174,9 +174,9 @@ export default function Home() {
 
         {/* JOB FEED SECTION */}
         <section className="pt-8">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Recommended for you</h2>
-            <span className="text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Recommended for you</h2>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full self-start sm:self-auto">
               {jobs.length} roles found
             </span>
           </div>

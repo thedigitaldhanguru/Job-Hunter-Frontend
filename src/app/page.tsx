@@ -9,21 +9,21 @@ import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
 import { API_BASE_URL } from '@/lib/config';
 import { useProfileStore } from '@/store/useProfileStore';
+import { useJobsStore, JobListing } from '@/store/useJobsStore';
 
 export default function Home() {
   const { data: session, status } = useSession();
-
-  const [jobs, setJobs] = useState<JobListing[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [offset, setOffset] = useState(0);
+  
+  const { 
+    jobs, loading, offset, searchQuery, hasFetched, 
+    setSearchQuery, setOffset, fetchJobs 
+  } = useJobsStore();
   
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
   
-  const { isComplete, hasFetched, isFetching, fetchProfile } = useProfileStore();
-  const showOnboardingPopup = hasFetched && !isComplete;
-  const profileLoading = isFetching || !hasFetched;
+  const { isComplete, hasFetched: profileFetched, isFetching: profileFetching, fetchProfile } = useProfileStore();
+  const showOnboardingPopup = profileFetched && !isComplete;
+  const profileLoading = profileFetching || !profileFetched;
 
   const LIMIT = 20;
 
@@ -35,34 +35,25 @@ export default function Home() {
     fetchProfile(session?.user?.email, session?.user?.name, session?.user?.image);
   }, [session, status, fetchProfile]);
 
-  // --- DATA FETCHING ---
+  // --- DATA FETCHING (ZUSTAND) ---
   useEffect(() => {
     if (status !== 'authenticated') return;
-
-    const fetchJobs = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let url = `${API_BASE_URL}/jobs?limit=${LIMIT}&offset=${offset}`;
-        if (searchQuery.trim() !== '') {
-          url = `${API_BASE_URL}/jobs/search?q=${encodeURIComponent(searchQuery)}`;
-        }
-        const res = await fetch(url);
-        if (!res.ok) {
-          if (res.status === 404) { setJobs([]); return; }
-          throw new Error('Failed to fetch jobs.');
-        }
-        const data = await res.json();
-        setJobs(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    const delayDebounceFn = setTimeout(fetchJobs, 300);
+    
+    const delayDebounceFn = setTimeout(() => {
+      // If searchQuery is empty and we already fetched, don't re-fetch unless it's a new search
+      if (hasFetched && searchQuery === '') return;
+      fetchJobs(LIMIT, true); // Reset to page 0 on new search
+    }, 300);
+    
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, offset, status]);
+  }, [searchQuery, status]); 
+
+  // Initial load effect
+  useEffect(() => {
+    if (status === 'authenticated' && !hasFetched) {
+      fetchJobs(LIMIT, true);
+    }
+  }, [status, hasFetched, fetchJobs]);
 
   // --- APPLY LOGIC ---
   const handleApply = async (e: React.MouseEvent, job: JobListing) => {
@@ -263,15 +254,23 @@ export default function Home() {
               {/* Pagination Controls */}
               <div className="flex justify-center items-center gap-4 pt-8 pb-4">
                 <button 
-                  onClick={() => setOffset(Math.max(0, offset - LIMIT))}
-                  disabled={offset === 0}
+                  onClick={() => {
+                    const prevOffset = Math.max(0, offset - LIMIT);
+                    setOffset(prevOffset);
+                    fetchJobs(LIMIT, false);
+                  }}
+                  disabled={offset === 0 || loading}
                   className="px-6 py-3 rounded-full font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm hover:shadow-md"
                 >
                   Previous Page
                 </button>
                 <button 
-                  onClick={() => setOffset(offset + LIMIT)}
-                  disabled={jobs.length < LIMIT}
+                  onClick={() => {
+                    const nextOffset = offset + LIMIT;
+                    setOffset(nextOffset);
+                    fetchJobs(LIMIT, false);
+                  }}
+                  disabled={loading || jobs.length < LIMIT}
                   className="px-6 py-3 rounded-full font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm hover:shadow-md"
                 >
                   Next Page

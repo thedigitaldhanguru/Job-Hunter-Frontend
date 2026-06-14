@@ -8,29 +8,14 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
-// --- TYPES ---
-type Status = 'Applied' | 'Interviewing' | 'Offered' | 'Rejected';
-
-interface Application {
-  id: string;
-  company: string;
-  role: string;
-  status: Status;
-  dateApplied: string;
-  jobUrl?: string;
-}
-
-// --- CONSTANTS ---
 import { API_BASE_URL } from '@/lib/config';
+import { useApplicationsStore, Status, Application } from '@/store/useApplicationsStore';
 
 export default function ApplicationsPage() {
-  // <-- 2. Initialize the session state
   const { data: session, status: sessionStatus } = useSession(); 
+  const { apps, hasFetched, isFetching, error, fetchApplications, updateStatusLocal, deleteApplicationLocal, addApplicationLocal } = useApplicationsStore();
 
   const [mounted, setMounted] = useState(false);
-  const [apps, setApps] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -83,53 +68,25 @@ export default function ApplicationsPage() {
     }
   }, []);
 
-  // --- FETCH DATA ---
+  // --- FETCH DATA FROM ZUSTAND ---
   useEffect(() => {
-    const fetchApplications = async () => {
-      // 3. Wait for NextAuth to finish checking the login state
-      if (sessionStatus === 'loading') return; 
-      
-      // 4. If no user is logged in, show an error and stop
-      if (!session?.user?.email) {
-        setError('Please log in to view your applications.');
-        setLoading(false);
-        setMounted(true);
-        return;
-      }
-
-      try {
-        // 5. Use the dynamic email here
-        const response = await fetch(`${API_BASE_URL}/applications/${session.user.email}`);
-        if (!response.ok) throw new Error('Failed to fetch');
-        
-        const data = await response.json();
-        
-        const formattedApps: Application[] = data.map((item: any) => ({
-          id: item.id.toString(),
-          company: item.company_name || 'Unknown', 
-          role: item.job_title || 'Unknown Position',
-          status: item.application_status.charAt(0).toUpperCase() + item.application_status.slice(1) as Status,
-          dateApplied: item.created_at ? item.created_at.split('T')[0] : '',
-          jobUrl: item.job_url || ''
-        }));
-        
-        setApps(formattedApps);
-        
-      } catch (err) {
-        console.error(err);
-        setError('Could not load your applications. Are you connected to the internet?');
-      } finally {
-        setLoading(false);
-        setMounted(true);
-      }
-    };
+    if (sessionStatus === 'loading') return; 
     
-    fetchApplications();
-  }, [session, sessionStatus]); // <-- 6. Re-run fetch if the session changes
+    if (!session?.user?.email) {
+      setMounted(true);
+      return;
+    }
+
+    if (!hasFetched && !isFetching) {
+      fetchApplications(session.user.email).then(() => setMounted(true));
+    } else {
+      setMounted(true);
+    }
+  }, [session, sessionStatus, hasFetched, isFetching, fetchApplications]);
 
   // --- ACTIONS ---
   const handleStatusChange = async (id: string, newStatus: Status) => {
-    setApps(prev => prev.map(app => app.id === id ? { ...app, status: newStatus } : app));
+    updateStatusLocal(id, newStatus);
     
     try {
       await fetch(`${API_BASE_URL}/applications/${id}/status`, {
@@ -144,7 +101,7 @@ export default function ApplicationsPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Remove this application from your tracker?')) {
-      setApps(prev => prev.filter(app => app.id !== id));
+      deleteApplicationLocal(id);
       
       try {
         await fetch(`${API_BASE_URL}/applications/${id}`, { 
@@ -182,7 +139,18 @@ export default function ApplicationsPage() {
       });
 
       if (response.ok) {
-        window.location.reload(); 
+        const data = await response.json();
+        const addedApp: Application = {
+          id: data.id ? data.id.toString() : Date.now().toString(),
+          company: payload.company_name,
+          role: payload.job_title,
+          status: newApp.status,
+          dateApplied: new Date().toISOString().split('T')[0],
+          jobUrl: payload.job_url || ''
+        };
+        addApplicationLocal(addedApp);
+        setIsModalOpen(false);
+        setNewApp({ company: '', role: '', jobUrl: '', status: 'Applied' });
       } else {
         alert("Failed to add application. Check backend logs.");
       }
@@ -259,7 +227,7 @@ export default function ApplicationsPage() {
         </div>
 
         {/* --- LAYOUT SWITCHER BASED ON APPLICATION STATE --- */}
-        {(!mounted || sessionStatus === 'loading' || loading) ? (
+        {(!mounted || sessionStatus === 'loading' || isFetching || !hasFetched) ? (
           <SkeletonBoard />
         ) : error ? (
           <div className="bg-red-50/60 border border-red-200/60 text-red-700 p-4 rounded-2xl flex items-center gap-3 text-sm font-medium max-w-2xl mx-auto shadow-sm">

@@ -32,7 +32,7 @@ export default function Home() {
 
     const checkProfile = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/profile/${session.user.email}`);
+        const res = await fetch(`${API_BASE_URL}/profile/${session?.user?.email}`);
         if (res.ok) {
           const data = await res.json();
           let extended = data.extended_profile;

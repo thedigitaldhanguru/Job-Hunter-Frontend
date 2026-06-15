@@ -7,9 +7,9 @@ import { Search, Briefcase, Building2, Loader2, ExternalLink, MapPin, User } fro
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import ProfileGuard from '@/components/ProfileGuard';
 import AuthForm from '../components/AuthButton';
 import { API_BASE_URL } from '@/lib/config';
-import { useProfileStore } from '@/store/useProfileStore';
 import { useJobsStore } from '@/store/useJobsStore';
 
 export default function Home() {
@@ -23,19 +23,7 @@ export default function Home() {
   
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
   
-  const { isComplete, hasFetched: profileFetched, isFetching: profileFetching, fetchProfile } = useProfileStore();
-  const showOnboardingPopup = profileFetched && !isComplete;
-  const profileLoading = profileFetching || !profileFetched;
-
   const LIMIT = 20;
-
-  // --- PROFILE CHECK ---
-  useEffect(() => {
-    if (status !== 'authenticated' || !session?.user?.email) {
-      return;
-    }
-    fetchProfile(session?.user?.email, session?.user?.name, session?.user?.image);
-  }, [session, status, fetchProfile]);
 
   // --- DATA FETCHING (ZUSTAND) ---
   useEffect(() => {
@@ -114,31 +102,8 @@ export default function Home() {
       
       <Navbar />
       
-      {/* ONBOARDING MODAL */}
-      {showOnboardingPopup && !profileLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div>
-          <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 sm:p-10 max-w-lg w-full text-center space-y-6 animate-fade-in-up">
-            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2 border border-blue-100 shadow-inner">
-              <User className="w-10 h-10 text-blue-600" />
-            </div>
-            <div className="space-y-3">
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome to Job Hunter!</h2>
-              <p className="text-slate-500 font-medium text-lg leading-relaxed">
-                To start applying for jobs and matching with top employers, you need to complete your profile. It only takes 2 minutes.
-              </p>
-            </div>
-            <Link 
-              href="/profile" 
-              className="block w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98] mt-4"
-            >
-              Complete My Profile
-            </Link>
-          </div>
-        </div>
-      )}
-
-      <main className="max-w-5xl mx-auto px-6 pt-12 pb-20 flex flex-col gap-14">
+      <ProfileGuard>
+        <main className="max-w-5xl mx-auto px-6 pt-12 pb-20 flex flex-col gap-14">
         
         {/* HERO SECTION */}
         <section className="flex flex-col items-center text-center space-y-8 mt-8">
@@ -286,6 +251,7 @@ export default function Home() {
           )}
         </section>
       </main>
+      </ProfileGuard>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   Search, Clock, CheckCircle2, XCircle, UserPlus, Loader2, AlertCircle, Link as LinkIcon
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import ProfileGuard from '@/components/ProfileGuard';
 
 import { API_BASE_URL } from '@/lib/config';
 import { useApplicationsStore, Status, Application } from '@/store/useApplicationsStore';
@@ -179,7 +180,8 @@ export default function ApplicationsPage() {
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-slate-800 pb-20">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-10">
+      <ProfileGuard>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-10">
         
         {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-slate-200/60 pb-6">
@@ -434,6 +436,7 @@ export default function ApplicationsPage() {
           </div>
         </div>
       )}
+      </ProfileGuard>
     </div>
   );
 }

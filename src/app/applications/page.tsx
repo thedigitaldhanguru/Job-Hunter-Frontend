@@ -11,6 +11,14 @@ import Navbar from '@/components/Navbar';
 import { API_BASE_URL } from '@/lib/config';
 import { useApplicationsStore, Status, Application } from '@/store/useApplicationsStore';
 
+// Define COLUMNS array at the module level so it is accessible to both ApplicationsPage and SkeletonBoard
+const COLUMNS: { title: string; status: Status; icon: any; color: string; bg: string; dot: string }[] = [
+  { title: 'Applied', status: 'Applied', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50/50 border-blue-100', dot: 'bg-blue-500' },
+  { title: 'Interviewing', status: 'Interviewing', icon: UserPlus, color: 'text-purple-600', bg: 'bg-purple-50/50 border-purple-100', dot: 'bg-purple-500' },
+  { title: 'Offered', status: 'Offered', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50/50 border-emerald-100', dot: 'bg-emerald-500' },
+  { title: 'Rejected', status: 'Rejected', icon: XCircle, color: 'text-slate-500', bg: 'bg-slate-50 border-slate-200', dot: 'bg-slate-400' }
+];
+
 export default function ApplicationsPage() {
   const { data: session, status: sessionStatus } = useSession(); 
   const { apps, hasFetched, isFetching, error, fetchApplications, updateStatusLocal, deleteApplicationLocal, addApplicationLocal } = useApplicationsStore();
@@ -165,12 +173,7 @@ export default function ApplicationsPage() {
     app.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const columns: { title: string; status: Status; icon: any; color: string; bg: string; dot: string }[] = [
-    { title: 'Applied', status: 'Applied', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50/50 border-blue-100', dot: 'bg-blue-500' },
-    { title: 'Interviewing', status: 'Interviewing', icon: UserPlus, color: 'text-purple-600', bg: 'bg-purple-50/50 border-purple-100', dot: 'bg-purple-500' },
-    { title: 'Offered', status: 'Offered', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50/50 border-emerald-100', dot: 'bg-emerald-500' },
-    { title: 'Rejected', status: 'Rejected', icon: XCircle, color: 'text-slate-500', bg: 'bg-slate-50 border-slate-200', dot: 'bg-slate-400' }
-  ];
+
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-slate-800 pb-20">
@@ -236,7 +239,7 @@ export default function ApplicationsPage() {
         ) : (
           /* --- KANBAN BOARD --- */
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
-            {columns.map(col => {
+            {COLUMNS.map(col => {
               const columnApps = filteredApps.filter(app => app.status === col.status);
               return (
                 <div key={col.title} className="flex flex-col gap-4 bg-slate-50/40 p-3 rounded-2xl border border-slate-200/50">
@@ -439,28 +442,34 @@ export default function ApplicationsPage() {
 function SkeletonBoard() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
-      {[1, 2, 3, 4].map((colIndex) => (
-        <div key={colIndex} className="flex flex-col gap-4 bg-slate-50/40 p-3 rounded-2xl border border-slate-200/50">
+      {COLUMNS.map((col) => (
+        <div key={col.title} className="flex flex-col gap-4 bg-slate-50/40 p-3 rounded-2xl border border-slate-200/50">
           
           {/* Skeleton Header */}
-          <div className="flex items-center justify-between p-3 rounded-xl border bg-white shadow-sm">
-            <div className="w-24 h-4 bg-slate-100 rounded-md animate-pulse" />
-            <div className="w-6 h-6 bg-slate-100 rounded-md animate-pulse" />
+          <div className={`flex items-center justify-between p-3 rounded-xl border bg-white shadow-sm ${col.bg}`}>
+            <div className="flex items-center gap-2">
+              <span className={`w-1.5 h-1.5 rounded-full ${col.dot} opacity-60 animate-pulse`} />
+              <span className="font-bold text-sm text-slate-400 animate-pulse">{col.title}</span>
+            </div>
+            <div className="w-5 h-5 bg-slate-200/30 rounded-md animate-pulse" />
           </div>
           
           {/* Skeleton Cards */}
           {[1, 2].map((cardIndex) => (
-            <div key={cardIndex} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-slate-100 animate-pulse shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-slate-100 rounded-md w-3/4 animate-pulse" />
-                  <div className="h-2.5 bg-slate-100 rounded-md w-1/2 animate-pulse" />
+            <div key={cardIndex} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm space-y-4 relative overflow-hidden">
+              {/* Left Color Accent Bar */}
+              <div className={`absolute top-0 left-0 bottom-0 w-[3px] ${col.dot} opacity-30 animate-pulse`} />
+              
+              <div className="flex items-start gap-3 pl-1">
+                <div className="w-9 h-9 rounded-lg bg-slate-100 animate-pulse shrink-0 border border-slate-200/40" />
+                <div className="flex-1 space-y-2 mt-0.5">
+                  <div className="h-3.5 bg-slate-200/60 rounded-md w-4/5 animate-pulse" />
+                  <div className="h-3 bg-slate-200/40 rounded-md w-1/2 animate-pulse" />
                 </div>
               </div>
-              <div className="pt-3.5 border-t border-slate-100 flex justify-between items-center">
-                <div className="w-16 h-2.5 bg-slate-100 rounded-md animate-pulse" />
-                <div className="w-14 h-5 bg-slate-100 rounded-md animate-pulse" />
+              <div className="pt-3.5 border-t border-slate-100 flex justify-between items-center pl-1">
+                <div className="w-20 h-3 bg-slate-100 animate-pulse rounded-md" />
+                <div className="w-16 h-6 bg-slate-50 border border-slate-200/60 rounded-lg animate-pulse" />
               </div>
             </div>
           ))}

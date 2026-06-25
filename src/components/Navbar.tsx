@@ -45,98 +45,77 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full bg-[#FAFAFA]/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <nav className="w-full border-b border-[var(--kindling-border)] bg-transparent relative z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           
-          {/* Typographic Logo */}
-          <Link href="/" onClick={(e) => handleNavClick(e, '/')} className="flex items-center group shrink-0">
-            <span className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tighter transition-colors group-hover:text-slate-600">
-              Job Hunter
-            </span>
+          {/* LOGO */}
+          <Link href="/" onClick={(e) => handleNavClick(e, '/')} className="flex items-center gap-3 hover:opacity-80 transition-opacity z-50">
+            <div className="w-8 h-8 rounded-full bg-[var(--kindling-ink)] text-white flex items-center justify-center font-serif text-xl leading-none pt-1">
+              k
+            </div>
+            <span className="font-serif text-[1.35rem] tracking-tight text-[var(--kindling-ink)]">kindling</span>
           </Link>
-
-          {/* Desktop Navigation Links */}
-          <div className="hidden sm:flex items-center gap-2 text-sm font-medium">
+          
+          {/* DESKTOP NAV LINKS */}
+          <div className="hidden md:flex items-center bg-transparent rounded-full p-1 border border-[var(--kindling-border)]">
             <Link 
               href="/" 
               onClick={(e) => handleNavClick(e, '/')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                pathname === '/' 
-                  ? 'bg-slate-200/50 text-slate-900' 
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-              }`}
+              className={`px-5 py-1.5 rounded-full font-medium text-[13px] transition-colors ${pathname === '/' ? 'bg-[var(--kindling-ink)] text-white' : 'text-gray-500 hover:text-black'}`}
             >
-              Search
-            </Link>
-            <Link 
-              href="/profile" 
-              onClick={(e) => handleNavClick(e, '/profile')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                pathname === '/profile' 
-                  ? 'bg-slate-200/50 text-slate-900' 
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-              }`}
-            >
-              Profile
+              Find work
             </Link>
             <Link 
               href="/applications" 
               onClick={(e) => handleNavClick(e, '/applications')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                pathname === '/applications' 
-                  ? 'bg-slate-200/50 text-slate-900' 
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-              }`}
+              className={`px-5 py-1.5 rounded-full font-medium text-[13px] transition-colors ${pathname === '/applications' ? 'bg-[var(--kindling-ink)] text-white' : 'text-gray-500 hover:text-black'}`}
             >
               Applications
             </Link>
+            <Link 
+              href="/profile" 
+              onClick={(e) => handleNavClick(e, '/profile')}
+              className={`px-5 py-1.5 rounded-full font-medium text-[13px] transition-colors ${pathname === '/profile' ? 'bg-[var(--kindling-ink)] text-white' : 'text-gray-500 hover:text-black'}`}
+            >
+              Profile
+            </Link>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <button 
-            className="sm:hidden p-2 text-slate-600 hover:text-slate-900 transition-colors"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* DESKTOP ACTIONS & MOBILE TOGGLE */}
+          <div className="flex items-center gap-3 md:gap-5 z-50">
+            <button 
+              className="md:hidden p-2 text-gray-600 hover:text-black"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* MOBILE FULL-SCREEN MENU */}
         {isMobileMenuOpen && (
-          <div className="sm:hidden border-t border-slate-200 bg-[#FAFAFA] animate-fade-in absolute w-full shadow-lg">
-            <div className="flex flex-col px-4 py-3 space-y-2 text-sm font-medium">
+          <div className="fixed inset-0 top-20 bg-white/95 backdrop-blur-md z-40 md:hidden flex flex-col items-center justify-start pt-10 border-t border-[var(--kindling-border)] animate-fade-in px-6">
+            <div className="flex flex-col items-center gap-6 text-center w-full">
               <Link 
                 href="/" 
                 onClick={(e) => { handleNavClick(e, '/'); setIsMobileMenuOpen(false); }}
-                className={`px-4 py-3 rounded-xl transition-colors ${
-                  pathname === '/' 
-                    ? 'bg-blue-50 text-blue-600 font-bold' 
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
+                className={`text-2xl font-serif w-full py-4 border-b border-[var(--kindling-border)] ${pathname === '/' ? 'text-[var(--kindling-ink)] font-normal' : 'text-gray-500'}`}
               >
-                Search Jobs
-              </Link>
-              <Link 
-                href="/profile" 
-                onClick={(e) => { handleNavClick(e, '/profile'); setIsMobileMenuOpen(false); }}
-                className={`px-4 py-3 rounded-xl transition-colors ${
-                  pathname === '/profile' 
-                    ? 'bg-blue-50 text-blue-600 font-bold' 
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                My Profile
+                Find work
               </Link>
               <Link 
                 href="/applications" 
                 onClick={(e) => { handleNavClick(e, '/applications'); setIsMobileMenuOpen(false); }}
-                className={`px-4 py-3 rounded-xl transition-colors ${
-                  pathname === '/applications' 
-                    ? 'bg-blue-50 text-blue-600 font-bold' 
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
+                className={`text-2xl font-serif w-full py-4 border-b border-[var(--kindling-border)] ${pathname === '/applications' ? 'text-[var(--kindling-ink)] font-normal' : 'text-gray-500'}`}
               >
                 Applications
+              </Link>
+              <Link 
+                href="/profile" 
+                onClick={(e) => { handleNavClick(e, '/profile'); setIsMobileMenuOpen(false); }}
+                className={`text-2xl font-serif w-full py-4 border-b border-[var(--kindling-border)] ${pathname === '/profile' ? 'text-[var(--kindling-ink)] font-normal' : 'text-gray-500'}`}
+              >
+                Profile
               </Link>
             </div>
           </div>
@@ -146,17 +125,17 @@ export default function Navbar() {
       {/* WARNING POPUP: ENTER REMAINING FIELDS DETAILS */}
       {showWarningModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-[4px] animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200/80 p-6 sm:p-8 max-w-md w-full text-center space-y-5 transform scale-100 transition-all duration-300">
+          <div className="bg-white rounded-[1.5rem] shadow-2xl border border-[var(--kindling-border)] p-6 sm:p-8 max-w-md w-full text-center space-y-5 transform scale-100 transition-all duration-300">
             <div className="w-14 h-14 bg-red-50 border border-red-100 rounded-full flex items-center justify-center mx-auto shadow-inner">
               <AlertCircle className="w-7 h-7 text-red-500" />
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-slate-950">
-                Enter Remaining Fields Details
+              <h3 className="text-xl font-bold text-slate-950 font-serif">
+                Complete your profile
               </h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">
-                You have not completed all required details yet. Please fill out all required fields on your profile (Name, Phone, Location, Degree, University, Salary Preferences, and Resume) to browse jobs or view applications.
+                You have not completed all required details yet. Please fill out all required fields on your profile to browse jobs or view applications.
               </p>
             </div>
 
@@ -165,9 +144,9 @@ export default function Navbar() {
                 setShowWarningModal(false);
                 router.push('/profile');
               }}
-              className="w-full py-3.5 bg-slate-950 hover:bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg transition-all duration-300 active:scale-[0.98] mt-2 flex items-center justify-center gap-1.5"
+              className="w-full py-3.5 bg-[var(--kindling-ink)] hover:opacity-80 text-white rounded-full font-bold text-sm shadow-lg transition-all duration-300 active:scale-[0.98] mt-2 flex items-center justify-center gap-1.5"
             >
-              Go Complete Profile
+              Go to Profile
             </button>
           </div>
         </div>

@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer"; 
 import SessionWrapper from "@/components/SessionWrapper"; 
 
-// Configure the global font
 const inter = Inter({ 
   subsets: ["latin"],
   variable: "--font-inter", 
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-instrument-serif",
 });
 
 export const metadata: Metadata = {
@@ -22,17 +27,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen`}>
+      <body className={`${inter.variable} ${instrumentSerif.variable} font-sans antialiased flex flex-col min-h-screen`}>
         
-        {/* 2. Wrap everything in the SessionWrapper */}
+        <div className="paperGrid"></div>
+        <div className="glow"></div>
+
         <SessionWrapper>
-          
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col relative z-10">
             {children}
           </div>
-
           <Footer />
-          
         </SessionWrapper>
 
       </body>

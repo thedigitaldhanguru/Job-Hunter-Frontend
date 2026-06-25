@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, Lock, ArrowRight, Loader2, Sparkles, UserPlus, LogIn } from 'lucide-react';
+import { Mail, Lock, Loader2 } from 'lucide-react';
 import { signIn } from "next-auth/react";
 
 export default function AuthForm() {
@@ -22,14 +22,12 @@ export default function AuthForm() {
         email,
         password,
         action: isLogin ? 'login' : 'register',
-        redirect: false, // Handle redirect manually to catch errors
+        redirect: false,
       });
       
       if (res?.error) {
-        // Show error message instead of failing silently
         alert(res.error);
       } else if (res?.ok) {
-        // Successful login/signup, redirect to main landing page
         window.location.href = '/'; 
       }
     } catch (error) {
@@ -41,30 +39,28 @@ export default function AuthForm() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    // Redirect to home page upon successful Google sign in instead of /profile
     await signIn('google', { callbackUrl: '/' });
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-8 sm:mt-12">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10 relative overflow-hidden transition-all duration-300">
+    <div className="w-full max-w-md mx-auto mt-4 sm:mt-8 relative z-10">
+      <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--kindling-border)] p-8 sm:p-10 relative overflow-hidden transition-all duration-300">
         
         <div className="relative z-10 space-y-8">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              {isLogin ? 'Sign in to Job Hunter' : 'Create your account'}
+          <div className="text-center space-y-3">
+            <h2 className="text-4xl sm:text-5xl font-normal tracking-tight text-[var(--kindling-ink)] leading-none" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
+              {isLogin ? 'Welcome back' : 'Join us'}
             </h2>
-            <p className="text-slate-500 text-sm font-medium">
-              {isLogin ? 'Welcome back! Please enter your details.' : 'Start discovering your next career move.'}
+            <p className="text-slate-500 text-[15px] font-medium leading-relaxed">
+              {isLogin ? 'Sign in to access your tailored job matches.' : 'Start discovering your next career move.'}
             </p>
           </div>
 
-          {/* Google Sign-In at the TOP */}
           <button 
             type="button"
             onClick={handleGoogleSignIn}
             disabled={isLoading || isGoogleLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3 px-4 rounded-xl shadow-sm transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
+            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-4 rounded-full shadow-sm transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100"
           >
             {isGoogleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin text-slate-500" />
@@ -80,18 +76,17 @@ export default function AuthForm() {
           </button>
 
           <div className="relative flex items-center py-1">
-            <div className="flex-grow border-t border-slate-200"></div>
-            <span className="flex-shrink-0 mx-4 text-xs font-medium text-slate-400">or continue with email</span>
-            <div className="flex-grow border-t border-slate-200"></div>
+            <div className="flex-grow border-t border-slate-100"></div>
+            <span className="flex-shrink-0 mx-4 text-[11px] font-semibold tracking-wider uppercase text-slate-400">or with email</span>
+            <div className="flex-grow border-t border-slate-100"></div>
           </div>
 
-          {/* Email/Password Form at the BOTTOM */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700 block">Email address</label>
+                <label className="text-sm font-semibold text-slate-700 block ml-1">Email address</label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[var(--kindling-ink)] transition-colors">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input 
@@ -99,22 +94,22 @@ export default function AuthForm() {
                     name="email"
                     required 
                     placeholder="name@company.com" 
-                    className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-400 text-sm"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-full py-3.5 pl-11 pr-4 outline-none focus:bg-white focus:border-[var(--kindling-ink)] focus:ring-1 focus:ring-[var(--kindling-ink)] transition-all placeholder:text-slate-400 text-[15px]"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-slate-700 block">Password</label>
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-sm font-semibold text-slate-700 block">Password</label>
                   {isLogin && (
-                    <a href="#" className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                    <a href="#" className="text-xs font-medium text-slate-500 hover:text-[var(--kindling-ink)] transition-colors">
                       Forgot password?
                     </a>
                   )}
                 </div>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[var(--kindling-ink)] transition-colors">
                     <Lock className="w-4 h-4" />
                   </div>
                   <input 
@@ -122,7 +117,7 @@ export default function AuthForm() {
                     name="password"
                     required 
                     placeholder="••••••••" 
-                    className="w-full bg-white border border-slate-300 text-slate-900 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-slate-400 text-sm"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-full py-3.5 pl-11 pr-4 outline-none focus:bg-white focus:border-[var(--kindling-ink)] focus:ring-1 focus:ring-[var(--kindling-ink)] transition-all placeholder:text-slate-400 text-[15px]"
                   />
                 </div>
               </div>
@@ -131,7 +126,7 @@ export default function AuthForm() {
             <button 
               type="submit" 
               disabled={isLoading || isGoogleLoading}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-4 rounded-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 mt-2"
+              className="w-full flex items-center justify-center gap-2 bg-[var(--kindling-ink)] hover:bg-black text-white font-semibold py-3.5 px-4 rounded-full transition-all active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 mt-2 shadow-md"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -144,13 +139,13 @@ export default function AuthForm() {
         </div>
       </div>
 
-      <div className="mt-6 text-center">
+      <div className="mt-8 text-center pb-8">
         <p className="text-slate-500 text-sm">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button 
             type="button"
             onClick={() => setIsLogin(!isLogin)}
-            className="text-slate-900 font-semibold hover:underline transition-all"
+            className="text-[var(--kindling-ink)] font-bold hover:underline transition-all"
           >
             {isLogin ? 'Sign up' : 'Sign in'}
           </button>

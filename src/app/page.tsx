@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { JobListing } from '@/types/job';
-import { Search, Briefcase, Building2, Loader2, ExternalLink, MapPin, User } from 'lucide-react';
-import Link from 'next/link';
+import { Search, MapPin, Sparkles, Clock, ArrowUpRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
-import ProfileGuard from '@/components/ProfileGuard';
-import AuthForm from '../components/AuthButton';
 import { API_BASE_URL } from '@/lib/config';
 import { useJobsStore } from '@/store/useJobsStore';
+import Navbar from '@/components/Navbar';
+import AuthForm from '../components/AuthButton';
+import SmartFillPrompt from '@/components/SmartFillPrompt';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -22,7 +21,6 @@ export default function Home() {
   } = useJobsStore();
   
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
-  
   const LIMIT = 20;
 
   // --- DATA FETCHING (ZUSTAND) ---
@@ -30,7 +28,6 @@ export default function Home() {
     if (status !== 'authenticated') return;
     
     const delayDebounceFn = setTimeout(() => {
-      // If searchQuery is empty and we already fetched, don't re-fetch unless it's a new search
       if (hasFetched && searchQuery === '') return;
       fetchJobs(LIMIT, true); // Reset to page 0 on new search
     }, 300);
@@ -45,7 +42,6 @@ export default function Home() {
     }
   }, [status, hasFetched, fetchJobs]);
 
-  // --- APPLY LOGIC ---
   const handleApply = async (e: React.MouseEvent, job: JobListing) => {
     e.stopPropagation();
     if (!session?.user?.email) { signIn(); return; }
@@ -69,8 +65,6 @@ export default function Home() {
         if (targetUrl) {
           window.open(targetUrl, '_blank', 'noopener,noreferrer');
         }
-        
-        // Use SPA router to navigate without killing the window.open call
         router.push('/applications');
       }
     } finally {
@@ -80,178 +74,195 @@ export default function Home() {
 
   // --- GATEKEEPER ---
   if (status === "loading") return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased relative overflow-hidden flex flex-col">
+    <div className="min-h-screen antialiased relative overflow-hidden flex flex-col">
       <Navbar />
       <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--kindling-ink)]" />
       </div>
     </div>
   );
   
   if (status === "unauthenticated") return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold mb-2">Job Hunter Pro</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans relative z-10 w-full">
+      <div className="text-center mb-2">
+        <h1 className="text-4xl font-normal text-[var(--kindling-ink)]" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Job Hunter Pro</h1>
+      </div>
       <AuthForm />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased relative overflow-hidden">
-      {/* Decorative premium background grid */}
-      <div className="absolute inset-0 -z-10 h-full w-full bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40"></div>
-      
+    <div className="min-h-screen antialiased font-sans text-slate-800 pb-16 relative overflow-x-hidden w-full">
       <Navbar />
       
-      <ProfileGuard>
-        <main className="max-w-5xl mx-auto px-6 pt-12 pb-20 flex flex-col gap-14">
+      <main className="max-w-[1100px] mx-auto px-6 mt-8">
         
         {/* HERO SECTION */}
-        <section className="flex flex-col items-center text-center space-y-8 mt-8">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-semibold text-sm mb-4">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-              </span>
-              Over 10,000+ active roles
-            </div>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] max-w-4xl mx-auto">
-              Discover your next <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-                career defining role.
-              </span>
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto mt-6 px-2">
-              Skip the noise. We match your unique profile with top-tier companies actively hiring right now.
-            </p>
+        <section className="pt-8 pb-16 max-w-4xl mx-auto flex flex-col items-center text-center relative z-10">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[var(--kindling-border)] bg-white text-[12px] font-medium text-gray-600 mb-8 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-gray-400" />
+            12,480 new roles this week
           </div>
-
-          <div className="relative flex items-center bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-200 p-2 w-full max-w-3xl group focus-within:ring-4 focus-within:ring-blue-500/10 focus-within:border-blue-500 transition-all duration-300">
-            <div className="pl-6 pr-2">
-              <Search className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+          
+          <h1 className="text-5xl sm:text-7xl lg:text-[5.5rem] font-normal tracking-tight leading-[1.02] text-[var(--kindling-ink)] mb-6" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
+            Find work <br/> <em className="italic font-serif pr-2">worth</em> doing.
+          </h1>
+          
+          <p className="text-[17px] text-gray-600 max-w-[500px] leading-[1.6] mb-7">
+            Discover career-defining roles tailored to your unique profile. Skip the noise and find your perfect match.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center bg-white rounded-full border border-[var(--kindling-border)] p-1.5 w-full max-w-[700px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] focus-within:ring-4 focus-within:ring-gray-100 transition-all text-left">
+            <div className="flex-1 flex items-center pl-4 py-2 w-full">
+              <Search className="w-[18px] h-[18px] text-gray-400 mr-3 shrink-0" />
+              <input 
+                type="text" 
+                placeholder="Job title, company or keyword" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent outline-none w-full text-gray-800 placeholder-gray-400 text-[15px]" 
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Search jobs, skills, companies..."
-              value={searchQuery}
-              onChange={(e) => { setOffset(0); setSearchQuery(e.target.value); }}
-              className="flex-1 bg-transparent py-3 sm:py-4 outline-none text-slate-900 font-medium placeholder:text-slate-400 text-base sm:text-lg truncate"
-            />
-            <button className="hidden sm:block bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-full transition-colors shrink-0">
-              Search
+            
+            <div className="hidden sm:block w-[1px] h-6 bg-gray-200 mx-2"></div>
+            
+            <div className="flex-[0.8] flex items-center px-4 py-2 w-full">
+              <MapPin className="w-[18px] h-[18px] text-gray-400 mr-3 shrink-0" />
+              <input type="text" placeholder="City or remote" className="bg-transparent outline-none w-full text-gray-800 placeholder-gray-400 text-[15px]" />
+            </div>
+            
+            <button className="w-full sm:w-auto mt-2 sm:mt-0 bg-[var(--kindling-ink)] text-white px-7 py-3 rounded-full text-[15px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 shrink-0">
+              <Search className="w-4 h-4" /> Search
             </button>
+          </div>
+          
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+            <span className="text-[10px] font-semibold text-gray-400 tracking-wider mr-2">POPULAR</span>
+            {['Product Designer', 'Frontend', 'iOS Engineer', 'Marketing', 'Remote'].map(tag => (
+              <span key={tag} className="px-3.5 py-1.5 rounded-full border border-[var(--kindling-border)] bg-white text-[12px] font-medium text-gray-600 hover:border-gray-300 cursor-pointer transition-colors shadow-sm">{tag}</span>
+            ))}
           </div>
         </section>
 
         {/* JOB FEED SECTION */}
-        <section className="pt-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Recommended for you</h2>
-            <span className="text-xs sm:text-sm font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full self-start sm:self-auto">
-              {jobs.length} roles found
-            </span>
+        <section className="pt-4 pb-32">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <span className="text-[11px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-3 block">Handpicked</span>
+              <h2 className="text-[2.75rem] font-normal leading-none" style={{ fontFamily: 'var(--font-instrument-serif)', color: 'var(--kindling-ink)' }}>
+                Roles we love this week
+              </h2>
+            </div>
+            <div className="text-[14px] text-gray-500 mb-1">
+              Showing <span className="font-semibold text-gray-900">{jobs.length}</span> roles
+            </div>
           </div>
 
           {loading ? (
-             <div className="flex flex-col items-center justify-center py-20 space-y-4">
-               <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-               <p className="text-slate-500 font-medium animate-pulse">Curating the best roles...</p>
+             <div className="flex justify-center items-center py-20">
+               <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
              </div>
           ) : jobs.length === 0 ? (
-             <div className="text-center py-20 bg-white border border-dashed border-slate-300 rounded-3xl">
-               <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-               <h3 className="text-xl font-bold text-slate-900">No jobs found</h3>
-               <p className="text-slate-500 mt-2">Try adjusting your search terms</p>
+             <div className="text-center py-20 border border-[var(--kindling-border)] rounded-2xl bg-white">
+               <p className="text-gray-500">No jobs found. Try adjusting your search.</p>
              </div>
           ) : (
-            <div className="space-y-5">
-              {jobs.map((job) => (
-                <div 
-                  key={job.id} 
-                  className="group bg-white border border-slate-200 rounded-[2rem] p-6 sm:p-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-blue-200 transition-all duration-300"
-                >
-                  <div className="flex items-start gap-5">
-                    {/* Company Initial Badge */}
-                    <div className="hidden sm:flex w-14 h-14 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-50 border border-slate-200 items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
-                      <span className="text-xl font-extrabold text-slate-700">
-                        {job.company_raw ? job.company_raw.charAt(0).toUpperCase() : 'C'}
-                      </span>
-                    </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {jobs.map((job, idx) => (
+                  <article 
+                    key={job.id} 
+                    className="group relative bg-white border border-[var(--kindling-border)] rounded-[1.25rem] p-5 flex flex-col hover:border-[#d4ff70] transition-colors duration-300 shadow-sm"
+                  >
+                    {idx === 0 && offset === 0 && (
+                      <div className="absolute top-4 right-4 bg-[#d4ff70] text-[#111] text-[9px] font-bold tracking-[0.05em] px-2 py-0.5 rounded uppercase">
+                        Featured
+                      </div>
+                    )}
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-bold text-xl text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
-                          {job.title}
-                        </h3>
-                        {/* Optional badge */}
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
-                          New
+                    <div className="flex items-center gap-3 mb-3.5">
+                      <div className="w-[36px] h-[36px] bg-[var(--kindling-ink)] text-white rounded-[8px] flex items-center justify-center font-serif text-[18px] pt-1">
+                        {job.company_raw ? job.company_raw.charAt(0).toUpperCase() : 'C'}
+                      </div>
+                      <div>
+                        <div className="text-[14px] font-medium text-gray-800 leading-tight mb-0.5">{job.company_raw || "Confidential"}</div>
+                        <div className="text-[12px] text-gray-500 flex items-center gap-1.5">
+                          <Clock className="w-[11px] h-[11px] opacity-70" /> 2d ago
+                        </div>
+                      </div>
+                    </div>
+
+                    <h3 className="text-[1.35rem] font-normal mb-3.5 leading-[1.1] text-gray-900" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
+                      {job.title}
+                    </h3>
+
+                    <div className="flex items-center gap-1.5 text-[12px] text-gray-500 mb-4">
+                      <MapPin className="w-3 h-3 opacity-70" />
+                      {job.location || "Remote"}
+                      <span className="w-[2px] h-[2px] bg-gray-400 rounded-full mx-1"></span>
+                      Remote
+                      <span className="w-[2px] h-[2px] bg-gray-400 rounded-full mx-1"></span>
+                      Full-time
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 mb-5">
+                      {['Design Systems', 'Figma', 'Product'].map(tag => (
+                        <span key={tag} className="px-2.5 py-0.5 rounded-full bg-[#f9f9f9] border border-[var(--kindling-border)] text-[11px] font-medium text-gray-600">
+                          {tag}
                         </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-auto pt-4 border-t border-dotted border-gray-300 flex items-center justify-between">
+                      <div>
+                        <div className="text-[9px] font-semibold text-gray-400 tracking-[0.1em] uppercase mb-0.5">Salary</div>
+                        <div className="font-serif text-base text-gray-900">$180k - $220k</div>
                       </div>
                       
-                      <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500">
-                        <span className="flex items-center gap-1.5">
-                          <Building2 className="w-4 h-4" />
-                          {job.company_raw || "Confidential"}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4" />
-                          {job.location || "Remote"}
-                        </span>
-                      </div>
+                      <button 
+                        onClick={(e) => handleApply(e, job)}
+                        disabled={applyingTo === job.id}
+                        className="bg-[var(--kindling-ink)] text-white px-4 py-1.5 rounded-full text-[13px] font-medium flex items-center gap-1.5 hover:bg-black transition-colors"
+                      >
+                        {applyingTo === job.id ? '...' : (
+                          <>Apply <ArrowUpRight className="w-3 h-3 opacity-80 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" /></>
+                        )}
+                      </button>
                     </div>
-                  </div>
+                  </article>
+                ))}
+              </div>
 
-                  <button 
-                    onClick={(e) => handleApply(e, job)} 
-                    disabled={applyingTo === job.id}
-                    className="w-full sm:w-auto px-8 py-3.5 bg-slate-900 text-white rounded-full font-bold hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/20 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:bg-slate-900"
-                  >
-                    {applyingTo === job.id ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Applying...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Apply Now</span>
-                        <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              ))}
-              
-              {/* Pagination Controls */}
-              <div className="flex justify-center items-center gap-4 pt-8 pb-4">
-                <button 
+              {/* PAGINATION */}
+              <div className="flex justify-center items-center gap-4 mt-12">
+                <button
                   onClick={() => {
-                    const prevOffset = Math.max(0, offset - LIMIT);
-                    setOffset(prevOffset);
+                    setOffset(Math.max(0, offset - LIMIT));
                     fetchJobs(LIMIT, false);
                   }}
                   disabled={offset === 0 || loading}
-                  className="px-6 py-3 rounded-full font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm hover:shadow-md"
+                  className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 disabled:opacity-50 bg-white border border-[var(--kindling-border)] text-gray-700 hover:bg-gray-50 shadow-sm"
                 >
-                  Previous Page
+                  Previous
                 </button>
-                <button 
+                <span className="text-sm text-gray-500 font-medium">Page {Math.floor(offset / LIMIT) + 1}</span>
+                <button
                   onClick={() => {
-                    const nextOffset = offset + LIMIT;
-                    setOffset(nextOffset);
+                    setOffset(offset + LIMIT);
                     fetchJobs(LIMIT, false);
                   }}
                   disabled={loading || jobs.length < LIMIT}
-                  className="px-6 py-3 rounded-full font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm hover:shadow-md"
+                  className="px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 disabled:opacity-50 bg-white border border-[var(--kindling-border)] text-gray-700 hover:bg-gray-50 shadow-sm"
                 >
-                  Next Page
+                  Next
                 </button>
               </div>
-            </div>
+            </>
           )}
         </section>
       </main>
-      </ProfileGuard>
+
+      <SmartFillPrompt />
     </div>
   );
 }

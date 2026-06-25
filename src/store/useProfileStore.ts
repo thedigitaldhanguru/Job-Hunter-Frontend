@@ -3,8 +3,8 @@ import { API_BASE_URL } from '@/lib/config';
 
 export const EMPTY_PROFILE = {
   header: { name: '', degree: '', university: '', location: '', experience: '', phone: '', email: '', gender: '', dob: '', avatar: '' },
-  summary: '', resumeName: '', resumeUrl: '', employment: [], internships: [], education: [], skills: [], projects: [], 
-  languages: [], academicAchievements: [], accomplishments: [], exams: [], 
+  summary: '', resumeName: '', resumeUrl: '', employment: [] as any[], internships: [] as any[], education: [] as any[], skills: [] as string[], projects: [] as any[], 
+  languages: [] as string[], academicAchievements: [] as any[], accomplishments: [] as any[], exams: [] as any[], 
   preferences: { jobType: '', availability: '', location: '', currentCTC: '', expectedCTC: '' }
 };
 

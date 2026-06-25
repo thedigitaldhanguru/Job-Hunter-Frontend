@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react'; // <-- 1. Import NextAuth hook
+import { useSession } from 'next-auth/react';
 import { 
   Building2, Calendar, Plus, Briefcase, ChevronDown, Trash2,
   Search, Clock, CheckCircle2, XCircle, UserPlus, Loader2, AlertCircle, Link as LinkIcon
@@ -12,15 +12,14 @@ import ProfileGuard from '@/components/ProfileGuard';
 import { API_BASE_URL } from '@/lib/config';
 import { useApplicationsStore, Status, Application } from '@/store/useApplicationsStore';
 
-// Define COLUMNS array at the module level so it is accessible to both ApplicationsPage and SkeletonBoard
 const COLUMNS: { title: string; status: Status; icon: any; color: string; bg: string; dot: string }[] = [
-  { title: 'Applied', status: 'Applied', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50/50 border-blue-100', dot: 'bg-blue-500' },
-  { title: 'Interviewing', status: 'Interviewing', icon: UserPlus, color: 'text-purple-600', bg: 'bg-purple-50/50 border-purple-100', dot: 'bg-purple-500' },
-  { title: 'Offered', status: 'Offered', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50/50 border-emerald-100', dot: 'bg-emerald-500' },
-  { title: 'Rejected', status: 'Rejected', icon: XCircle, color: 'text-slate-500', bg: 'bg-slate-50 border-slate-200', dot: 'bg-slate-400' }
+  { title: 'Applied', status: 'Applied', icon: Clock, color: 'text-blue-600', bg: 'bg-white', dot: 'bg-blue-500' },
+  { title: 'Interviewing', status: 'Interviewing', icon: UserPlus, color: 'text-purple-600', bg: 'bg-white', dot: 'bg-purple-500' },
+  { title: 'Offered', status: 'Offered', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-white', dot: 'bg-emerald-500' },
+  { title: 'Rejected', status: 'Rejected', icon: XCircle, color: 'text-slate-500', bg: 'bg-white', dot: 'bg-slate-400' }
 ];
 
-export default function ApplicationsPage() {
+export default function SandboxApplicationsPage() {
   const { data: session, status: sessionStatus } = useSession(); 
   const { apps, hasFetched, isFetching, error, fetchApplications, updateStatusLocal, deleteApplicationLocal, addApplicationLocal } = useApplicationsStore();
 
@@ -35,13 +34,11 @@ export default function ApplicationsPage() {
     status: 'Applied' 
   });
 
-  // --- 🔥 BULLETPROOF BOOKMARKLET GENERATOR 🔥 ---
   const getBookmarkletCode = () => {
     const appDomain = typeof window !== 'undefined' ? window.location.origin : '';
-    return `javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(window.location.href);window.open("${appDomain}/applications?autoAdd=true&title="+t+"&url="+u,"_blank");})();`;
+    return `javascript:(function(){var t=encodeURIComponent(document.title),u=encodeURIComponent(window.location.href);window.open("${appDomain}/design-sandbox/applications?autoAdd=true&title="+t+"&url="+u,"_blank");})();`;
   };
 
-  // --- CATCH BOOKMARKLET REDIRECTS & EXTRACT COMPANY ---
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -77,7 +74,6 @@ export default function ApplicationsPage() {
     }
   }, []);
 
-  // --- FETCH DATA FROM ZUSTAND ---
   useEffect(() => {
     if (sessionStatus === 'loading') return; 
     
@@ -93,7 +89,6 @@ export default function ApplicationsPage() {
     }
   }, [session, sessionStatus, hasFetched, isFetching, fetchApplications]);
 
-  // --- ACTIONS ---
   const handleStatusChange = async (id: string, newStatus: Status) => {
     updateStatusLocal(id, newStatus);
     
@@ -125,14 +120,13 @@ export default function ApplicationsPage() {
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 7. Security check before submitting
     if (!session?.user?.email) {
       alert("You must be logged in to add an application.");
       return;
     }
     
     const payload = { 
-      user_email: session.user.email, // <-- 8. Use the dynamic email here
+      user_email: session.user.email,
       job_id: 0, 
       company_name: newApp.company || "Unknown Company",
       job_title: newApp.role || "Unknown Role",
@@ -168,63 +162,56 @@ export default function ApplicationsPage() {
     }
   };
 
-  // --- FILTERING ---
   const filteredApps = apps.filter(app => 
     app.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
     app.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-
-
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-slate-800 pb-20">
+    <div className="min-h-screen antialiased font-sans text-slate-800 pb-20 relative overflow-x-hidden w-full">
       <Navbar />
-
       <ProfileGuard>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-10">
+        <main className="max-w-[1400px] mx-auto px-6 mt-10 space-y-10 relative z-10">
         
         {/* --- HEADER --- */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-slate-200/60 pb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 border-b border-[var(--kindling-border)] pb-6">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">Application Tracker</h1>
-            <p className="text-sm text-slate-500 mt-1">Manage and track your job hunt progress seamlessly.</p>
+            <h1 className="text-4xl sm:text-5xl font-normal tracking-tight text-[var(--kindling-ink)]" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Pipeline</h1>
+            <p className="text-[15px] text-gray-500 mt-2">Manage and track your job hunt progress seamlessly.</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            {/* Search Input */}
             <div className="relative flex-1 md:flex-none">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-[18px] h-[18px] text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
               <input 
                 type="text" 
                 placeholder="Search jobs..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all w-full sm:w-64 shadow-sm"
+                className="pl-11 pr-4 py-2.5 bg-white border border-[var(--kindling-border)] rounded-full text-[14px] outline-none focus:border-gray-300 focus:ring-4 focus:ring-gray-100 transition-all w-full sm:w-64 shadow-sm"
               />
             </div>
             
-            {/* 🔥 THE MAGIC BOOKMARKLET BUTTON (REACT SECURITY BYPASS) 🔥 */}
             {mounted && session?.user && (
               <span dangerouslySetInnerHTML={{
                 __html: `
                   <a 
                     href='${getBookmarkletCode()}'
                     onclick="window.alert('⚙️ HOW TO INSTALL:\\n1. Press Ctrl+Shift+B (Cmd+Shift+B on Mac) to show your Bookmarks Bar.\\n2. Drag and drop this button into the bar.\\n\\n🚀 HOW TO USE:\\nWhenever you find a job on LinkedIn, just click the bookmark to instantly save it here!'); return false;"
-                    class="bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 px-3 py-2.5 rounded-xl text-sm font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-grab shrink-0"
+                    class="bg-white border border-[var(--kindling-border)] text-gray-700 px-4 py-2.5 rounded-full text-[13px] font-medium flex items-center gap-2 transition-all shadow-sm hover:border-gray-300 cursor-grab shrink-0"
                     title="Drag to Bookmarks!"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-                    JOB HUNTER TRACK
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                    Job Hunter Track
                   </a>
                 `
               }} />
             )}
 
-            {/* Add Manually Button */}
             <button 
               onClick={() => setIsModalOpen(true)}
-              disabled={!session?.user} // Prevent opening if not logged in
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-sm hover:shadow active:scale-[0.98] shrink-0"
+              disabled={!session?.user} 
+              className="bg-[var(--kindling-ink)] hover:bg-black disabled:opacity-50 text-white px-5 py-2.5 rounded-full text-[14px] font-medium flex items-center gap-2 transition-all shadow-sm shrink-0"
             >
               <Plus className="w-4 h-4" /> Add Manually
             </button>
@@ -235,55 +222,54 @@ export default function ApplicationsPage() {
         {(!mounted || sessionStatus === 'loading' || isFetching || !hasFetched) ? (
           <SkeletonBoard />
         ) : error ? (
-          <div className="bg-red-50/60 border border-red-200/60 text-red-700 p-4 rounded-2xl flex items-center gap-3 text-sm font-medium max-w-2xl mx-auto shadow-sm">
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-[1.25rem] flex items-center gap-3 text-sm font-medium max-w-2xl mx-auto shadow-sm">
             <AlertCircle className="w-5 h-5 text-red-500 shrink-0"/> {error}
           </div>
         ) : (
           /* --- KANBAN BOARD --- */
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
+          <div className="flex md:grid md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 items-start overflow-x-auto snap-x snap-mandatory pb-6 -mx-6 px-6 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {COLUMNS.map(col => {
               const columnApps = filteredApps.filter(app => app.status === col.status);
               return (
-                <div key={col.title} className="flex flex-col gap-4 bg-slate-50/40 p-3 rounded-2xl border border-slate-200/50">
+                <div key={col.title} className="flex-none w-[85vw] sm:w-[320px] md:w-auto flex flex-col gap-4 bg-[#f9f9f9]/50 p-2.5 rounded-[1.5rem] border border-[var(--kindling-border)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] snap-center md:snap-align-none">
                   
                   {/* Column Header */}
-                  <div className={`flex items-center justify-between p-3 rounded-xl border bg-white shadow-sm ${col.bg}`}>
-                    <div className="flex items-center gap-2">
-                      <span className={`w-1.5 h-1.5 rounded-full ${col.dot}`} />
-                      <h2 className="font-bold text-sm text-slate-800">{col.title}</h2>
+                  <div className={`flex items-center justify-between p-3.5 rounded-[1.25rem] bg-white border border-[var(--kindling-border)] shadow-sm`}>
+                    <div className="flex items-center gap-2.5">
+                      <span className={`w-2 h-2 rounded-full ${col.dot}`} />
+                      <h2 className="font-semibold text-[14px] text-gray-800 tracking-wide uppercase">{col.title}</h2>
                     </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/40`}>
+                    <span className={`text-[12px] font-bold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200`}>
                       {columnApps.length}
                     </span>
                   </div>
 
                   {/* Cards Container */}
-                  <div className="flex flex-col gap-3 min-h-[150px] transition-all">
+                  <div className="flex flex-col gap-3 min-h-[150px] transition-all px-1 pb-1">
                     {columnApps.map(app => (
-                      <div key={app.id} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group relative overflow-hidden">
+                      <div key={app.id} className="bg-white border border-[var(--kindling-border)] rounded-[1.25rem] p-4 shadow-sm hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden">
                         
-                        {/* Status Accent Bar */}
-                        <div className={`absolute top-0 left-0 bottom-0 w-[3px] ${col.dot}`} />
+                        {/* Status Accent Bar - Subtler in Kindling design */}
+                        <div className={`absolute top-0 left-0 right-0 h-[2px] opacity-40 ${col.dot}`} />
 
                         {/* Delete Button */}
                         <button 
                           onClick={() => handleDelete(app.id)}
-                          className="absolute top-3 right-3 text-slate-300 hover:text-red-500 md:opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-slate-50 rounded-lg"
+                          className="absolute top-4 right-4 text-gray-300 hover:text-red-500 md:opacity-0 group-hover:opacity-100 transition-all p-1.5 hover:bg-gray-50 rounded-full"
                           title="Delete Application"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
 
-                        <div className="flex items-start gap-3 pl-1">
-                          <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0 shadow-sm">
-                            {app.company.charAt(0).toUpperCase()}
+                        <div className="flex items-start gap-3.5">
+                          <div className="w-[36px] h-[36px] bg-[var(--kindling-ink)] text-white rounded-[8px] flex items-center justify-center font-serif text-[18px] pt-1 shrink-0">
+                            {app.company ? app.company.charAt(0).toUpperCase() : 'C'}
                           </div>
-                          <div className="pr-6">
-                            <h3 className="font-bold text-slate-900 text-sm tracking-tight line-clamp-2">{app.role}</h3>
-                            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 mt-1">
-                              <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                              <span className="truncate max-w-[140px]">{app.company}</span>
-                            </div>
+                          <div className="pr-6 flex-1">
+                            <div className="text-[13px] font-medium text-gray-600 leading-tight mb-0.5 truncate max-w-[140px]">{app.company}</div>
+                            <h3 className="font-normal text-[1.25rem] leading-[1.1] text-gray-900 mb-2" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
+                              {app.role}
+                            </h3>
                             
                             {/* Job URL Link */}
                             {app.jobUrl && (
@@ -291,7 +277,7 @@ export default function ApplicationsPage() {
                                 href={app.jobUrl} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline mt-2 bg-blue-50/50 w-fit px-2 py-0.5 rounded"
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 hover:text-black border border-gray-200 px-2.5 py-1 rounded-full transition-colors"
                               >
                                 <LinkIcon className="w-3 h-3" /> View Posting
                               </a>
@@ -299,33 +285,32 @@ export default function ApplicationsPage() {
                           </div>
                         </div>
 
-                        <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center justify-between pl-1">
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                        <div className="mt-4 pt-4 border-t border-dotted border-gray-300 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
                             <Calendar className="w-3.5 h-3.5" />
                             {app.dateApplied || 'Just now'}
                           </div>
 
-                          {/* Minimal Custom Selector Wrapper */}
                           <div className="relative">
                             <select 
                               value={app.status}
                               onChange={(e) => handleStatusChange(app.id, e.target.value as Status)}
-                              className="appearance-none text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-700 rounded-lg pl-2.5 pr-7 py-1 outline-none cursor-pointer hover:bg-slate-100 hover:border-slate-300 transition-all"
+                              className="appearance-none text-[12px] font-medium bg-[#f9f9f9] border border-[var(--kindling-border)] text-gray-700 rounded-full pl-3 pr-8 py-1.5 outline-none cursor-pointer hover:border-gray-300 transition-all shadow-sm"
                             >
                               <option value="Applied">Applied</option>
                               <option value="Interviewing">Intv</option>
                               <option value="Offered">Offered</option>
                               <option value="Rejected">Reject</option>
                             </select>
-                            <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                           </div>
                         </div>
                       </div>
                     ))}
 
                     {columnApps.length === 0 && (
-                      <div className="border border-dashed border-slate-200/80 bg-slate-50/20 rounded-xl py-8 flex flex-col items-center justify-center text-center">
-                        <span className="text-xs font-semibold text-slate-400 tracking-wide">No applications</span>
+                      <div className="border border-dashed border-gray-300 bg-white/50 rounded-[1.25rem] py-8 flex flex-col items-center justify-center text-center">
+                        <span className="text-[12px] font-medium text-gray-400 tracking-wide">Empty pipeline</span>
                       </div>
                     )}
                   </div>
@@ -338,96 +323,92 @@ export default function ApplicationsPage() {
 
       {/* --- ADD NEW APPLICATION MODAL --- */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-[4px] animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 transform transition-all scale-100">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-base font-bold text-slate-900">Add New Application</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-1 hover:bg-slate-100 rounded-lg">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.08)] w-full max-w-md overflow-hidden border border-[var(--kindling-border)] transform transition-all scale-100">
+            <div className="p-5 border-b border-[var(--kindling-border)] flex justify-between items-center bg-[#f9f9f9]">
+              <h2 className="text-[15px] font-bold text-gray-900">Add New Application</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-black transition-colors p-1.5 hover:bg-gray-200 rounded-full">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
             
             <form onSubmit={handleAddSubmit} className="p-6 space-y-4">
-              <div className="text-xs text-amber-700 bg-amber-50/80 p-3 rounded-xl border border-amber-200/60 leading-relaxed">
-                <strong>Magic Bookmarklet Triggered!</strong> Check your details below and hit save to add this to your tracker.
-              </div>
-
               {/* Input: Company Name */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Company Name</label>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Company Name</label>
                 <div className="relative">
-                  <Building2 className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Building2 className="w-[18px] h-[18px] text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input 
                     required 
                     type="text" 
                     placeholder="e.g. Google, Stripe" 
                     value={newApp.company} 
                     onChange={e => setNewApp({...newApp, company: e.target.value})} 
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" 
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-[var(--kindling-border)] rounded-xl text-[14px] outline-none focus:border-gray-300 focus:ring-4 focus:ring-gray-100 transition-all shadow-sm" 
                   />
                 </div>
               </div>
               
               {/* Input: Job Title */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Job Title / Role</label>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Job Title / Role</label>
                 <div className="relative">
-                  <Briefcase className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Briefcase className="w-[18px] h-[18px] text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input 
                     required 
                     type="text" 
-                    placeholder="e.g. Full-Stack Developer" 
+                    placeholder="e.g. Product Designer" 
                     value={newApp.role} 
                     onChange={e => setNewApp({...newApp, role: e.target.value})} 
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" 
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-[var(--kindling-border)] rounded-xl text-[14px] outline-none focus:border-gray-300 focus:ring-4 focus:ring-gray-100 transition-all shadow-sm" 
                   />
                 </div>
               </div>
 
               {/* Input: Job URL */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Job URL</label>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Job URL</label>
                 <div className="relative">
-                  <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <LinkIcon className="w-[18px] h-[18px] text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input 
                     type="url" 
-                    placeholder="https://linkedin.com/jobs/..." 
+                    placeholder="https://..." 
                     value={newApp.jobUrl} 
                     onChange={e => setNewApp({...newApp, jobUrl: e.target.value})} 
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-sm" 
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-[var(--kindling-border)] rounded-xl text-[14px] outline-none focus:border-gray-300 focus:ring-4 focus:ring-gray-100 transition-all shadow-sm" 
                   />
                 </div>
               </div>
 
               {/* Status Select */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Current Pipeline Status</label>
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Current Pipeline Status</label>
                 <div className="relative">
                   <select 
                     value={newApp.status} 
                     onChange={e => setNewApp({...newApp, status: e.target.value as Status})} 
-                    className="w-full appearance-none px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 cursor-pointer shadow-sm pr-10 font-medium text-slate-700"
+                    className="w-full appearance-none px-4 py-2.5 bg-white border border-[var(--kindling-border)] rounded-xl text-[14px] outline-none focus:border-gray-300 focus:ring-4 focus:ring-gray-100 cursor-pointer shadow-sm pr-10 font-medium text-gray-700"
                   >
                     <option value="Applied">Applied</option>
                     <option value="Interviewing">Interviewing</option>
                     <option value="Offered">Offered</option>
                     <option value="Rejected">Rejected</option>
                   </select>
-                  <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
 
-              <div className="pt-4 flex gap-3">
+              <div className="pt-5 flex gap-3">
                 <button 
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 border border-slate-200 text-slate-600 font-semibold text-sm py-2.5 rounded-xl hover:bg-slate-50 transition-colors"
+                  className="flex-1 border border-[var(--kindling-border)] text-gray-600 font-medium text-[14px] py-2.5 rounded-full hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 bg-blue-600 text-white font-semibold text-sm py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-sm hover:shadow active:scale-[0.98]"
+                  className="flex-1 bg-[var(--kindling-ink)] text-white font-medium text-[14px] py-2.5 rounded-full hover:bg-black transition-all shadow-sm"
                 >
                   Save Tracker
                 </button>
@@ -444,39 +425,35 @@ export default function ApplicationsPage() {
 // --- SUB-COMPONENT: SKELETON LOADER ---
 function SkeletonBoard() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
+    <div className="flex md:grid md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 items-start overflow-x-hidden pb-6 -mx-6 px-6 md:mx-0 md:px-0">
       {COLUMNS.map((col) => (
-        <div key={col.title} className="flex flex-col gap-4 bg-slate-50/40 p-3 rounded-2xl border border-slate-200/50">
+        <div key={col.title} className="flex-none w-[85vw] sm:w-[320px] md:w-auto flex flex-col gap-4 bg-[#f9f9f9]/50 p-2.5 rounded-[1.5rem] border border-[var(--kindling-border)]">
           
-          {/* Skeleton Header */}
-          <div className={`flex items-center justify-between p-3 rounded-xl border bg-white shadow-sm ${col.bg}`}>
-            <div className="flex items-center gap-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${col.dot} opacity-60 animate-pulse`} />
-              <span className="font-bold text-sm text-slate-400 animate-pulse">{col.title}</span>
+          <div className={`flex items-center justify-between p-3.5 rounded-[1.25rem] border border-[var(--kindling-border)] bg-white shadow-sm`}>
+            <div className="flex items-center gap-2.5">
+              <span className={`w-2 h-2 rounded-full ${col.dot} opacity-60 animate-pulse`} />
+              <span className="font-semibold text-[14px] text-gray-300 uppercase tracking-wide animate-pulse">{col.title}</span>
             </div>
-            <div className="w-5 h-5 bg-slate-200/30 rounded-md animate-pulse" />
+            <div className="w-6 h-5 bg-gray-100 rounded-full animate-pulse" />
           </div>
           
-          {/* Skeleton Cards */}
           {[1, 2].map((cardIndex) => (
-            <div key={cardIndex} className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm space-y-4 relative overflow-hidden">
-              {/* Left Color Accent Bar */}
-              <div className={`absolute top-0 left-0 bottom-0 w-[3px] ${col.dot} opacity-30 animate-pulse`} />
+            <div key={cardIndex} className="bg-white border border-[var(--kindling-border)] rounded-[1.25rem] p-4 shadow-sm space-y-4 relative overflow-hidden">
+              <div className={`absolute top-0 left-0 right-0 h-[2px] ${col.dot} opacity-20 animate-pulse`} />
               
-              <div className="flex items-start gap-3 pl-1">
-                <div className="w-9 h-9 rounded-lg bg-slate-100 animate-pulse shrink-0 border border-slate-200/40" />
-                <div className="flex-1 space-y-2 mt-0.5">
-                  <div className="h-3.5 bg-slate-200/60 rounded-md w-4/5 animate-pulse" />
-                  <div className="h-3 bg-slate-200/40 rounded-md w-1/2 animate-pulse" />
+              <div className="flex items-start gap-3.5">
+                <div className="w-[36px] h-[36px] rounded-[8px] bg-gray-100 animate-pulse shrink-0 border border-[var(--kindling-border)]" />
+                <div className="flex-1 space-y-2.5 mt-1">
+                  <div className="h-2.5 bg-gray-100 rounded-md w-1/2 animate-pulse" />
+                  <div className="h-4 bg-gray-200 rounded-md w-4/5 animate-pulse" />
                 </div>
               </div>
-              <div className="pt-3.5 border-t border-slate-100 flex justify-between items-center pl-1">
-                <div className="w-20 h-3 bg-slate-100 animate-pulse rounded-md" />
-                <div className="w-16 h-6 bg-slate-50 border border-slate-200/60 rounded-lg animate-pulse" />
+              <div className="pt-4 border-t border-dotted border-gray-200 flex justify-between items-center">
+                <div className="w-20 h-3 bg-gray-100 animate-pulse rounded-md" />
+                <div className="w-20 h-7 bg-gray-50 border border-[var(--kindling-border)] rounded-full animate-pulse" />
               </div>
             </div>
           ))}
-
         </div>
       ))}
     </div>

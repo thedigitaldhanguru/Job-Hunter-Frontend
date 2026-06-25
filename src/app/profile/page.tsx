@@ -4,11 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react'; // <-- 1. Import NextAuth
 import { 
   MapPin, Briefcase, Phone, Mail, 
-  Trash2, FileText, Award, TrendingUp, CheckCircle2, User, Calendar, Camera, Check, Edit2, Plus, Save, Loader2, XCircle, Menu
+  Trash2, FileText, Award, TrendingUp, CheckCircle2, User, Calendar, Camera, Check, Edit2, Plus, Save, Loader2, XCircle, Menu, Sparkles
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { API_BASE_URL } from '@/lib/config';
 import { useProfileStore, EMPTY_PROFILE } from '@/store/useProfileStore';
+import { uploadToS3 } from '@/lib/s3Helper';
 
 const QUICK_LINKS = [
   { label: 'Profile summary', id: 'summary' },
@@ -31,7 +32,7 @@ export default function ProfilePage() {
 
   const [mounted, setMounted] = useState(false);
   const [data, setData] = useState(EMPTY_PROFILE);
-  const [initialData, setInitialData] = useState(EMPTY_PROFILE); 
+  const [initialData, setInitialData] = useState(EMPTY_PROFILE);
   const [editMode, setEditMode] = useState<Record<string, boolean>>({});
   const [newSkill, setNewSkill] = useState('');
   const [newLanguage, setNewLanguage] = useState('');
@@ -43,6 +44,59 @@ export default function ProfilePage() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null); 
+  const smartFillInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSmartFillUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File is too large. Please upload a resume smaller than 5MB.");
+      return;
+    }
+
+    try {
+      setUploadingType('resume');
+      
+      const s3FileUrl = await uploadToS3(file);
+      
+      const response = await fetch(`${API_BASE_URL}/resume/extract`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resume_url: s3FileUrl })
+      });
+
+      if (!response.ok) throw new Error("AI extraction failed.");
+      
+      const dataResponse = await response.json();
+      const extracted = dataResponse.extracted || dataResponse; 
+
+      if (extracted) {
+        setData((prev: any) => ({
+          ...prev,
+          summary: extracted.summary || prev.summary,
+          resumeName: file.name,
+          resumeUrl: s3FileUrl,
+          skills: Array.from(new Set([...prev.skills, ...(extracted.skills || [])])),
+          languages: Array.from(new Set([...prev.languages, ...(extracted.languages || [])])),
+          header: { ...prev.header, ...extracted.header },
+          preferences: { ...prev.preferences, ...extracted.preferences },
+          experience: extracted.experience?.length ? extracted.experience : prev.experience,
+          education: extracted.education?.length ? extracted.education : prev.education,
+          projects: extracted.projects?.length ? extracted.projects : prev.projects,
+        }));
+        
+        alert("Profile intelligently updated from your resume! Don't forget to click Save.");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred during Smart Fill. Please try again.");
+    } finally {
+      setUploadingType(null);
+      if (smartFillInputRef.current) smartFillInputRef.current.value = '';
+    }
+  };
 
   // --- 1. FETCH DATA FROM ZUSTAND STORE ---
   useEffect(() => {
@@ -225,38 +279,19 @@ export default function ProfilePage() {
   const toggleEdit = (section: string) => setEditMode(prev => ({ ...prev, [section]: !prev[section] }));
 
   const handleArrayChange = (section: keyof typeof data, id: string, field: string, value: string) => {
-    setData(prev => ({ ...prev, [section]: (prev[section] as any[]).map(item => item.id === id ? { ...item, [field]: value } : item) }));
+    setData((prev: any) => ({ ...prev, [section]: (prev[section] as any[]).map((item: any) => item.id === id ? { ...item, [field]: value } : item) }));
   };
 
   const handleArrayAdd = (section: keyof typeof data, template: any) => {
-    setData(prev => ({ ...prev, [section]: [template, ...(prev[section] as any[])] }));
+    setData((prev: any) => ({ ...prev, [section]: [template, ...(prev[section] as any[])] }));
     setEditMode(prev => ({ ...prev, [section]: true })); 
   };
 
   const handleArrayDelete = (section: keyof typeof data, id: string) => {
-    setData(prev => ({ ...prev, [section]: (prev[section] as any[]).filter(item => item.id !== id) }));
+    setData((prev: any) => ({ ...prev, [section]: (prev[section] as any[]).filter((item: any) => item.id !== id) }));
   };
 
-  const uploadToS3 = async (file: File): Promise<string> => {
-    try {
-      const urlResponse = await fetch(`${API_BASE_URL}/uploads/presigned-url?file_name=${encodeURIComponent(file.name)}&file_type=${encodeURIComponent(file.type)}`);
-      if (!urlResponse.ok) throw new Error("Failed to get AWS secure upload URL");
-      
-      const { upload_url, file_url } = await urlResponse.json();
 
-      const s3Response = await fetch(upload_url, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type }
-      });
-
-      if (!s3Response.ok) throw new Error("Failed to upload file to S3");
-      return file_url;
-    } catch (error) {
-      console.error("S3 Upload Error:", error);
-      throw error;
-    }
-  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -268,7 +303,7 @@ export default function ProfilePage() {
       try {
         setUploadingType('avatar');
         const s3FileUrl = await uploadToS3(file);
-        setData(prev => ({ ...prev, header: { ...prev.header, avatar: s3FileUrl } }));
+        setData((prev: any) => ({ ...prev, header: { ...prev.header, avatar: s3FileUrl } }));
       } catch (err) {
         alert("An error occurred while uploading your profile picture. Please try again.");
       } finally {
@@ -280,14 +315,14 @@ export default function ProfilePage() {
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        alert("File is too large. Please upload a resume smaller than 10MB.");
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File is too large. Please upload a resume smaller than 5MB.");
         return;
       }
       try {
         setUploadingType('resume');
         const s3FileUrl = await uploadToS3(file);
-        setData(prev => ({ ...prev, resumeName: file.name, resumeUrl: s3FileUrl }));
+        setData((prev: any) => ({ ...prev, resumeName: file.name, resumeUrl: s3FileUrl }));
       } catch (err) {
         alert("An error occurred while uploading your resume. Please try again.");
       } finally {
@@ -303,13 +338,13 @@ export default function ProfilePage() {
     const currentArray = (data[field] || []) as string[];
     
     if (!currentArray.includes(cleanValue)) {
-      setData(prev => ({ ...prev, [field]: [...currentArray, cleanValue] }));
+      setData((prev: any) => ({ ...prev, [field]: [...currentArray, cleanValue] }));
     }
     setter(''); 
   };
 
   const handleSimpleArrayRemove = (field: 'skills' | 'languages', valueToRemove: string) => {
-    setData(prev => ({ ...prev, [field]: (prev[field] || []).filter(item => item !== valueToRemove) }));
+    setData((prev: any) => ({ ...prev, [field]: (prev[field] || []).filter((item: any) => item !== valueToRemove) }));
   };
 
   const scrollToSection = (id: string) => {
@@ -328,10 +363,10 @@ export default function ProfilePage() {
     const items = (data[dataKey] || []) as any[];
     
     return (
-      <div id={id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 scroll-mt-24 transition-all duration-300 hover:shadow-md">
+      <div id={id} className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] p-6 md:p-8 scroll-mt-24 transition-all duration-300">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+            <h2 className="text-3xl font-normal text-[var(--kindling-ink)] mb-1" style={{ fontFamily: 'var(--font-instrument-serif)' }}>{title}</h2>
             {items.length === 0 && !editMode[id] && (
               <p className="text-sm text-slate-500 mt-1 max-w-2xl">{emptySubtitle}</p>
             )}
@@ -391,8 +426,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] font-sans antialiased text-slate-800 pb-16 relative">
-      <div className="h-2 w-full bg-slate-900"></div>
+    <div className="min-h-screen antialiased font-sans text-slate-800 pb-16 relative overflow-x-hidden w-full">
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
@@ -408,8 +442,35 @@ export default function ProfilePage() {
           </div>
         ) : (
           <>
+            {/* ================= SMART FILL TOP ACTION ================= */}
+            <div className="flex justify-end mb-4">
+              <input 
+                type="file" 
+                ref={smartFillInputRef} 
+                onChange={handleSmartFillUpload} 
+                accept=".pdf,.doc,.docx" 
+                className="hidden" 
+                disabled={uploadingType === 'resume'}
+              />
+              <button 
+                onClick={() => smartFillInputRef.current?.click()}
+                disabled={uploadingType === 'resume'}
+                className="group relative px-6 py-3 bg-[var(--kindling-ink)] text-white rounded-full font-semibold text-sm shadow-md hover:opacity-90 transition-all duration-300 active:scale-[0.98] flex items-center gap-2 overflow-hidden"
+              >
+                {uploadingType === 'resume' ? (
+                  <><Loader2 className="w-4 h-4 animate-spin"/> Processing Resume...</>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-[#d4ff70] group-hover:rotate-12 transition-transform" />
+                    <span>Update via Resume</span>
+                    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-shimmer" />
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* ================= 1. PREMIUM HERO HEADER ================= */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start relative overflow-hidden transition-all duration-300 hover:shadow-md">
+            <div className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start relative overflow-hidden transition-all duration-300">
               
               <button onClick={() => toggleEdit('header')} className="absolute top-6 right-6 md:right-8 text-slate-400 hover:text-slate-900 font-semibold text-sm transition-colors">
                 {editMode.header ? 'Done' : 'Edit'}
@@ -461,7 +522,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="transition-all duration-300 text-center md:text-left">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{data.header?.name || 'Your Name'}</h1>
+                    <h1 className="text-4xl sm:text-5xl font-normal text-[var(--kindling-ink)] tracking-tight" style={{ fontFamily: 'var(--font-instrument-serif)' }}>{data.header?.name || 'Your Name'}</h1>
                     <p className="text-sm sm:text-base font-semibold text-slate-700 mt-1">{data.header?.degree || 'Add your degree'}</p>
                     <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{data.header?.university || 'Add your university'}</p>
                   </div>
@@ -566,7 +627,7 @@ export default function ProfilePage() {
               
               {/* LEFT SIDEBAR (STICKY QUICK LINKS) */}
               <div className="lg:col-span-3 hidden lg:block lg:sticky lg:top-24 z-10">
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 py-5 max-h-[calc(100vh-8rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] py-5 max-h-[calc(100vh-8rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   <h3 className="px-6 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Quick Links</h3>
                   <ul className="text-sm font-medium text-slate-600 space-y-1">
                     {QUICK_LINKS.map(link => (
@@ -585,9 +646,9 @@ export default function ProfilePage() {
               <div className="lg:col-span-9 space-y-6">
               
                 {/* SUMMARY */}
-                <div id="summary" className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 scroll-mt-24 transition-all duration-300 hover:shadow-md">
+                <div id="summary" className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] p-6 md:p-8 scroll-mt-24 transition-all duration-300">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold text-slate-900">Profile Summary</h2>
+                    <h2 className="text-3xl font-normal text-[var(--kindling-ink)] mb-1" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Profile Summary</h2>
                     {!editMode.summary && (
                       <button onClick={() => toggleEdit('summary')} className="text-blue-600 font-semibold text-sm hover:underline transition-all">
                         {data.summary ? 'Edit' : 'Add'}
@@ -610,8 +671,8 @@ export default function ProfilePage() {
                 </div>
 
                 {/* RESUME UPLOAD SECTION */}
-                <div id="resume" className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 scroll-mt-24 transition-all duration-300 hover:shadow-md">
-                  <h2 className="text-lg font-bold text-slate-900 mb-4">Resume</h2>
+                <div id="resume" className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] p-6 md:p-8 scroll-mt-24 transition-all duration-300">
+                  <h2 className="text-3xl font-normal text-[var(--kindling-ink)] mb-5" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Resume</h2>
                   <div className="flex flex-col sm:flex-row items-center justify-between border border-slate-200 rounded-xl p-4 bg-slate-50 gap-4 transition-all duration-300 hover:border-blue-200">
                     <div className="flex items-center gap-4 w-full sm:w-auto">
                       <div className="w-12 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center shrink-0 shadow-sm transition-transform hover:scale-105">
@@ -668,10 +729,10 @@ export default function ProfilePage() {
                   [{key:'institution', label: 'Institution Name', placeholder:'e.g. MIT', type:'input'}, {key:'degree', label: 'Degree / Class', placeholder:'e.g. B.Tech Computer Science', type:'input'}, {key:'details', label: 'Graduation Details', placeholder:'e.g. Graduating in 2026, Full Time', type:'input'}])}
 
                 {/* KEY SKILLS */}
-                <div id="skills" className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 scroll-mt-24 transition-all duration-300 hover:shadow-md">
+                <div id="skills" className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] p-6 md:p-8 scroll-mt-24 transition-all duration-300">
                   <div className="flex justify-between items-center mb-6">
                     <div>
-                      <h2 className="text-lg font-bold text-slate-900">Key Skills</h2>
+                      <h2 className="text-3xl font-normal text-[var(--kindling-ink)] mb-1" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Key Skills</h2>
                       {data.skills.length === 0 && !editMode.skills && <p className="text-sm text-slate-500 mt-1 max-w-2xl">Add skills that showcase your technical expertise.</p>}
                     </div>
                     {!editMode.skills && <button onClick={() => toggleEdit('skills')} className="text-blue-600 font-semibold text-sm hover:underline transition-colors">Edit</button>}
@@ -726,10 +787,10 @@ export default function ProfilePage() {
                   [{key:'title', label: 'Project Name', placeholder:'e.g. Student Marketplace', type:'input'}, {key:'duration', label: 'Project Duration', placeholder:'e.g. Jan 2026 - Mar 2026', type:'input'}, {key:'description', label: 'Describe the project', placeholder:'Architecture, tech stack, and your role...', type:'textarea'}])}
 
                 {/* LANGUAGES */}
-                <div id="languages" className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 scroll-mt-24 transition-all duration-300 hover:shadow-md">
+                <div id="languages" className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] p-6 md:p-8 scroll-mt-24 transition-all duration-300">
                   <div className="flex justify-between items-center mb-6">
                     <div>
-                      <h2 className="text-lg font-bold text-slate-900">Languages</h2>
+                      <h2 className="text-3xl font-normal text-[var(--kindling-ink)] mb-1" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Languages</h2>
                       {data.languages.length === 0 && !editMode.languages && <p className="text-sm text-slate-500 mt-1 max-w-2xl">Add languages you can speak, read, or write.</p>}
                     </div>
                     {!editMode.languages && <button onClick={() => toggleEdit('languages')} className="text-blue-600 font-semibold text-sm hover:underline transition-colors">Edit</button>}
@@ -794,9 +855,9 @@ export default function ProfilePage() {
                   [{key:'examName', label: 'Exam Name', placeholder:'e.g. GATE / GRE', type:'input'}, {key:'year', label: 'Year', placeholder:'e.g. 2025', type:'input'}, {key:'score', label: 'Score / Rank', placeholder:'e.g. 98th Percentile', type:'input'}])}
 
                 {/* 🚀 UPGRADED PREFERENCES (WITH CTC) 🚀 */}
-                <div id="preferences" className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 scroll-mt-24 transition-all duration-300 hover:shadow-md">
+                <div id="preferences" className="bg-white rounded-[1.5rem] shadow-sm border border-[var(--kindling-border)] p-6 md:p-8 scroll-mt-24 transition-all duration-300">
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-bold text-slate-900">Career Preferences</h2>
+                    <h2 className="text-3xl font-normal text-[var(--kindling-ink)] mb-1" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Career Preferences</h2>
                     <button onClick={() => toggleEdit('preferences')} className="text-slate-500 hover:text-blue-600 text-sm font-medium flex items-center gap-1 transition-colors">
                       {editMode.preferences ? 'Done' : 'Edit'}
                     </button>

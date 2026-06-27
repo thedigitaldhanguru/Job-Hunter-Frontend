@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, AlertCircle } from 'lucide-react';
@@ -13,9 +13,16 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
-  const { isComplete } = useProfileStore();
+  const { isComplete, fetchProfile } = useProfileStore();
   const { openModal } = useAuthModalStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Globally fetch profile details once user logs in
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetchProfile(session.user.email, session.user.name, session.user.image);
+    }
+  }, [session, fetchProfile]);
 
   return (
     <>

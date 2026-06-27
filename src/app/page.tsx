@@ -9,15 +9,18 @@ import { API_BASE_URL } from '@/lib/config';
 import { useJobsStore } from '@/store/useJobsStore';
 import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
-import SmartFillPrompt from '@/components/SmartFillPrompt';
 import { useAuthModalStore } from '@/store/useAuthModalStore';
 import { useApplicationsStore } from '@/store/useApplicationsStore';
+import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
+import { useProfileStore } from '@/store/useProfileStore';
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { openModal } = useAuthModalStore();
   const { addApplicationLocal } = useApplicationsStore();
+  const { openModal: openSmartFillModal } = useSmartFillModalStore();
+  const { isComplete } = useProfileStore();
   
   const { 
     jobs, loading, offset, searchQuery, hasFetched, 
@@ -73,25 +76,44 @@ export default function Home() {
       const targetUrl = data.redirect_url || job.job_url || job.absolute_url;
       const isValidUrl = targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'));
 
-      // 2. Open external link or alert if missing
-      if (isValidUrl) {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      const trackAndOpen = () => {
+        // A. Open external link or alert if missing
+        if (isValidUrl) {
+          window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        } else {
+          alert("This job does not have an external application link, but we tracked it in your pipeline!");
+        }
+
+        // B. Add to local applications pipeline store
+        addApplicationLocal({
+          id: `temp-${Date.now()}`,
+          company: job.company_raw || "Unknown Company",
+          role: job.title || "Unknown Position",
+          status: "Applied",
+          dateApplied: new Date().toISOString().split('T')[0],
+          jobUrl: isValidUrl ? targetUrl : ''
+        });
+      };
+
+      // 2. Check if profile is complete. If not, trigger Smart Fill modal speed bump!
+      if (!isComplete) {
+        openSmartFillModal(
+          // onSkip callback
+          () => {
+            trackAndOpen();
+            router.push('/applications');
+          },
+          // onUploadSuccess callback
+          () => {
+            trackAndOpen();
+            router.push('/profile');
+          }
+        );
       } else {
-        alert("This job does not have an external application link, but we tracked it in your pipeline!");
+        // Normal flow
+        trackAndOpen();
+        router.push('/applications');
       }
-
-      // 3. Add to local applications pipeline store
-      addApplicationLocal({
-        id: `temp-${Date.now()}`,
-        company: job.company_raw || "Unknown Company",
-        role: job.title || "Unknown Position",
-        status: "Applied",
-        dateApplied: new Date().toISOString().split('T')[0],
-        jobUrl: isValidUrl ? targetUrl : ''
-      });
-
-      // 4. Redirect to pipeline page
-      router.push('/applications');
     } catch (err) {
       console.error(err);
       alert("Failed to track application. Please check your internet connection.");
@@ -282,8 +304,6 @@ export default function Home() {
           )}
         </section>
       </main>
-
-      <SmartFillPrompt />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import {
   Search, Clock, CheckCircle2, XCircle, UserPlus, Loader2, AlertCircle, Link as LinkIcon
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import ProfileGuard from '@/components/ProfileGuard';
 import { useAuthModalStore } from '@/store/useAuthModalStore';
 
 import { API_BASE_URL } from '@/lib/config';
@@ -184,8 +183,7 @@ export default function SandboxApplicationsPage() {
   return (
     <div className="min-h-screen antialiased font-sans text-slate-800 pb-20 relative overflow-x-hidden w-full">
       <Navbar />
-      <ProfileGuard>
-        <main className="max-w-[1400px] mx-auto px-6 mt-10 space-y-10 relative z-10">
+      <main className="max-w-[1400px] mx-auto px-6 mt-10 space-y-10 relative z-10">
         
         {/* --- HEADER --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 border-b border-[var(--kindling-border)] pb-6">
@@ -445,7 +443,6 @@ export default function SandboxApplicationsPage() {
           </div>
         </div>
       )}
-      </ProfileGuard>
     </div>
   );
 }

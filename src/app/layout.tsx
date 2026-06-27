@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer"; 
 import SessionWrapper from "@/components/SessionWrapper"; 
 import LoginModal from "@/components/LoginModal";
+import SmartFillModal from "@/components/SmartFillModal";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -39,6 +40,7 @@ export default function RootLayout({
           </div>
           <Footer />
           <LoginModal />
+          <SmartFillModal />
         </SessionWrapper>
 
       </body>

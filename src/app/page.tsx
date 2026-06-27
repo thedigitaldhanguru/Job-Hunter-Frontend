@@ -10,10 +10,12 @@ import { useJobsStore } from '@/store/useJobsStore';
 import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
 import SmartFillPrompt from '@/components/SmartFillPrompt';
+import { useAuthModalStore } from '@/store/useAuthModalStore';
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { openModal } = useAuthModalStore();
   
   const { 
     jobs, loading, offset, searchQuery, hasFetched, 
@@ -25,26 +27,27 @@ export default function Home() {
 
   // --- DATA FETCHING (ZUSTAND) ---
   useEffect(() => {
-    if (status !== 'authenticated') return;
-    
     const delayDebounceFn = setTimeout(() => {
       if (hasFetched && searchQuery === '') return;
       fetchJobs(LIMIT, true); // Reset to page 0 on new search
     }, 300);
     
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, status]); 
+  }, [searchQuery]); 
 
   // Initial load effect
   useEffect(() => {
-    if (status === 'authenticated' && !hasFetched) {
+    if (!hasFetched) {
       fetchJobs(LIMIT, true);
     }
-  }, [status, hasFetched, fetchJobs]);
+  }, [hasFetched, fetchJobs]);
 
   const handleApply = async (e: React.MouseEvent, job: JobListing) => {
     e.stopPropagation();
-    if (!session?.user?.email) { signIn(); return; }
+    if (!session?.user?.email) { 
+      openModal(); 
+      return; 
+    }
 
     setApplyingTo(job.id);
     try {
@@ -67,6 +70,8 @@ export default function Home() {
         }
         router.push('/applications');
       }
+    } catch (err) {
+      console.error(err);
     } finally {
       setApplyingTo(null);
     }
@@ -79,15 +84,6 @@ export default function Home() {
       <div className="flex-1 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--kindling-ink)]" />
       </div>
-    </div>
-  );
-  
-  if (status === "unauthenticated") return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans relative z-10 w-full">
-      <div className="text-center mb-2">
-        <h1 className="text-4xl font-normal text-[var(--kindling-ink)]" style={{ fontFamily: 'var(--font-instrument-serif)' }}>Job Hunter Pro</h1>
-      </div>
-      <AuthForm />
     </div>
   );
 

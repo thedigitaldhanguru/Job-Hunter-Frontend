@@ -3,6 +3,7 @@ import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer"; 
 import SessionWrapper from "@/components/SessionWrapper"; 
+import LoginModal from "@/components/LoginModal";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({
             {children}
           </div>
           <Footer />
+          <LoginModal />
         </SessionWrapper>
 
       </body>

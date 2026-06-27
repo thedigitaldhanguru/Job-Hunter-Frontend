@@ -10,6 +10,7 @@ import Navbar from '@/components/Navbar';
 import { API_BASE_URL } from '@/lib/config';
 import { useProfileStore, EMPTY_PROFILE } from '@/store/useProfileStore';
 import { uploadToS3 } from '@/lib/s3Helper';
+import { useAuthModalStore } from '@/store/useAuthModalStore';
 
 const QUICK_LINKS = [
   { label: 'Profile summary', id: 'summary' },
@@ -29,6 +30,7 @@ const QUICK_LINKS = [
 export default function ProfilePage() {
   const { data: session, status: sessionStatus } = useSession();
   const { profileData, hasFetched, isFetching, fetchProfile, setProfileData } = useProfileStore();
+  const { openModal } = useAuthModalStore();
 
   const [mounted, setMounted] = useState(false);
   const [data, setData] = useState(EMPTY_PROFILE);
@@ -435,10 +437,16 @@ export default function ProfilePage() {
         {(!mounted || sessionStatus === 'loading' || isFetching || !hasFetched) ? (
           <SkeletonProfile />
         ) : !session?.user ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
-            <User className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-slate-900">Access Denied</h2>
-            <p className="text-slate-500 mt-2">Please sign in to view and edit your profile.</p>
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center justify-center space-y-4">
+            <User className="w-16 h-16 text-slate-300 mx-auto animate-pulse" />
+            <h2 className="text-2xl font-bold text-slate-900 leading-none">Access Denied</h2>
+            <p className="text-slate-500 max-w-sm text-sm">Please sign in to view and edit your profile details.</p>
+            <button 
+              onClick={openModal}
+              className="bg-[var(--kindling-ink)] text-white px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm mt-2"
+            >
+              Sign In
+            </button>
           </div>
         ) : (
           <>

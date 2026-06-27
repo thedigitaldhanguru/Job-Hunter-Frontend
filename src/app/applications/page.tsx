@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import ProfileGuard from '@/components/ProfileGuard';
+import { useAuthModalStore } from '@/store/useAuthModalStore';
 
 import { API_BASE_URL } from '@/lib/config';
 import { useApplicationsStore, Status, Application } from '@/store/useApplicationsStore';
@@ -22,6 +23,7 @@ const COLUMNS: { title: string; status: Status; icon: any; color: string; bg: st
 export default function SandboxApplicationsPage() {
   const { data: session, status: sessionStatus } = useSession(); 
   const { apps, hasFetched, isFetching, error, fetchApplications, updateStatusLocal, deleteApplicationLocal, addApplicationLocal } = useApplicationsStore();
+  const { openModal } = useAuthModalStore();
 
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -219,7 +221,21 @@ export default function SandboxApplicationsPage() {
         </div>
 
         {/* --- LAYOUT SWITCHER BASED ON APPLICATION STATE --- */}
-        {(!mounted || sessionStatus === 'loading' || isFetching || !hasFetched) ? (
+        {(!mounted || sessionStatus === 'loading') ? (
+          <SkeletonBoard />
+        ) : !session ? (
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center justify-center space-y-4 max-w-2xl mx-auto mt-10">
+            <Briefcase className="w-16 h-16 text-slate-300 mx-auto animate-pulse" />
+            <h2 className="text-2xl font-bold text-slate-900 leading-none">Access Denied</h2>
+            <p className="text-slate-500 max-w-sm text-sm">Please sign in to view and track your job application pipeline.</p>
+            <button 
+              onClick={openModal}
+              className="bg-[var(--kindling-ink)] text-white px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-black transition-all active:scale-[0.98] shadow-sm mt-2"
+            >
+              Sign In
+            </button>
+          </div>
+        ) : (isFetching || !hasFetched) ? (
           <SkeletonBoard />
         ) : error ? (
           <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-[1.25rem] flex items-center gap-3 text-sm font-medium max-w-2xl mx-auto shadow-sm">

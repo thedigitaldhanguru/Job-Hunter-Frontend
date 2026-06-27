@@ -148,7 +148,7 @@ export default function Home() {
             Discover career-defining roles tailored to your unique profile. Skip the noise and find your perfect match.
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center bg-white rounded-full border border-[var(--kindling-border)] p-1.5 w-full max-w-[700px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] focus-within:ring-4 focus-within:ring-gray-100 transition-all text-left">
+          <div className="flex flex-col sm:flex-row items-center bg-white rounded-3xl sm:rounded-full border border-[var(--kindling-border)] p-2 sm:p-1.5 w-full max-w-[700px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] focus-within:ring-4 focus-within:ring-gray-100 transition-all text-left">
             <div className="flex-1 flex items-center pl-4 py-2 w-full">
               <Search className="w-[18px] h-[18px] text-gray-400 mr-3 shrink-0" />
               <input 
@@ -162,7 +162,7 @@ export default function Home() {
             
             <div className="hidden sm:block w-[1px] h-6 bg-gray-200 mx-2"></div>
             
-            <div className="flex-[0.8] flex items-center px-4 py-2 w-full">
+            <div className="flex-[0.8] flex items-center pl-4 sm:px-4 py-2 w-full">
               <MapPin className="w-[18px] h-[18px] text-gray-400 mr-3 shrink-0" />
               <input type="text" placeholder="City or remote" className="bg-transparent outline-none w-full text-gray-800 placeholder-gray-400 text-[15px]" />
             </div>

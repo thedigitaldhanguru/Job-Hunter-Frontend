@@ -12,15 +12,26 @@ export default function VerifyProfileModal() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Only show if user is logged in, the pending flag is set, and they aren't already on the profile page
-    if (session?.user?.email && pathname !== '/profile') {
-      const pending = localStorage.getItem('pending_profile_verification');
-      if (pending === 'true') {
-        setIsOpen(true);
+    const checkPending = () => {
+      if (session?.user?.email && pathname !== '/profile') {
+        const pending = localStorage.getItem('pending_profile_verification');
+        if (pending === 'true') {
+          setIsOpen(true);
+        } else {
+          setIsOpen(false);
+        }
+      } else {
+        setIsOpen(false);
       }
-    } else {
-      setIsOpen(false);
-    }
+    };
+
+    checkPending();
+
+    // Listen for background completion event
+    window.addEventListener('pending_profile_updated', checkPending);
+    return () => {
+      window.removeEventListener('pending_profile_updated', checkPending);
+    };
   }, [session, pathname]);
 
   if (!isOpen) return null;

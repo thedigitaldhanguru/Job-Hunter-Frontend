@@ -1,36 +1,25 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { Sparkles, UploadCloud, Loader2 } from 'lucide-react';
+import { Sparkles, UploadCloud } from 'lucide-react';
 import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
 import { uploadToS3 } from '@/lib/s3Helper';
 import { API_BASE_URL } from '@/lib/config';
 
 export default function SmartFillModal() {
   const { data: session } = useSession();
-  const { isOpen, onUploadSuccess, closeModal } = useSmartFillModalStore();
-  const [isUploading, setIsUploading] = useState(false);
+  const { isOpen, onUploadSuccess, closeModal, setBackgroundExtracting } = useSmartFillModalStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
-  const handleSmartFill = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File is too large. Please upload a resume smaller than 5MB.");
-      return;
-    }
-
+  const runBackgroundExtraction = async (file: File, userEmail: string) => {
     try {
-      setIsUploading(true);
-      
-      // 1. Upload to S3
+      // 1. Upload to S3 in background
       const s3FileUrl = await uploadToS3(file);
       
-      // 2. Extract details using Bedrock AI
+      // 2. Extract details using Bedrock AI in background
       const response = await fetch(`${API_BASE_URL}/resume/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,7 +33,7 @@ export default function SmartFillModal() {
 
       if (extracted) {
         // 3. Write draft to localStorage
-        const draftKey = `profile_draft_${session?.user?.email}`;
+        const draftKey = `profile_draft_${userEmail}`;
         const currentDraftStr = localStorage.getItem(draftKey);
         let currentDraft = currentDraftStr ? JSON.parse(currentDraftStr) : {};
 
@@ -67,33 +56,56 @@ export default function SmartFillModal() {
         // 4. Set pending verification flag in localStorage
         localStorage.setItem('pending_profile_verification', 'true');
 
-        // 5. Trigger redirect & tab opening success callback
-        if (onUploadSuccess) {
-          onUploadSuccess();
-        }
-        
-        closeModal();
+        // 5. Notify layout that draft profile is updated in background
+        window.dispatchEvent(new Event('pending_profile_updated'));
       }
-
     } catch (err) {
-      console.error(err);
-      alert("An error occurred during Smart Fill extraction. Please check your internet connection and try again.");
+      console.error("Background resume extraction failed:", err);
+      // Fallback: clear background state so they can retry later
     } finally {
-      setIsUploading(false);
+      setBackgroundExtracting(false);
     }
+  };
+
+  const handleSmartFill = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File is too large. Please upload a resume smaller than 5MB.");
+      return;
+    }
+
+    const userEmail = session?.user?.email;
+    if (!userEmail) {
+      alert("No active session found. Please log in again.");
+      closeModal();
+      return;
+    }
+
+    // 1. Immediately switch store into background-extracting mode
+    setBackgroundExtracting(true);
+
+    // 2. Instantly call success callback (opens redirect tab and moves window to /applications)
+    if (onUploadSuccess) {
+      onUploadSuccess();
+    }
+    
+    // 3. Immediately close modal overlay
+    closeModal();
+
+    // 4. Trigger asynchronous background process
+    runBackgroundExtraction(file, userEmail);
   };
 
   return (
     <div 
       className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-[6px] animate-fade-in"
-      // Dismissal on backdrop click is removed since this is a mandatory step
     >
       <div 
         className="relative w-full max-w-[420px] bg-white rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-[var(--kindling-border)] overflow-hidden transform scale-100 transition-all duration-300 animate-fade-in-up"
         onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
       >
-        {/* CLOSE BUTTON (Removed for mandatory onboarding flow) */}
-
         {/* CONTENT */}
         <div className="p-8">
           <div className="flex flex-col items-center text-center space-y-4">
@@ -117,25 +129,14 @@ export default function SmartFillModal() {
                 onChange={handleSmartFill} 
                 accept=".pdf,.doc,.docx" 
                 className="hidden" 
-                disabled={isUploading}
               />
               
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="w-full bg-[var(--kindling-ink)] hover:bg-black text-white py-3.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-75 disabled:hover:bg-[var(--kindling-ink)]"
+                className="w-full bg-[var(--kindling-ink)] hover:bg-black text-white py-3.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]"
               >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Extracting details...
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="w-4 h-4" />
-                    Upload Resume
-                  </>
-                )}
+                <UploadCloud className="w-4 h-4" />
+                Upload Resume
               </button>
             </div>
           </div>

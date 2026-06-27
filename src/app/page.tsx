@@ -19,7 +19,7 @@ export default function Home() {
   const router = useRouter();
   const { openModal } = useAuthModalStore();
   const { addApplicationLocal } = useApplicationsStore();
-  const { openModal: openSmartFillModal } = useSmartFillModalStore();
+  const { openModal: openSmartFillModal, isBackgroundExtracting } = useSmartFillModalStore();
   const { isComplete } = useProfileStore();
   
   const { 
@@ -97,8 +97,9 @@ export default function Home() {
 
       const hasPendingVerification = localStorage.getItem('pending_profile_verification') === 'true';
 
-      // 2. Check if profile is complete or has a pending draft. If not, trigger mandatory Smart Fill.
-      if (!isComplete && !hasPendingVerification) {
+      // 2. Check if profile is complete, has a pending draft, or is currently extracting in background.
+      // If none of these, trigger mandatory Smart Fill.
+      if (!isComplete && !hasPendingVerification && !isBackgroundExtracting) {
         openSmartFillModal(() => {
           trackAndOpen();
           router.push('/applications');

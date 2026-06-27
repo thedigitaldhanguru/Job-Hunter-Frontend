@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, AlertCircle } from 'lucide-react';
+import { Menu, X, AlertCircle, Loader2 } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { useProfileStore } from '@/store/useProfileStore';
 import { isProfileComplete } from '@/lib/profileHelper';
 import { useAuthModalStore } from '@/store/useAuthModalStore';
+import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function Navbar() {
   const { data: session } = useSession();
   const { isComplete, fetchProfile } = useProfileStore();
   const { openModal } = useAuthModalStore();
+  const { isBackgroundExtracting } = useSmartFillModalStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Globally fetch profile details once user logs in
@@ -58,9 +60,11 @@ export default function Navbar() {
                   className={`px-5 py-1.5 rounded-full font-medium text-[13px] transition-colors flex items-center gap-1.5 ${pathname === '/profile' ? 'bg-[var(--kindling-ink)] text-white' : 'text-gray-500 hover:text-black'}`}
                 >
                   Profile
-                  {!isComplete && (
+                  {isBackgroundExtracting ? (
+                    <Loader2 className="w-3 h-3 text-amber-500 animate-spin shrink-0" />
+                  ) : !isComplete ? (
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                  )}
+                  ) : null}
                 </Link>
               </>
             )}
@@ -122,9 +126,11 @@ export default function Navbar() {
                     className={`text-2xl font-serif w-full py-4 border-b border-[var(--kindling-border)] flex items-center justify-center gap-2 ${pathname === '/profile' ? 'text-[var(--kindling-ink)] font-normal' : 'text-gray-500'}`}
                   >
                     Profile
-                    {!isComplete && (
+                    {isBackgroundExtracting ? (
+                      <Loader2 className="w-4 h-4 text-amber-500 animate-spin shrink-0" />
+                    ) : !isComplete ? (
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                    )}
+                    ) : null}
                   </Link>
                   <button 
                     onClick={() => { signOut({ callbackUrl: '/' }); setIsMobileMenuOpen(false); }}

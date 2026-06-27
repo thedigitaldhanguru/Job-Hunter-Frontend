@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import SessionWrapper from "@/components/SessionWrapper"; 
 import LoginModal from "@/components/LoginModal";
 import SmartFillModal from "@/components/SmartFillModal";
+import VerifyProfileModal from "@/components/VerifyProfileModal";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({
           <Footer />
           <LoginModal />
           <SmartFillModal />
+          <VerifyProfileModal />
         </SessionWrapper>
 
       </body>

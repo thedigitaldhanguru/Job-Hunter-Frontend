@@ -2,25 +2,18 @@
 
 import { useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { Sparkles, X, UploadCloud, Loader2 } from 'lucide-react';
+import { Sparkles, UploadCloud, Loader2 } from 'lucide-react';
 import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
 import { uploadToS3 } from '@/lib/s3Helper';
 import { API_BASE_URL } from '@/lib/config';
 
 export default function SmartFillModal() {
   const { data: session } = useSession();
-  const { isOpen, onSkip, onUploadSuccess, closeModal } = useSmartFillModalStore();
+  const { isOpen, onUploadSuccess, closeModal } = useSmartFillModalStore();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
-
-  const handleSkip = () => {
-    if (onSkip) {
-      onSkip();
-    }
-    closeModal();
-  };
 
   const handleSmartFill = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,7 +64,10 @@ export default function SmartFillModal() {
 
         localStorage.setItem(draftKey, JSON.stringify(mergedDraft));
 
-        // 4. Trigger redirect & tab opening success callback
+        // 4. Set pending verification flag in localStorage
+        localStorage.setItem('pending_profile_verification', 'true');
+
+        // 5. Trigger redirect & tab opening success callback
         if (onUploadSuccess) {
           onUploadSuccess();
         }
@@ -90,20 +86,13 @@ export default function SmartFillModal() {
   return (
     <div 
       className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-[6px] animate-fade-in"
-      onClick={handleSkip}
+      // Dismissal on backdrop click is removed since this is a mandatory step
     >
       <div 
         className="relative w-full max-w-[420px] bg-white rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-[var(--kindling-border)] overflow-hidden transform scale-100 transition-all duration-300 animate-fade-in-up"
         onClick={(e) => e.stopPropagation()} // Prevent modal from closing when clicking inside
       >
-        {/* CLOSE BUTTON */}
-        <button 
-          onClick={handleSkip}
-          disabled={isUploading}
-          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors z-20"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
+        {/* CLOSE BUTTON (Removed for mandatory onboarding flow) */}
 
         {/* CONTENT */}
         <div className="p-8">
@@ -114,10 +103,10 @@ export default function SmartFillModal() {
             
             <div className="space-y-2">
               <h2 className="text-3xl font-normal text-[var(--kindling-ink)] leading-none animate-fade-in" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
-                Optimize with AI Smart Fill
+                Upload Your Resume
               </h2>
               <p className="text-sm text-slate-500 leading-relaxed max-w-[340px]">
-                Want to set up your profile in 5 seconds? Upload your resume and our Bedrock AI will build it for you automatically.
+                To apply for jobs, please upload your resume. Our Bedrock AI will instantly pre-fill your profile details.
               </p>
             </div>
 
@@ -134,12 +123,12 @@ export default function SmartFillModal() {
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="w-full bg-[var(--kindling-ink)] hover:bg-black text-white py-3 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-75 disabled:hover:bg-[var(--kindling-ink)]"
+                className="w-full bg-[var(--kindling-ink)] hover:bg-black text-white py-3.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-75 disabled:hover:bg-[var(--kindling-ink)]"
               >
                 {isUploading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Extracting resume details...
+                    Extracting details...
                   </>
                 ) : (
                   <>
@@ -147,14 +136,6 @@ export default function SmartFillModal() {
                     Upload Resume
                   </>
                 )}
-              </button>
-
-              <button 
-                onClick={handleSkip}
-                disabled={isUploading}
-                className="w-full border border-slate-200 hover:bg-slate-50 text-slate-700 py-3 rounded-full text-sm font-semibold transition-all"
-              >
-                Skip and Apply
               </button>
             </div>
           </div>

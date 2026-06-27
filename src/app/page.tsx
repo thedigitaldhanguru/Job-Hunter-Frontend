@@ -97,18 +97,10 @@ export default function Home() {
 
       // 2. Check if profile is complete. If not, trigger Smart Fill modal speed bump!
       if (!isComplete) {
-        openSmartFillModal(
-          // onSkip callback
-          () => {
-            trackAndOpen();
-            router.push('/applications');
-          },
-          // onUploadSuccess callback
-          () => {
-            trackAndOpen();
-            router.push('/profile');
-          }
-        );
+        openSmartFillModal(() => {
+          trackAndOpen();
+          router.push('/applications');
+        });
       } else {
         // Normal flow
         trackAndOpen();

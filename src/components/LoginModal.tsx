@@ -28,20 +28,20 @@ export default function LoginModal() {
       onClick={closeModal}
     >
       <div 
-        className="relative w-full max-w-md bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-[var(--kindling-border)] overflow-hidden transform scale-100 transition-all duration-300 animate-fade-in-up"
+        className="relative w-full max-w-[390px] bg-white rounded-[1.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-[var(--kindling-border)] overflow-hidden transform scale-100 transition-all duration-300 animate-fade-in-up"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
       >
         {/* CLOSE BUTTON */}
         <button 
           onClick={closeModal}
-          className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors z-20"
+          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors z-20"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
 
         {/* AUTH FORM CARD */}
-        <div className="pt-6 pb-2 px-1">
-          <AuthForm />
+        <div className="p-6 pt-8">
+          <AuthForm isModal={true} />
         </div>
       </div>
     </div>

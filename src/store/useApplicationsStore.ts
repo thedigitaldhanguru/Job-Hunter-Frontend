@@ -38,7 +38,15 @@ export const useApplicationsStore = create<ApplicationsStore>((set, get) => ({
     set({ isFetching: true, error: null });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/applications/${email}`);
+      const tokenResponse = await fetch('/api/auth/token');
+      if (!tokenResponse.ok) throw new Error('Failed to retrieve authentication token');
+      const { token } = await tokenResponse.json();
+
+      const response = await fetch(`${API_BASE_URL}/applications/${email}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch');
       
       const data = await response.json();

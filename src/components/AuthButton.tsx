@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Mail, Lock, Loader2 } from 'lucide-react';
 import { signIn } from "next-auth/react";
 
-export default function AuthForm() {
+export default function AuthForm({ isModal = false }: { isModal?: boolean }) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -43,11 +43,11 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-4 sm:mt-8 relative z-10">
-      <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--kindling-border)] p-8 sm:p-10 relative overflow-hidden transition-all duration-300">
+    <div className={`w-full ${isModal ? '' : 'max-w-md mx-auto mt-4 sm:mt-8'} relative z-10`}>
+      <div className={`${isModal ? 'p-1' : 'bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--kindling-border)] p-8 sm:p-10'} relative overflow-hidden transition-all duration-300`}>
         
-        <div className="relative z-10 space-y-8">
-          <div className="text-center space-y-3">
+        <div className="relative z-10 space-y-6">
+          <div className="text-center space-y-2">
             <h2 className="text-4xl sm:text-5xl font-normal tracking-tight text-[var(--kindling-ink)] leading-none" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
               {isLogin ? 'Welcome back' : 'Join us'}
             </h2>
@@ -139,7 +139,7 @@ export default function AuthForm() {
         </div>
       </div>
 
-      <div className="mt-8 text-center pb-8">
+      <div className={`${isModal ? 'mt-5' : 'mt-8'} text-center ${isModal ? 'pb-2' : 'pb-8'}`}>
         <p className="text-slate-500 text-sm">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button 

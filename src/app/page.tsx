@@ -11,11 +11,13 @@ import Navbar from '@/components/Navbar';
 import AuthForm from '../components/AuthButton';
 import SmartFillPrompt from '@/components/SmartFillPrompt';
 import { useAuthModalStore } from '@/store/useAuthModalStore';
+import { useApplicationsStore } from '@/store/useApplicationsStore';
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { openModal } = useAuthModalStore();
+  const { addApplicationLocal } = useApplicationsStore();
   
   const { 
     jobs, loading, offset, searchQuery, hasFetched, 
@@ -42,39 +44,48 @@ export default function Home() {
     }
   }, [hasFetched, fetchJobs]);
 
-  const handleApply = async (e: React.MouseEvent, job: JobListing) => {
+  const handleApply = (e: React.MouseEvent, job: JobListing) => {
     e.stopPropagation();
     if (!session?.user?.email) { 
       openModal(); 
       return; 
     }
 
-    setApplyingTo(job.id);
-    try {
-      const res = await fetch(`${API_BASE_URL}/apply/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_email: session.user.email,
-          job_id: job.id,
-          company_name: job.company_raw,
-          job_title: job.title,
-          application_status: "applied"
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        const targetUrl = data.redirect_url || job.job_url || job.absolute_url;
-        if (targetUrl) {
-          window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        }
-        router.push('/applications');
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setApplyingTo(null);
+    const targetUrl = job.job_url || job.absolute_url;
+    const isValidUrl = targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'));
+
+    // 1. Immediately open external URL if valid, or show warning alert
+    if (isValidUrl) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      alert("This job listing does not have a valid application link.");
     }
+
+    // 2. Optimistically add application to pipeline store
+    addApplicationLocal({
+      id: `temp-${Date.now()}`,
+      company: job.company_raw || "Unknown Company",
+      role: job.title || "Unknown Position",
+      status: "Applied",
+      dateApplied: new Date().toISOString().split('T')[0],
+      jobUrl: isValidUrl ? targetUrl : ''
+    });
+
+    // 3. Immediately redirect to applications pipeline tracker
+    router.push('/applications');
+
+    // 4. Save to DB asynchronously in the background
+    fetch(`${API_BASE_URL}/apply/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_email: session.user.email,
+        job_id: job.id,
+        company_name: job.company_raw || "Unknown Company",
+        job_title: job.title || "Unknown Position",
+        application_status: "applied"
+      })
+    }).catch(err => console.error("Background application tracking failed:", err));
   };
 
   // --- GATEKEEPER ---

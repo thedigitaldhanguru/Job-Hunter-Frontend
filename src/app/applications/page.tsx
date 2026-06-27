@@ -95,9 +95,15 @@ export default function SandboxApplicationsPage() {
     updateStatusLocal(id, newStatus);
     
     try {
+      const tokenResponse = await fetch('/api/auth/token');
+      const { token } = await tokenResponse.json();
+
       await fetch(`${API_BASE_URL}/applications/${id}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ status: newStatus.toLowerCase() })
       });
     } catch (err) {
@@ -110,8 +116,14 @@ export default function SandboxApplicationsPage() {
       deleteApplicationLocal(id);
       
       try {
+        const tokenResponse = await fetch('/api/auth/token');
+        const { token } = await tokenResponse.json();
+
         await fetch(`${API_BASE_URL}/applications/${id}`, { 
-          method: 'DELETE' 
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
       } catch (err) {
         console.error("Failed to delete from DB:", err);

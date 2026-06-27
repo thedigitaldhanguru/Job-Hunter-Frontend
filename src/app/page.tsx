@@ -44,48 +44,60 @@ export default function Home() {
     }
   }, [hasFetched, fetchJobs]);
 
-  const handleApply = (e: React.MouseEvent, job: JobListing) => {
+  const handleApply = async (e: React.MouseEvent, job: JobListing) => {
     e.stopPropagation();
     if (!session?.user?.email) { 
       openModal(); 
       return; 
     }
 
-    const targetUrl = job.job_url || job.absolute_url;
-    const isValidUrl = targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'));
+    setApplyingTo(job.id);
 
-    // 1. Immediately open external URL if valid, or show warning alert
-    if (isValidUrl) {
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      alert("This job listing does not have a valid application link.");
+    try {
+      // 1. Save application to DB and retrieve URL
+      const res = await fetch(`${API_BASE_URL}/apply/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_email: session.user.email,
+          job_id: job.id,
+          company_name: job.company_raw || "Unknown Company",
+          job_title: job.title || "Unknown Position",
+          application_status: "applied"
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to record application");
+      const data = await res.json();
+      
+      const targetUrl = data.redirect_url || job.job_url || job.absolute_url;
+      const isValidUrl = targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'));
+
+      // 2. Open external link or alert if missing
+      if (isValidUrl) {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        alert("This job does not have an external application link, but we tracked it in your pipeline!");
+      }
+
+      // 3. Add to local applications pipeline store
+      addApplicationLocal({
+        id: `temp-${Date.now()}`,
+        company: job.company_raw || "Unknown Company",
+        role: job.title || "Unknown Position",
+        status: "Applied",
+        dateApplied: new Date().toISOString().split('T')[0],
+        jobUrl: isValidUrl ? targetUrl : ''
+      });
+
+      // 4. Redirect to pipeline page
+      router.push('/applications');
+    } catch (err) {
+      console.error(err);
+      alert("Failed to track application. Please check your internet connection.");
+    } finally {
+      setApplyingTo(null);
     }
-
-    // 2. Optimistically add application to pipeline store
-    addApplicationLocal({
-      id: `temp-${Date.now()}`,
-      company: job.company_raw || "Unknown Company",
-      role: job.title || "Unknown Position",
-      status: "Applied",
-      dateApplied: new Date().toISOString().split('T')[0],
-      jobUrl: isValidUrl ? targetUrl : ''
-    });
-
-    // 3. Immediately redirect to applications pipeline tracker
-    router.push('/applications');
-
-    // 4. Save to DB asynchronously in the background
-    fetch(`${API_BASE_URL}/apply/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_email: session.user.email,
-        job_id: job.id,
-        company_name: job.company_raw || "Unknown Company",
-        job_title: job.title || "Unknown Position",
-        application_status: "applied"
-      })
-    }).catch(err => console.error("Background application tracking failed:", err));
   };
 
   // --- GATEKEEPER ---
@@ -231,7 +243,9 @@ export default function Home() {
                         disabled={applyingTo === job.id}
                         className="bg-[var(--kindling-ink)] text-white px-4 py-1.5 rounded-full text-[13px] font-medium flex items-center gap-1.5 hover:bg-black transition-colors"
                       >
-                        {applyingTo === job.id ? '...' : (
+                        {applyingTo === job.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
                           <>Apply <ArrowUpRight className="w-3 h-3 opacity-80 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" /></>
                         )}
                       </button>

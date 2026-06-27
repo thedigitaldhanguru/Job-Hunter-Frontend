@@ -95,8 +95,10 @@ export default function Home() {
         });
       };
 
-      // 2. Check if profile is complete. If not, trigger Smart Fill modal speed bump!
-      if (!isComplete) {
+      const hasPendingVerification = localStorage.getItem('pending_profile_verification') === 'true';
+
+      // 2. Check if profile is complete or has a pending draft. If not, trigger mandatory Smart Fill.
+      if (!isComplete && !hasPendingVerification) {
         openSmartFillModal(() => {
           trackAndOpen();
           router.push('/applications');

@@ -1,127 +1,112 @@
 'use client';
 
 import Link from 'next/link';
-import { Briefcase } from 'lucide-react';
-import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-
-// Custom SVG components to replace the removed Lucide brand icons
-const TwitterIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
-  </svg>
-);
-
-const LinkedinIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-    <rect width="4" height="12" x="2" y="9"/>
-    <circle cx="4" cy="4" r="2"/>
-  </svg>
-);
-
-const GithubIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-    <path d="M9 18c-4.51 2-5-2-7-2"/>
-  </svg>
-);
+import { Briefcase } from 'lucide-react';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-  const { status } = useSession();
   const pathname = usePathname();
+  const currentYear = new Date().getFullYear();
 
-  // Hide the footer on the login page (unauthenticated users on root path)
-  if (status === 'unauthenticated' && pathname === '/') {
+  // Hide the footer on full-screen login / register screens
+  if (pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') {
     return null;
   }
 
   return (
-    <footer className="bg-white border-t border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
+    <footer className="bg-[#0b0f19] border-t border-slate-900 text-slate-400 py-16 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
-        {/* Top Grid Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8">
-          
-          {/* 1. Brand & Description */}
-          <div className="space-y-4 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white transition-transform duration-200 group-hover:scale-105 shadow-sm shrink-0">
-                <Briefcase className="w-4 h-4" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] gap-8">
+          {/* Tagline */}
+          <div className="space-y-6">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#0a4fcd] to-[#051949] flex items-center justify-center shadow-md">
+                <Briefcase className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold text-slate-900 tracking-tighter transition-colors group-hover:text-slate-600">
-                Job Hunter
+              <span className="font-bold text-lg tracking-tight text-white">
+                hire<span className="text-[#f97316]">deck</span>
               </span>
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
-              The premium destination for finding top-tier engineering and design roles. Apply with a resume tailored for every opportunity.
+              Curated jobs from India's top product companies and global startups. Skip the noise.
             </p>
-            {/* Social Links */}
-            <div className="flex items-center gap-4 pt-2">
-              <a href="#" className="text-slate-400 hover:text-slate-900 transition-colors">
-                <TwitterIcon className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-slate-400 hover:text-slate-900 transition-colors">
-                <LinkedinIcon className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-slate-400 hover:text-slate-900 transition-colors">
-                <GithubIcon className="w-5 h-5" />
-              </a>
+            
+            {/* Social links */}
+            <div className="flex items-center gap-3">
+              {['Tw', 'In', 'Yt', 'Li'].map(social => (
+                <span 
+                  key={social} 
+                  className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-white hover:bg-white/10 cursor-pointer transition-colors shadow-sm"
+                >
+                  {social}
+                </span>
+              ))}
             </div>
           </div>
 
-          {/* 2. For Job Seekers */}
-          <div>
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">For Job Seekers</h3>
-            <ul className="space-y-3">
-              <li><Link href="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Browse Jobs</Link></li>
-              <li><Link href="/profile" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Create Profile</Link></li>
-              <li><Link href="/applications" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Track Applications</Link></li>
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Salary Calculator</Link></li>
-            </ul>
-          </div>
-
-          {/* 3. For Employers */}
-          <div>
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">For Employers</h3>
-            <ul className="space-y-3">
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Post a Job</Link></li>
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Search Resumes</Link></li>
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Pricing</Link></li>
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Enterprise Solutions</Link></li>
-            </ul>
-          </div>
-
-          {/* 4. Company & Legal */}
-          <div>
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Company</h3>
-            <ul className="space-y-3">
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">About Us</Link></li>
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Careers</Link></li>
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Terms of Service</Link></li>
-            </ul>
-          </div>
-
+          {/* Links Columns */}
+          {[
+            {
+              title: 'For Seekers',
+              links: [
+                { label: 'Search Jobs', href: '/jobs' },
+                { label: 'Browse Companies', href: '/companies' },
+                { label: 'Browse Salaries', href: '#' },
+                { label: 'Help Center', href: '#' }
+              ]
+            },
+            {
+              title: 'For Employers',
+              links: [
+                { label: 'Post a job', href: '#' },
+                { label: 'Browse Resumes', href: '#' },
+                { label: 'Employer Brands', href: '#' },
+                { label: 'Recruitment Software', href: '#' }
+              ]
+            },
+            {
+              title: 'Company',
+              links: [
+                { label: 'About Us', href: '#' },
+                { label: 'Careers', href: '#' },
+                { label: 'Press & Media', href: '#' },
+                { label: 'Contact support', href: '#' }
+              ]
+            },
+            {
+              title: 'Resources',
+              links: [
+                { label: 'Career Advice', href: '#' },
+                { label: 'Resume Builder', href: '#' },
+                { label: 'Interview Prep', href: '#' },
+                { label: 'Salary Insights', href: '#' }
+              ]
+            }
+          ].map(col => (
+            <div key={col.title} className="space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-white">{col.title}</h4>
+              <ul className="space-y-2 text-sm text-slate-500">
+                {col.links.map(link => (
+                  <li key={link.label}>
+                    <Link href={link.href} className="hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm font-medium text-slate-400">
-            © {currentYear} Job Hunter Inc. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <span className="flex items-center gap-2 text-sm font-medium text-slate-400">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              All systems operational
-            </span>
+        <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <span>&copy; {currentYear} hiredeck Pro. All rights reserved.</span>
+          <div className="flex flex-wrap items-center gap-4">
+            {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Sitemap'].map(item => (
+              <span key={item} className="hover:text-slate-300 cursor-pointer transition-colors">{item}</span>
+            ))}
           </div>
         </div>
-
       </div>
     </footer>
   );

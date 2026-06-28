@@ -3,7 +3,6 @@ import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer"; 
 import SessionWrapper from "@/components/SessionWrapper"; 
-import LoginModal from "@/components/LoginModal";
 import SmartFillModal from "@/components/SmartFillModal";
 import VerifyProfileModal from "@/components/VerifyProfileModal";
 
@@ -40,7 +39,6 @@ export default function RootLayout({
             {children}
           </div>
           <Footer />
-          <LoginModal />
           <SmartFillModal />
           <VerifyProfileModal />
         </SessionWrapper>

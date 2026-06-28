@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
   ],
   session: { strategy: "database" },
   secret: process.env.AUTH_SECRET,
-  pages:{
+  pages: {
     signIn: "/", // Redirect to home instead of /login
   },
 };

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Instrument_Serif } from "next/font/google";
+import { Outfit, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer"; 
 import SessionWrapper from "@/components/SessionWrapper"; 
 import SmartFillModal from "@/components/SmartFillModal";
 import VerifyProfileModal from "@/components/VerifyProfileModal";
 
-const inter = Inter({ 
+const outfit = Outfit({ 
   subsets: ["latin"],
-  variable: "--font-inter", 
+  variable: "--font-outfit", 
 });
 
 const instrumentSerif = Instrument_Serif({
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${instrumentSerif.variable} font-sans antialiased flex flex-col min-h-screen`}>
+      <body className={`${outfit.variable} ${instrumentSerif.variable} font-sans antialiased flex flex-col min-h-screen`}>
         
         <div className="paperGrid"></div>
         <div className="glow"></div>

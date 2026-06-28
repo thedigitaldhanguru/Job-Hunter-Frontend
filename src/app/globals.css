@@ -2,8 +2,8 @@
 
 /* MASTER CONTROL PANEL */
 @theme {
-  /* 1. Link your custom font (matches the --font-inter from layout.tsx) */
-  --font-sans: var(--font-inter);
+  /* 1. Link your custom font (matches the --font-outfit from layout.tsx) */
+  --font-sans: var(--font-outfit);
 
   /* 2. Define your global colors */
   --color-background: #FAFAFA;     /* bg-background */

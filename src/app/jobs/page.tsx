@@ -25,8 +25,8 @@ export default function JobsPage() {
   const { isComplete } = useProfileStore();
 
   const {
-    jobs: dbJobs, loading, offset, searchQuery, hasFetched,
-    setSearchQuery, setOffset, fetchJobs
+    jobs: dbJobs, loading, offset, searchQuery, locationQuery, hasFetched,
+    setSearchQuery, setLocationQuery, setOffset, fetchJobs
   } = useJobsStore();
 
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
@@ -43,7 +43,7 @@ export default function JobsPage() {
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, locationQuery]);
 
   useEffect(() => {
     if (!hasFetched) {
@@ -191,6 +191,12 @@ export default function JobsPage() {
       const matchCompany = job.company_raw?.toLowerCase().includes(query);
       const matchLoc = job.location?.toLowerCase().includes(query);
       if (!matchTitle && !matchCompany && !matchLoc) return false;
+    }
+
+    // Location Query filter
+    if (locationQuery) {
+      const loc = locationQuery.toLowerCase();
+      if (!job.location?.toLowerCase().includes(loc)) return false;
     }
 
     // Work Mode Filter
@@ -427,11 +433,16 @@ export default function JobsPage() {
                   <input 
                     type="text" 
                     placeholder="City, state, or 'Remote'" 
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
                     className="bg-transparent outline-none w-full text-sm font-semibold placeholder-slate-400" 
                   />
                 </div>
                 
-                <button className="w-full sm:w-auto bg-[#f97316] hover:bg-[#ea580c] text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 shrink-0">
+                <button 
+                  onClick={() => fetchJobs(LIMIT, true)}
+                  className="w-full sm:w-auto bg-[#f97316] hover:bg-[#ea580c] text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 shrink-0"
+                >
                   Search jobs
                 </button>
               </div>

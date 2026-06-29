@@ -28,8 +28,8 @@ export default function Home() {
   const { isComplete } = useProfileStore();
 
   const {
-    jobs, loading, offset, searchQuery, hasFetched,
-    setSearchQuery, setOffset, fetchJobs
+    jobs, loading, offset, searchQuery, locationQuery, hasFetched,
+    setSearchQuery, setLocationQuery, setOffset, fetchJobs
   } = useJobsStore();
 
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
@@ -38,12 +38,12 @@ export default function Home() {
   // --- DATA FETCHING (ZUSTAND) ---
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      if (hasFetched && searchQuery === '') return;
+      if (hasFetched && searchQuery === '' && locationQuery === '') return;
       fetchJobs(LIMIT, true); // Reset to page 0 on new search
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, locationQuery]);
 
   // Initial load effect
   useEffect(() => {
@@ -176,10 +176,19 @@ export default function Home() {
             
             <div className="flex-1 flex items-center pl-4 py-2 w-full text-slate-800">
               <MapPin className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
-              <input type="text" placeholder="City or remote" className="bg-transparent outline-none w-full text-sm font-medium placeholder-slate-400" />
+              <input 
+                type="text" 
+                placeholder="City or remote" 
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+                className="bg-transparent outline-none w-full text-sm font-medium placeholder-slate-400" 
+              />
             </div>
             
-            <button className="w-full sm:w-auto bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-7 py-3.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 shrink-0">
+            <button 
+              onClick={() => router.push('/jobs')}
+              className="w-full sm:w-auto bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-7 py-3.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 shrink-0"
+            >
               Search Jobs
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -191,7 +200,10 @@ export default function Home() {
             {['React', 'Product Manager', 'Data Scientist', 'Designer', 'DevOps'].map(tag => (
               <span 
                 key={tag} 
-                onClick={() => setSearchQuery(tag)}
+                onClick={() => {
+                  setSearchQuery(tag);
+                  router.push('/jobs');
+                }}
                 className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition-colors text-white font-medium text-xs shadow-inner"
               >
                 {tag}
@@ -434,7 +446,10 @@ export default function Home() {
                 <div className="text-xs uppercase font-bold tracking-wider text-blue-200 mt-1">Open Roles</div>
               </div>
               <button 
-                onClick={() => setSearchQuery('Engineering')}
+                onClick={() => {
+                  setSearchQuery('Engineering');
+                  router.push('/jobs');
+                }}
                 className="w-12 h-12 bg-white text-[#2563eb] rounded-full flex items-center justify-center shadow-md hover:scale-105 transition-transform active:scale-95"
               >
                 <ArrowRight className="w-5 h-5" />
@@ -456,7 +471,10 @@ export default function Home() {
               return (
                 <div 
                   key={cat.title} 
-                  onClick={() => setSearchQuery(cat.title)}
+                  onClick={() => {
+                    setSearchQuery(cat.title);
+                    router.push('/jobs');
+                  }}
                   className={`group bg-white border rounded-2xl p-5 flex items-center justify-between hover:border-[#2563eb] hover:shadow-md transition-all duration-300 cursor-pointer ${cat.active ? 'border-blue-400 shadow-sm shadow-blue-500/5' : 'border-[#e2e8f0]'}`}
                 >
                   <div className="flex items-center gap-4">

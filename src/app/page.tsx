@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { 
   Search, MapPin, Star, ArrowRight, TrendingUp, Palette, BarChart3, 
   Megaphone, Box, PenTool, Wallet, Clock, Loader2, ArrowUpRight,
-  Sparkles, FileText, Shield, Zap, Database
+  Sparkles, FileText, Shield, Zap, Database, Monitor, MousePointer, 
+  Globe, Check, Eye, Bell
 } from 'lucide-react';
 import { JobListing } from '@/types/job';
 import { API_BASE_URL } from '@/lib/config';
@@ -588,127 +589,230 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= TOP EMPLOYERS ================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-12 bg-gradient-to-b from-white to-[#f8fafc]/50">
-        <div className="flex items-end justify-between border-b border-[#e2e8f0] pb-6">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]/80 mb-2 block">Top Employers</span>
-            <h2 className="text-3xl font-bold tracking-tight text-[#0f172a]">Where talented people are heading</h2>
-            <p className="text-sm text-slate-500 mt-2">Ranked by employee reviews, growth and active openings.</p>
-          </div>
-          <button className="text-sm font-bold text-[#2563eb] hover:underline flex items-center gap-1 select-none">
-            See full ranking
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+      {/* ================= BROWSER EXTENSION SECTION ================= */}
+      <section className="bg-[#0a4fcd] text-white relative overflow-hidden py-24 w-full">
+        {/* Dotted background overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.15)_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-70"></div>
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-white/10 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-900/40 rounded-full blur-[100px]" />
 
-        {/* Leaderboard layout split */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Featured #1 Card */}
-          <div className="bg-[image:var(--hd-gradient-hero)] rounded-3xl p-8 text-white flex flex-col justify-between shadow-lg relative overflow-hidden group">
-            <div className="absolute top-4 right-4 bg-[#f97316] text-white text-[9px] font-bold tracking-[0.1em] px-2.5 py-1 rounded-full uppercase">
-              #1 Editor's Pick
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Column: Extension Details */}
+          <div className="lg:col-span-6 space-y-8">
+            
+            {/* Eyebrow badge */}
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-[12px] font-bold text-white shadow-sm">
+              <Monitor className="w-3.5 h-3.5" />
+              Browser extension
             </div>
 
-            <div className="space-y-6 pt-6">
-              <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner">
-                <BuildingIcon className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h3 className="text-3xl font-bold tracking-tight">Google</h3>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="font-bold text-sm">4.4</span>
-                  <span className="text-xs text-blue-200 font-medium">· 2.4k employees rate it</span>
-                </div>
-              </div>
-              <p className="text-sm text-blue-100/80 leading-relaxed">
-                Building developer-first infrastructure. Engineering, design and product hiring across India and remote.
+            <div className="space-y-4">
+              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
+                Track jobs across the web <br className="hidden sm:inline"/>
+                with zero clicks
+              </h2>
+              <p className="text-sm sm:text-base text-blue-100/90 max-w-xl leading-relaxed font-semibold">
+                Our extension automatically detects job postings on LinkedIn, Indeed, Naukri, and company career pages. Every role you view gets saved to your hiredeck tracker instantly — no buttons, no copy-paste.
               </p>
             </div>
 
-            <div className="pt-10 space-y-6">
-              <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-6 text-center">
-                <div>
-                  <div className="text-xl font-bold">142</div>
-                  <div className="text-[10px] text-blue-200 uppercase font-semibold mt-1">Open roles</div>
+            {/* Grid checklist (4 cards) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+              
+              {/* Feature 1 */}
+              <div className="bg-blue-600/30 border border-blue-500/20 p-5 rounded-2xl space-y-2">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-[#f97316]">
+                  <Eye className="w-4.5 h-4.5" />
                 </div>
-                <div>
-                  <div className="text-xl font-bold">92%</div>
-                  <div className="text-[10px] text-blue-200 uppercase font-semibold mt-1">Recommend</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold">4.8</div>
-                  <div className="text-[10px] text-blue-200 uppercase font-semibold mt-1">Culture</div>
-                </div>
+                <h4 className="font-extrabold text-[15px] text-white">Auto-detect on any site</h4>
+                <p className="text-xs text-blue-100/80 leading-relaxed font-semibold">
+                  Scans pages in real-time and recognizes job listings instantly.
+                </p>
               </div>
-              <button 
-                onClick={() => setSearchQuery('Google')}
-                className="w-full bg-[#f97316] hover:bg-[#ea580c] text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 group/btn active:scale-[0.98]"
-              >
-                Explore openings
-                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
-              </button>
+
+              {/* Feature 2 */}
+              <div className="bg-blue-600/30 border border-blue-500/20 p-5 rounded-2xl space-y-2">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-[#f97316]">
+                  <MousePointer className="w-4.5 h-4.5" />
+                </div>
+                <h4 className="font-extrabold text-[15px] text-white">Zero-click save</h4>
+                <p className="text-xs text-blue-100/80 leading-relaxed font-semibold">
+                  Jobs save automatically as you browse. No buttons to press.
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="bg-blue-600/30 border border-blue-500/20 p-5 rounded-2xl space-y-2">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-[#f97316]">
+                  <Globe className="w-4.5 h-4.5" />
+                </div>
+                <h4 className="font-extrabold text-[15px] text-white">Works everywhere</h4>
+                <p className="text-xs text-blue-100/80 leading-relaxed font-semibold">
+                  LinkedIn, Indeed, Naukri, company career pages, and more.
+                </p>
+              </div>
+
+              {/* Feature 4 */}
+              <div className="bg-blue-600/30 border border-blue-500/20 p-5 rounded-2xl space-y-2">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-[#f97316]">
+                  <Bell className="w-4.5 h-4.5" />
+                </div>
+                <h4 className="font-extrabold text-[15px] text-white">Smart reminders</h4>
+                <p className="text-xs text-blue-100/80 leading-relaxed font-semibold">
+                  Get notified when deadlines approach or follow-ups are due.
+                </p>
+              </div>
+
             </div>
+
+            {/* Coming soon button */}
+            <div className="pt-2">
+              <span className="inline-flex items-center gap-2 px-5 py-3 border border-white/20 bg-white/10 rounded-xl text-xs font-bold shadow-sm select-none">
+                <ChromeIcon className="w-4 h-4 text-orange-400" />
+                Coming to Chrome soon
+              </span>
+            </div>
+
           </div>
 
-          {/* Leaderboard rows card */}
-          <div className="lg:col-span-2 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">This week's leaderboard</h3>
-              <div className="flex bg-slate-100 p-1 rounded-full text-xs font-semibold text-slate-500">
-                <button className="bg-[#2563eb] text-white px-4 py-1 rounded-full shadow-sm">Top rated</button>
-                <button className="px-4 py-1 hover:text-slate-700">Most jobs</button>
-                <button className="px-4 py-1 hover:text-slate-700">Trending</button>
+          {/* Right Column: Visual extension page mock */}
+          <div className="lg:col-span-6 relative flex items-center justify-center">
+            
+            {/* Main mock browser */}
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] border border-slate-200 overflow-hidden select-none">
+              {/* Browser Header Bar */}
+              <div className="bg-slate-50 border-b border-slate-200/80 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                </div>
+                <div className="flex-1 max-w-[280px] bg-slate-100 border border-slate-200 rounded-lg px-3 py-1 text-[10px] text-slate-500 font-semibold text-center truncate mx-auto">
+                  linkedin.com/jobs/search
+                </div>
+                <div className="w-14"></div>
               </div>
-            </div>
 
-            {/* List */}
-            <div className="divide-y divide-slate-100">
-              {[
-                { rank: '02', name: 'Microsoft', logoText: 'M', logoBg: 'bg-purple-100 text-purple-600', rating: '4.5', category: 'Product · MNC', meta: 'Bengaluru · Hybrid', jobs: '98 jobs' },
-                { rank: '03', name: 'Amazon', logoText: 'A', logoBg: 'bg-red-100 text-red-600', rating: '3.9', category: 'Product · MNC', meta: 'Bengaluru · Hybrid', jobs: '213 jobs' },
-                { rank: '04', name: 'Flipkart', logoText: 'F', logoBg: 'bg-emerald-100 text-emerald-600', rating: '4.1', category: 'Product · MNC', meta: 'Bengaluru · Hybrid', jobs: '76 jobs' },
-                { rank: '05', name: 'Adobe', logoText: 'A', logoBg: 'bg-amber-100 text-amber-600', rating: '4.3', category: 'Product · MNC', meta: 'Bengaluru · Hybrid', jobs: '54 jobs' },
-                { rank: '06', name: 'Atlassian', logoText: 'A', logoBg: 'bg-cyan-100 text-cyan-600', rating: '4.6', category: 'Product · MNC', meta: 'Bengaluru · Hybrid', jobs: '41 jobs' },
-              ].map(item => (
-                <div 
-                  key={item.rank} 
-                  onClick={() => setSearchQuery(item.name)}
-                  className="grid grid-cols-[24px_auto_1fr_auto] gap-4 py-4.5 items-center group cursor-pointer hover:bg-slate-50/50 rounded-xl px-2 transition-colors"
-                >
-                  <span className="font-bold text-xs text-slate-300">{item.rank}</span>
-                  
-                  <div className={`w-10 h-10 rounded-xl font-bold flex items-center justify-center shadow-inner ${item.logoBg}`}>
-                    {item.logoText}
+              {/* Browser Main split grid */}
+              <div className="grid grid-cols-[1.5fr_1fr] h-[270px]">
+                
+                {/* Left Side: Mock LinkedIn Results */}
+                <div className="bg-white p-4 space-y-3.5 border-r border-slate-100 overflow-hidden">
+                  <div className="flex items-center justify-between text-[10px] font-extrabold text-slate-700">
+                    <span>Results · 1,248</span>
+                    <div className="w-10 h-2.5 bg-slate-100 rounded-full" />
                   </div>
 
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm group-hover:text-[#2563eb] transition-colors">{item.name}</h4>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
-                      <div className="flex items-center gap-0.5 text-amber-500">
-                        <Star className="w-3.5 h-3.5 fill-amber-500" />
-                        <span className="font-bold text-slate-700">{item.rating}</span>
+                  <div className="space-y-2">
+                    {/* Row 1 */}
+                    <div className="flex items-center justify-between p-2.5 bg-blue-50/40 border border-blue-100/60 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-bold text-sm flex items-center justify-center shrink-0 shadow-inner">R</div>
+                        <div className="space-y-0.5">
+                          <h5 className="text-[9px] font-extrabold text-slate-800 leading-none">Senior Product Manager</h5>
+                          <p className="text-[7.5px] text-slate-400 font-semibold">Razorpay · Bengaluru</p>
+                        </div>
                       </div>
-                      <span>·</span>
-                      <span>{item.category}</span>
-                      <span>·</span>
-                      <span>{item.meta}</span>
+                      <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    </div>
+
+                    {/* Row 2 */}
+                    <div className="flex items-center justify-between p-2.5 bg-blue-50/40 border border-blue-100/60 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-bold text-sm flex items-center justify-center shrink-0 shadow-inner">S</div>
+                        <div className="space-y-0.5">
+                          <h5 className="text-[9px] font-extrabold text-slate-800 leading-none">Frontend Lead Engineer</h5>
+                          <p className="text-[7.5px] text-slate-400 font-semibold">Swiggy · Bengaluru</p>
+                        </div>
+                      </div>
+                      <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    </div>
+
+                    {/* Row 3 */}
+                    <div className="flex items-center justify-between p-2.5 bg-blue-50/40 border border-blue-100/60 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-bold text-sm flex items-center justify-center shrink-0 shadow-inner">P</div>
+                        <div className="space-y-0.5">
+                          <h5 className="text-[9px] font-extrabold text-slate-800 leading-none">Staff Backend Engineer</h5>
+                          <p className="text-[7.5px] text-slate-400 font-semibold">PhonePe · Bengaluru</p>
+                        </div>
+                      </div>
+                      <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side: Mock Extension Panel */}
+                <div className="bg-[#0f172a] text-white p-4 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-[10px] text-white flex items-center gap-1">
+                        <div className="w-3 h-3 rounded bg-orange-500 flex items-center justify-center text-[7px] text-white font-extrabold">H</div>
+                        hiredeck
+                      </span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    </div>
+
+                    {/* Stats */}
+                    <div className="space-y-1.5">
+                      <div className="text-[8px] font-bold uppercase tracking-wider text-slate-400">Today</div>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-extrabold text-white">12</span>
+                        <span className="text-[8px] font-bold text-slate-400 uppercase">tracked</span>
+                      </div>
+                    </div>
+
+                    {/* Live Saving Card */}
+                    <div className="bg-slate-900/60 border border-slate-800/80 p-2.5 rounded-xl space-y-1.5">
+                      <div className="flex items-center justify-between text-[7px] font-extrabold uppercase">
+                        <span className="text-[#f97316] flex items-center gap-0.5"><div className="w-1 h-1 rounded-full bg-[#f97316]" /> Live</span>
+                        <span className="text-slate-400">Auto-saving job</span>
+                      </div>
+                      <div className="text-[8.5px] font-extrabold text-slate-300">Razorpay · PM</div>
+                      <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                        <div className="bg-[#f97316] h-full rounded-full w-2/3 animate-pulse-slow"></div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-xs font-bold">{item.jobs}</span>
-                    <button className="text-slate-400 group-hover:text-slate-600 hover:bg-slate-100 p-1 rounded-full transition-all">
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                    </button>
+                  {/* Bottom Stats list */}
+                  <div className="space-y-2 border-t border-slate-800 pt-3 text-[8.5px] font-bold">
+                    <div className="flex justify-between items-center text-slate-400">
+                      <span>Applied</span>
+                      <span className="text-white">4</span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-400">
+                      <span>Saved</span>
+                      <span className="text-white">8</span>
+                    </div>
                   </div>
                 </div>
-              ))}
+
+              </div>
             </div>
+
+            {/* Overlapping Floating Badge 1: Works on 40+ sites (Top Right) */}
+            <div className="absolute top-4 -right-4 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5 text-[9px] font-bold text-slate-700 select-none animate-bounce-slow">
+              <Globe className="w-3.5 h-3.5 text-[#0a4fcd]" />
+              Works on 40+ sites
+            </div>
+
+            {/* Overlapping Floating Badge 2: Job auto-tracked (Bottom Left) */}
+            <div className="absolute -bottom-4 -left-4 bg-white border border-slate-200 p-2.5 rounded-xl shadow-xl flex items-center gap-2 text-[9px] font-bold text-slate-800 select-none hover:-translate-y-0.5 transition-transform duration-200">
+              <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <Check className="w-3 h-3" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-slate-800 leading-none">Job auto-tracked</p>
+                <p className="text-[7.5px] text-slate-400 leading-none">Razorpay · just now</p>
+              </div>
           </div>
+
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* ================= CTA SECTION ================= */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -814,6 +918,29 @@ function BuildingIcon(props: React.SVGProps<SVGSVGElement>) {
       <line x1="15" y1="22" x2="15" y2="16" />
       <line x1="9" y1="16" x2="15" y2="16" />
       <path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M12 6h.01M12 10h.01" />
+    </svg>
+  );
+}
+
+function ChromeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="4" />
+      <line x1="21.17" y1="8" x2="12" y2="8" />
+      <line x1="3.95" y1="6.06" x2="8.54" y2="14" />
+      <line x1="10.88" y1="21.94" x2="15.46" y2="14" />
     </svg>
   );
 }

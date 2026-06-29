@@ -708,10 +708,10 @@ export default function Home() {
                     {/* Row 1 */}
                     <div className="flex items-center justify-between p-2.5 bg-blue-50/40 border border-blue-100/60 rounded-xl">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-bold text-sm flex items-center justify-center shrink-0 shadow-inner">R</div>
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-normal text-sm flex items-center justify-center shrink-0 shadow-inner">R</div>
                         <div className="space-y-0.5">
-                          <h5 className="text-[9px] font-extrabold text-slate-800 leading-none">Senior Product Manager</h5>
-                          <p className="text-[7.5px] text-slate-400 font-semibold">Razorpay · Bengaluru</p>
+                          <h5 className="text-[9px] font-normal text-slate-800 leading-none">Senior Product Manager</h5>
+                          <p className="text-[7.5px] text-slate-400 font-normal">Razorpay · Bengaluru</p>
                         </div>
                       </div>
                       <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -720,10 +720,10 @@ export default function Home() {
                     {/* Row 2 */}
                     <div className="flex items-center justify-between p-2.5 bg-blue-50/40 border border-blue-100/60 rounded-xl">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-bold text-sm flex items-center justify-center shrink-0 shadow-inner">S</div>
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-normal text-sm flex items-center justify-center shrink-0 shadow-inner">S</div>
                         <div className="space-y-0.5">
-                          <h5 className="text-[9px] font-extrabold text-slate-800 leading-none">Frontend Lead Engineer</h5>
-                          <p className="text-[7.5px] text-slate-400 font-semibold">Swiggy · Bengaluru</p>
+                          <h5 className="text-[9px] font-normal text-slate-800 leading-none">Frontend Lead Engineer</h5>
+                          <p className="text-[7.5px] text-slate-400 font-normal">Swiggy · Bengaluru</p>
                         </div>
                       </div>
                       <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -732,13 +732,25 @@ export default function Home() {
                     {/* Row 3 */}
                     <div className="flex items-center justify-between p-2.5 bg-blue-50/40 border border-blue-100/60 rounded-xl">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-bold text-sm flex items-center justify-center shrink-0 shadow-inner">P</div>
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-normal text-sm flex items-center justify-center shrink-0 shadow-inner">P</div>
                         <div className="space-y-0.5">
-                          <h5 className="text-[9px] font-extrabold text-slate-800 leading-none">Staff Backend Engineer</h5>
-                          <p className="text-[7.5px] text-slate-400 font-semibold">PhonePe · Bengaluru</p>
+                          <h5 className="text-[9px] font-normal text-slate-800 leading-none">Staff Backend Engineer</h5>
+                          <p className="text-[7.5px] text-slate-400 font-normal">PhonePe · Bengaluru</p>
                         </div>
                       </div>
                       <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    </div>
+
+                    {/* Row 4 */}
+                    <div className="flex items-center justify-between p-2.5 bg-blue-50/40 border border-blue-100/60 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0a4fcd] font-normal text-sm flex items-center justify-center shrink-0 shadow-inner">Z</div>
+                        <div className="space-y-0.5">
+                          <h5 className="text-[9px] font-normal text-slate-800 leading-none">Design Manager</h5>
+                          <p className="text-[7.5px] text-slate-400 font-normal">Zomato · Bengaluru</p>
+                        </div>
+                      </div>
+                      <div className="w-3.5 h-3.5 rounded-full border border-slate-200 shrink-0" />
                     </div>
                   </div>
                 </div>

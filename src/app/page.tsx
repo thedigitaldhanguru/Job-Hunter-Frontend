@@ -25,7 +25,9 @@ export default function Home() {
   const { openModal } = useAuthModalStore();
   const { addApplicationLocal } = useApplicationsStore();
   const { openModal: openSmartFillModal, isBackgroundExtracting } = useSmartFillModalStore();
-  const { isComplete } = useProfileStore();
+  const { 
+    isComplete, profileData, fetchProfile, hasFetched: profileHasFetched 
+  } = useProfileStore();
 
   const {
     jobs, loading, offset, searchQuery, locationQuery, hasFetched,
@@ -34,6 +36,13 @@ export default function Home() {
 
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
   const LIMIT = 20;
+
+  // Load profile details on mount/login
+  useEffect(() => {
+    if (session?.user?.email && !profileHasFetched) {
+      fetchProfile(session.user.email, session.user.name, session.user.image);
+    }
+  }, [session, profileHasFetched, fetchProfile]);
 
   // --- DATA FETCHING (ZUSTAND) ---
   useEffect(() => {
@@ -101,10 +110,11 @@ export default function Home() {
       };
 
       const hasPendingVerification = localStorage.getItem('pending_profile_verification') === 'true';
+      const hasUploadedResume = Boolean(profileData?.resumeUrl);
 
-      // 2. Check if profile is complete, has a pending draft, or is currently extracting in background.
+      // 2. Check if profile is complete, has a resume, has a pending draft, or is currently extracting in background.
       // If none of these, trigger mandatory Smart Fill.
-      if (!isComplete && !hasPendingVerification && !isBackgroundExtracting) {
+      if (!isComplete && !hasUploadedResume && !hasPendingVerification && !isBackgroundExtracting) {
         openSmartFillModal(() => {
           trackAndOpen();
           router.push('/applications');

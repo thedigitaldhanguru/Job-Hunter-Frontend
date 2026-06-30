@@ -250,7 +250,7 @@ export default function ApplicationsPage() {
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
               Application Tracker
             </div>
-            <h1 className="text-4xl sm:text-5xl font-normal tracking-tight text-slate-900" style={{ fontFamily: 'var(--font-instrument-serif)' }}>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
               Your job pipeline
             </h1>
             <p className="text-sm text-slate-500 leading-relaxed max-w-[480px]">
@@ -283,7 +283,7 @@ export default function ApplicationsPage() {
                   {activeAppsCount} active
                 </span>
               </div>
-              <h2 className="text-3xl font-extrabold text-slate-800 mt-4 leading-none">{totalAppsCount}</h2>
+              <h2 className="text-3xl font-bold text-slate-800 mt-4 leading-none">{totalAppsCount}</h2>
             </button>
 
             {/* APPLIED */}
@@ -295,7 +295,7 @@ export default function ApplicationsPage() {
                 <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">APPLIED</span>
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-500 border border-white" />
               </div>
-              <h2 className="text-3xl font-extrabold text-slate-800 mt-4 leading-none">{appliedCount}</h2>
+              <h2 className="text-3xl font-bold text-slate-800 mt-4 leading-none">{appliedCount}</h2>
             </button>
 
             {/* SHORTLISTED */}
@@ -307,7 +307,7 @@ export default function ApplicationsPage() {
                 <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">SHORTLISTED</span>
                 <span className="w-2.5 h-2.5 rounded-full bg-purple-500 border border-white" />
               </div>
-              <h2 className="text-3xl font-extrabold text-slate-800 mt-4 leading-none">{shortlistedCount}</h2>
+              <h2 className="text-3xl font-bold text-slate-800 mt-4 leading-none">{shortlistedCount}</h2>
             </button>
 
             {/* INTERVIEW */}
@@ -319,7 +319,7 @@ export default function ApplicationsPage() {
                 <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">INTERVIEW</span>
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-white" />
               </div>
-              <h2 className="text-3xl font-extrabold text-slate-800 mt-4 leading-none">{interviewCount}</h2>
+              <h2 className="text-3xl font-bold text-slate-800 mt-4 leading-none">{interviewCount}</h2>
             </button>
 
             {/* OFFER */}
@@ -331,7 +331,7 @@ export default function ApplicationsPage() {
                 <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">OFFER</span>
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-white" />
               </div>
-              <h2 className="text-3xl font-extrabold text-slate-800 mt-4 leading-none">{offerCount}</h2>
+              <h2 className="text-3xl font-bold text-slate-800 mt-4 leading-none">{offerCount}</h2>
             </button>
 
             {/* REJECTED */}
@@ -343,7 +343,7 @@ export default function ApplicationsPage() {
                 <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">REJECTED</span>
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500 border border-white" />
               </div>
-              <h2 className="text-3xl font-extrabold text-slate-800 mt-4 leading-none">{rejectedCount}</h2>
+              <h2 className="text-3xl font-bold text-slate-800 mt-4 leading-none">{rejectedCount}</h2>
             </button>
 
           </div>
@@ -425,7 +425,7 @@ export default function ApplicationsPage() {
                           </div>
                           <div>
                             <h4 className="font-extrabold text-slate-900 text-[14px] leading-snug">{app.role}</h4>
-                            <p className="text-xs text-slate-400 mt-0.5 font-bold">{app.company} · {app.location || 'Remote'}</p>
+                            <p className="text-xs text-slate-400 mt-0.5 font-medium">{app.company} · {app.location || 'Remote'}</p>
                           </div>
                         </div>
                       </td>

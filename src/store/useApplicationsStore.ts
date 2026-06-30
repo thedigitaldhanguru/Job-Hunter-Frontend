@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { API_BASE_URL } from '@/lib/config';
 
-export type Status = 'Applied' | 'Interviewing' | 'Offered' | 'Rejected';
+export type Status = 'Applied' | 'Shortlisted' | 'Interview' | 'Offer' | 'Rejected';
 
 export interface Application {
   id: string;
@@ -10,6 +10,8 @@ export interface Application {
   status: Status;
   dateApplied: string;
   jobUrl?: string;
+  location?: string;
+  nextStep?: string;
 }
 
 interface ApplicationsStore {
@@ -51,14 +53,24 @@ export const useApplicationsStore = create<ApplicationsStore>((set, get) => ({
       
       const data = await response.json();
       
-      const formattedApps: Application[] = data.map((item: any) => ({
-        id: item.id.toString(),
-        company: item.company_name || 'Unknown', 
-        role: item.job_title || 'Unknown Position',
-        status: item.application_status.charAt(0).toUpperCase() + item.application_status.slice(1) as Status,
-        dateApplied: item.created_at ? item.created_at.split('T')[0] : '',
-        jobUrl: item.job_url || ''
-      }));
+      const formattedApps: Application[] = data.map((item: any) => {
+        let rawStatus = item.application_status || 'applied';
+        // Normalize status
+        let statusStr = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1).toLowerCase();
+        if (statusStr === 'Interviewing') statusStr = 'Interview';
+        if (statusStr === 'Offered') statusStr = 'Offer';
+        
+        return {
+          id: item.id.toString(),
+          company: item.company_name || 'Unknown', 
+          role: item.job_title || 'Unknown Position',
+          status: statusStr as Status,
+          dateApplied: item.created_at ? item.created_at.split('T')[0] : '',
+          jobUrl: item.job_url || '',
+          location: item.location || 'Remote',
+          nextStep: item.next_step || ''
+        };
+      });
 
       set({ apps: formattedApps, hasFetched: true, isFetching: false });
     } catch (err) {

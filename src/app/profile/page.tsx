@@ -11,7 +11,6 @@ import {
   ExternalLink, GraduationCap, LayoutGrid, CheckCircle, ArrowRight
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { API_BASE_URL } from '@/lib/config';
 import { useProfileStore, EMPTY_PROFILE } from '@/store/useProfileStore';
 import { uploadToS3 } from '@/lib/s3Helper';
@@ -862,8 +861,7 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-
-      <Footer />
+      
     </div>
   );
 }

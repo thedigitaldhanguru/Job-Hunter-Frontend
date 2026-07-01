@@ -424,7 +424,7 @@ export default function ApplicationsPage() {
                             {app.company ? app.company.charAt(0).toUpperCase() : 'C'}
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-slate-900 text-[14px] leading-snug">{app.role}</h4>
+                            <h4 className="font-semibold text-slate-900 text-[14px] leading-snug">{app.role}</h4>
                             <p className="text-xs text-slate-400 mt-0.5 font-medium">{app.company} · {app.location || 'Remote'}</p>
                           </div>
                         </div>

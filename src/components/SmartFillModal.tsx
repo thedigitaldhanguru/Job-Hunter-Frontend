@@ -8,6 +8,7 @@ import {
   Clock, TrendingUp, Zap, X, FileText, Loader2 
 } from 'lucide-react';
 import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
+import { useProfileStore } from '@/store/useProfileStore';
 import { uploadToS3 } from '@/lib/s3Helper';
 import { API_BASE_URL } from '@/lib/config';
 
@@ -50,52 +51,68 @@ export default function SmartFillModal() {
 
   const runBackgroundExtraction = async (file: File, userEmail: string) => {
     try {
-      // 1. Upload to S3 in background
+      // 1. Upload to S3
       const s3FileUrl = await uploadToS3(file);
       
-      // 2. Extract details using Bedrock AI in background
-      const response = await fetch(`${API_BASE_URL}/resume/extract`, {
+      // 2. Fetch current profile from Zustand store
+      const currentProfile = useProfileStore.getState().profileData;
+      const updatedProfile = {
+        ...currentProfile,
+        resumeName: file.name,
+        resumeUrl: s3FileUrl
+      };
+
+      // 3. Construct backend profile update payload
+      const payload = {
+        full_name: updatedProfile.header.name || session?.user?.name || '',
+        email: updatedProfile.header.email || userEmail,
+        degree: updatedProfile.header.degree || '',
+        university: updatedProfile.header.university || '',
+        location: updatedProfile.header.location || '',
+        experience: updatedProfile.header.experience || '',
+        phone: updatedProfile.header.phone || '',
+        gender: updatedProfile.header.gender || '',
+        dob: updatedProfile.header.dob || '',
+        profile_summary: updatedProfile.summary || '',
+        avatar_url: updatedProfile.header.avatar || session?.user?.image || '',
+        current_ctc: updatedProfile.preferences.currentCTC || '',
+        expected_ctc: updatedProfile.preferences.expectedCTC || '',
+        extended_profile: {
+          employment: updatedProfile.employment,
+          internships: updatedProfile.internships,
+          education: updatedProfile.education,
+          skills: updatedProfile.skills,
+          projects: updatedProfile.projects,
+          languages: updatedProfile.languages,
+          academicAchievements: updatedProfile.academicAchievements,
+          accomplishments: updatedProfile.accomplishments,
+          exams: updatedProfile.exams,
+          preferences: updatedProfile.preferences,
+          resumeName: file.name,
+          resumeUrl: s3FileUrl
+        }
+      };
+
+      // 4. Update the backend database profile with the new resumeUrl
+      const response = await fetch(`${API_BASE_URL}/profile/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resume_url: s3FileUrl })
+        body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error("AI extraction failed.");
-      
-      const dataResponse = await response.json();
-      const extracted = dataResponse.extracted || dataResponse; 
+      if (!response.ok) throw new Error("Failed to save resume URL to profile database");
 
-      if (extracted) {
-        // 3. Write draft to localStorage
-        const draftKey = `profile_draft_${userEmail}`;
-        const currentDraftStr = localStorage.getItem(draftKey);
-        let currentDraft = currentDraftStr ? JSON.parse(currentDraftStr) : {};
+      // 5. Update store state locally
+      useProfileStore.getState().setProfileData(updatedProfile);
 
-        const mergedDraft = {
-          ...currentDraft,
-          summary: extracted.summary || currentDraft.summary,
-          resumeName: file.name,
-          resumeUrl: s3FileUrl,
-          skills: Array.from(new Set([...(currentDraft.skills || []), ...(extracted.skills || [])])),
-          languages: Array.from(new Set([...(currentDraft.languages || []), ...(extracted.languages || [])])),
-          header: { ...(currentDraft.header || {}), ...(extracted.header || {}) },
-          preferences: { ...(currentDraft.preferences || {}), ...(extracted.preferences || {}) },
-          experience: extracted.experience?.length ? extracted.experience : currentDraft.experience,
-          education: extracted.education?.length ? extracted.education : currentDraft.education,
-          projects: extracted.projects?.length ? extracted.projects : currentDraft.projects,
-        };
-
-        localStorage.setItem(draftKey, JSON.stringify(mergedDraft));
-
-        // 4. Set pending verification flag in localStorage
-        localStorage.setItem('pending_profile_verification', 'true');
-
-        // 5. Notify layout that draft profile is updated in background
-        window.dispatchEvent(new Event('pending_profile_updated'));
+      // 6. Complete upload and immediately proceed to Apply
+      if (onUploadSuccess) {
+        onUploadSuccess();
       }
+      closeModal();
     } catch (err) {
-      console.error("Background resume extraction failed:", err);
-      setErrorMsg("Resume parsing failed. Please upload again or complete manually.");
+      console.error("Resume upload and save failed:", err);
+      setErrorMsg("Resume upload failed. Please try again or complete manually.");
       setFileSelected(false);
     } finally {
       setBackgroundExtracting(false);
@@ -137,13 +154,7 @@ export default function SmartFillModal() {
   };
 
   const getStatusText = () => {
-    switch (loadingPhase) {
-      case 0: return "Uploading secure resume copy to cloud S3...";
-      case 1: return "Analyzing profile headline & technical skills...";
-      case 2: return "Pre-filling experience timeline & projects...";
-      case 3: return "Finalizing auto-fill configuration...";
-      default: return "Analyzing resume...";
-    }
+    return "Uploading resume copy to secure cloud S3...";
   };
 
   return (
@@ -295,7 +306,7 @@ export default function SmartFillModal() {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-lg font-extrabold text-slate-800 leading-tight">Analyzing your resume</h3>
+                  <h3 className="text-lg font-extrabold text-slate-800 leading-tight">Uploading your resume</h3>
                   <p className="text-xs text-slate-500 max-w-[280px] font-semibold leading-relaxed animate-pulse">
                     {getStatusText()}
                   </p>

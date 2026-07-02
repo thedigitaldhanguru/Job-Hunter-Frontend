@@ -265,9 +265,90 @@ export default function JobsPage() {
         base.mode = 'On-site';
       }
     }
-    
     return base;
   };
+
+  const parseJobDescription = (desc: string, company: string) => {
+    if (!desc) {
+      return { aboutRole: 'No description available.', whatYoullDo: null, aboutYou: null, aboutCompany: null };
+    }
+    if (!desc.includes('<') && !desc.includes('>')) {
+      return { aboutRole: desc, whatYoullDo: null, aboutYou: null, aboutCompany: null };
+    }
+    if (typeof window === 'undefined') {
+      return { aboutRole: desc, whatYoullDo: null, aboutYou: null, aboutCompany: null };
+    }
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(desc, 'text/html');
+      let aboutCompany = '';
+      let whatYoullDo = '';
+      let aboutYou = '';
+      let aboutRole = '';
+
+      const intro = doc.querySelector('.content-intro');
+      if (intro) {
+        aboutCompany = intro.innerHTML;
+        intro.remove();
+      }
+
+      const headings = Array.from(doc.querySelectorAll('h1, h2, h3, h4, h5, h6, strong'));
+      const headingMatches = (el: Element, keywords: string[]) => {
+        const text = el.textContent?.toLowerCase() || '';
+        return keywords.some(k => text.includes(k));
+      };
+
+      const extractSiblingContent = (headerEl: Element) => {
+        let content = '';
+        let sibling = headerEl.nextElementSibling;
+        if (!sibling && headerEl.parentElement && headerEl.parentElement.tagName === 'P') {
+          sibling = headerEl.parentElement.nextElementSibling;
+        }
+        while (sibling && !['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(sibling.tagName)) {
+          const strongText = sibling.querySelector('strong');
+          if (strongText && (strongText.textContent?.toLowerCase().includes('about') || strongText.textContent?.toLowerCase().includes('what') || strongText.textContent?.toLowerCase().includes('why') || strongText.textContent?.toLowerCase().includes('responsibilities') || strongText.textContent?.toLowerCase().includes('requirements'))) {
+            break;
+          }
+          content += sibling.outerHTML;
+          const next = sibling.nextElementSibling;
+          sibling.remove();
+          sibling = next;
+        }
+        headerEl.remove();
+        return content;
+      };
+
+      headings.forEach(h => {
+        if (headingMatches(h, ['about ' + company.toLowerCase(), 'about the company', 'about crunchyroll', 'about our values', 'why you will love working'])) {
+          aboutCompany += `<h3>${h.textContent}</h3>` + extractSiblingContent(h);
+        } else if (headingMatches(h, ["what you'll do", 'what you do', 'responsibilities', 'duties', 'the role', 'role & responsibilities', 'key responsibilities'])) {
+          whatYoullDo += `<h3>${h.textContent}</h3>` + extractSiblingContent(h);
+        } else if (headingMatches(h, ['about you', 'requirements', 'qualifications', 'who you are', 'what you bring', 'experience'])) {
+          aboutYou += `<h3>${h.textContent}</h3>` + extractSiblingContent(h);
+        }
+      });
+
+      const conclusion = doc.querySelector('.content-conclusion');
+      if (conclusion) {
+        aboutCompany += conclusion.innerHTML;
+        conclusion.remove();
+      }
+
+      aboutRole = doc.body.innerHTML;
+      return {
+        aboutRole: aboutRole.trim() || desc,
+        whatYoullDo: whatYoullDo.trim() || null,
+        aboutYou: aboutYou.trim() || null,
+        aboutCompany: aboutCompany.trim() || null
+      };
+    } catch (e) {
+      return { aboutRole: desc, whatYoullDo: null, aboutYou: null, aboutCompany: null };
+    }
+  };
+
+  const { aboutRole, whatYoullDo, aboutYou, aboutCompany } = selectedJob
+    ? parseJobDescription(selectedJob.description || '', selectedJob.company_raw || '')
+    : { aboutRole: '', whatYoullDo: null, aboutYou: null, aboutCompany: null };
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#0f172a] font-sans antialiased flex flex-col">
@@ -350,22 +431,58 @@ export default function JobsPage() {
 
               {/* About the role detail card */}
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm text-sm sm:text-base">
+                <style dangerouslySetInnerHTML={{ __html: `
+                  .hd-jd-content ul {
+                    list-style-type: disc !important;
+                    padding-left: 1.25rem !important;
+                    margin-top: 0.5rem !important;
+                    margin-bottom: 0.5rem !important;
+                    display: block !important;
+                  }
+                  .hd-jd-content li {
+                    margin-bottom: 0.25rem !important;
+                    display: list-item !important;
+                  }
+                  .hd-jd-content h3 {
+                    font-size: 1.125rem !important;
+                    font-weight: 700 !important;
+                    color: #0f172a !important;
+                    margin-top: 1.25rem !important;
+                    margin-bottom: 0.5rem !important;
+                  }
+                  .hd-jd-content p {
+                    margin-bottom: 0.75rem !important;
+                    line-height: 1.625 !important;
+                  }
+                `}} />
+
                 <div className="space-y-3">
                   <h2 className="text-lg font-bold text-slate-900">About the role</h2>
-                  <p className="text-slate-600 leading-relaxed">
-                    {selectedJob.description || "Swiggy is hiring across multiple teams. Read employee reviews and explore other openings. Work on developing end-to-end features, optimizing latency, and scaling cloud backend services."}
-                  </p>
+                  <div 
+                    className="text-slate-600 leading-relaxed space-y-4 hd-jd-content"
+                    dangerouslySetInnerHTML={{ __html: aboutRole }}
+                  />
                 </div>
 
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h2 className="text-lg font-bold text-slate-900">What you'll do</h2>
-                  <ul className="space-y-2.5 text-slate-600 list-disc pl-5">
-                    <li>Build forecasting and recommendation models to maximize performance</li>
-                    <li>Partner with product design and engineering teams to translate ideas into decisions</li>
-                    <li>Own end-to-end telemetry and logging infrastructure systems</li>
-                    <li>Write cleaner, maintainable, and thoroughly unit-tested codebases</li>
-                  </ul>
-                </div>
+                {whatYoullDo && (
+                  <div className="space-y-4 pt-4 border-t border-slate-100">
+                    <h2 className="text-lg font-bold text-slate-900">What you'll do</h2>
+                    <div 
+                      className="text-slate-600 leading-relaxed space-y-4 hd-jd-content"
+                      dangerouslySetInnerHTML={{ __html: whatYoullDo }}
+                    />
+                  </div>
+                )}
+
+                {aboutYou && (
+                  <div className="space-y-4 pt-4 border-t border-slate-100">
+                    <h2 className="text-lg font-bold text-slate-900">About You</h2>
+                    <div 
+                      className="text-slate-600 leading-relaxed space-y-4 hd-jd-content"
+                      dangerouslySetInnerHTML={{ __html: aboutYou }}
+                    />
+                  </div>
+                )}
               </div>
 
             </div>
@@ -403,12 +520,19 @@ export default function JobsPage() {
 
               {/* Company Info card */}
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 space-y-4 shadow-sm text-sm">
-                <h3 className="font-bold text-slate-900 uppercase tracking-wider text-xs">About {selectedJob.company_raw || "Swiggy"}</h3>
-                <p className="text-slate-500 leading-relaxed">
-                  {selectedJob.company_raw || "Swiggy"} is food ordering and delivery company and leading technology-first brand based out of Bengaluru.
-                </p>
+                <h3 className="font-bold text-slate-900 uppercase tracking-wider text-xs">About {selectedJob.company_raw || "Company"}</h3>
+                {aboutCompany ? (
+                  <div 
+                    className="text-slate-500 leading-relaxed space-y-3 hd-jd-content"
+                    dangerouslySetInnerHTML={{ __html: aboutCompany }}
+                  />
+                ) : (
+                  <p className="text-slate-500 leading-relaxed">
+                    Explore career opportunities and open roles at {selectedJob.company_raw || "this company"}.
+                  </p>
+                )}
                 <button className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-1 select-none">
-                  See more jobs at {selectedJob.company_raw || "Swiggy"}
+                  See more jobs at {selectedJob.company_raw || "this company"}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>

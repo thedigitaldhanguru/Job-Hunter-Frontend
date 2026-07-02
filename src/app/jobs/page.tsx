@@ -12,7 +12,6 @@ import { JobListing } from '@/types/job';
 import { API_BASE_URL } from '@/lib/config';
 import { useJobsStore } from '@/store/useJobsStore';
 import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { useApplicationsStore } from '@/store/useApplicationsStore';
 import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
 import { useProfileStore } from '@/store/useProfileStore';
@@ -837,6 +836,7 @@ export default function JobsPage() {
                       const prevOffset = Math.max(0, offset - LIMIT);
                       setOffset(prevOffset);
                       fetchJobs(LIMIT, false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     disabled={offset === 0 || loading}
                     className="px-3.5 py-2 border border-[#e2e8f0] rounded-xl hover:bg-slate-50 text-slate-500 disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed font-bold"
@@ -851,6 +851,7 @@ export default function JobsPage() {
                       const nextOffset = offset + LIMIT;
                       setOffset(nextOffset);
                       fetchJobs(LIMIT, false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     disabled={dbJobs.length < LIMIT || loading}
                     className="px-3.5 py-2 border border-[#e2e8f0] rounded-xl hover:bg-slate-50 text-slate-500 disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed font-bold"
@@ -865,8 +866,6 @@ export default function JobsPage() {
           </main>
         </>
       )}
-
-      <Footer />
     </div>
   );
 }

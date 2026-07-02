@@ -222,29 +222,51 @@ export default function JobsPage() {
   });
 
   // Detailed Card Details Mock fields helper
-  const getJobExtraInfo = (title: string, company: string) => {
+  const getJobExtraInfo = (job: JobListing) => {
+    const title = job.title || '';
+    const company = job.company_raw || '';
     const t = title.toLowerCase();
     const c = company.toLowerCase();
+    
+    let base = { rating: '4.3', exp: '1-3 years', salary: '12-18 LPA', skills: ['React', 'TypeScript', 'Tailwind'], mode: 'Remote', count: '24' };
+    
     if (c.includes('cred')) {
-      return { rating: '4.5', exp: '2-5 years', salary: '28-45 LPA', skills: ['Swift', 'SwiftUI', 'iOS'], mode: 'On-site', count: '142' };
+      base = { rating: '4.5', exp: '2-5 years', salary: '28-45 LPA', skills: ['Swift', 'SwiftUI', 'iOS'], mode: 'On-site', count: '142' };
+    } else if (c.includes('razorpay')) {
+      base = { rating: '4.4', exp: '3-7 years', salary: '30-50 LPA', skills: ['Go', 'PostgreSQL', 'Kafka', 'AWS'], mode: 'Hybrid', count: '89' };
+    } else if (c.includes('swiggy')) {
+      base = { rating: '4.2', exp: '2-5 years', salary: '22-38 LPA', skills: ['Python', 'SQL', 'ML', 'Pandas'], mode: 'On-site', count: '256' };
+    } else if (c.includes('zomato')) {
+      base = { rating: '4.1', exp: '4-8 years', salary: '18-28 LPA', skills: ['Brand', 'Growth', 'Performance Marketing', 'Analytics'], mode: 'On-site', count: '104' };
+    } else if (c.includes('stripe')) {
+      base = { rating: '4.6', exp: '5-8 years', salary: '35-55 LPA', skills: ['React', 'TypeScript', 'Next.js', 'GraphQL'], mode: 'Hybrid', count: '67' };
+    } else if (c.includes('linear')) {
+      base = { rating: '4.8', exp: '3-6 years', salary: '28-42 LPA', skills: ['Figma', 'Design Systems', 'Prototyping', 'UX Research'], mode: 'Remote', count: '48' };
     }
-    if (c.includes('razorpay')) {
-      return { rating: '4.4', exp: '3-7 years', salary: '30-50 LPA', skills: ['Go', 'PostgreSQL', 'Kafka', 'AWS'], mode: 'Hybrid', count: '89' };
+    
+    // Override base with database fields if they are defined
+    if (job.skills && job.skills.length > 0) {
+      base.skills = job.skills;
     }
-    if (c.includes('swiggy')) {
-      return { rating: '4.2', exp: '2-5 years', salary: '22-38 LPA', skills: ['Python', 'SQL', 'ML', 'Pandas'], mode: 'On-site', count: '256' };
+    if (job.experience_req) {
+      base.exp = job.experience_req;
     }
-    if (c.includes('zomato')) {
-      return { rating: '4.1', exp: '4-8 years', salary: '18-28 LPA', skills: ['Brand', 'Growth', 'Performance Marketing', 'Analytics'], mode: 'On-site', count: '104' };
+    if (job.salary_range) {
+      base.salary = job.salary_range;
     }
-    if (c.includes('stripe')) {
-      return { rating: '4.6', exp: '5-8 years', salary: '35-55 LPA', skills: ['React', 'TypeScript', 'Next.js', 'GraphQL'], mode: 'Hybrid', count: '67' };
+    
+    if (job.location) {
+      const locLower = job.location.toLowerCase();
+      if (locLower.includes('remote')) {
+        base.mode = 'Remote';
+      } else if (locLower.includes('hybrid')) {
+        base.mode = 'Hybrid';
+      } else {
+        base.mode = 'On-site';
+      }
     }
-    if (c.includes('linear')) {
-      return { rating: '4.8', exp: '3-6 years', salary: '28-42 LPA', skills: ['Figma', 'Design Systems', 'Prototyping', 'UX Research'], mode: 'Remote', count: '48' };
-    }
-    // Default fallback values
-    return { rating: '4.3', exp: '1-3 years', salary: '12-18 LPA', skills: ['React', 'TypeScript', 'Tailwind'], mode: 'Remote', count: '24' };
+    
+    return base;
   };
 
   return (
@@ -283,16 +305,16 @@ export default function JobsPage() {
                       <span className="text-slate-800">{selectedJob.company_raw || "Confidential"}</span>
                       <div className="flex items-center gap-0.5 text-amber-500">
                         <Star className="w-4 h-4 fill-amber-500" />
-                        <span>{getJobExtraInfo(selectedJob.title, selectedJob.company_raw || '').rating}</span>
+                        <span>{getJobExtraInfo(selectedJob).rating}</span>
                       </div>
                       <span>·</span>
-                      <span>{getJobExtraInfo(selectedJob.title, selectedJob.company_raw || '').count} applicants</span>
+                      <span>{getJobExtraInfo(selectedJob).count} applicants</span>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-400 font-semibold pt-2">
                       <div className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 opacity-60" /> {selectedJob.location || "Remote"}</div>
-                      <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob.title, selectedJob.company_raw || '').exp} · Full-time</div>
-                      <div className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob.title, selectedJob.company_raw || '').salary}</div>
+                      <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob).exp} · Full-time</div>
+                      <div className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob).salary}</div>
                       <span>·</span>
                       <span>Posted 3d ago</span>
                     </div>
@@ -358,11 +380,11 @@ export default function JobsPage() {
                 <div className="space-y-4 text-sm font-semibold">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Work mode</span>
-                    <span className="text-slate-800">{getJobExtraInfo(selectedJob.title, selectedJob.company_raw || '').mode}</span>
+                    <span className="text-slate-800">{getJobExtraInfo(selectedJob).mode}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Experience</span>
-                    <span className="text-slate-800">{getJobExtraInfo(selectedJob.title, selectedJob.company_raw || '').exp}</span>
+                    <span className="text-slate-800">{getJobExtraInfo(selectedJob).exp}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Type</span>
@@ -370,7 +392,7 @@ export default function JobsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Applicants</span>
-                    <span className="text-slate-800">{getJobExtraInfo(selectedJob.title, selectedJob.company_raw || '').count}</span>
+                    <span className="text-slate-800">{getJobExtraInfo(selectedJob).count}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Category</span>
@@ -645,7 +667,7 @@ export default function JobsPage() {
               ) : (
                 <div className="space-y-4">
                   {filteredJobs.map((job, idx) => {
-                    const extra = getJobExtraInfo(job.title, job.company_raw || '');
+                    const extra = getJobExtraInfo(job);
                     
                     return (
                       <div key={job.id} className="space-y-4">

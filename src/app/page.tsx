@@ -565,14 +565,14 @@ export default function Home() {
                       </h3>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 text-xs text-slate-500 mb-4">
-                        <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 opacity-60" /> 1-3 years</div>
-                        <div className="flex items-center gap-1.5"><WalletIcon className="w-3.5 h-3.5 opacity-60" /> $120k - $160k</div>
+                        <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 opacity-60" /> {job.experience_req || "1-3 years"}</div>
+                        <div className="flex items-center gap-1.5"><WalletIcon className="w-3.5 h-3.5 opacity-60" /> {job.salary_range || "₹12L - ₹18L PA"}</div>
                         <div className="flex items-center gap-1.5 col-span-2"><MapPin className="w-3.5 h-3.5 opacity-60" /> {job.location || "Remote"}</div>
                       </div>
 
                       {/* Skills tags */}
                       <div className="flex flex-wrap gap-1.5 mb-6">
-                        {['Design Systems', 'Figma', 'Product'].map(skill => (
+                        {(job.skills && job.skills.length > 0 ? job.skills : ['Design Systems', 'Figma', 'Product']).map(skill => (
                           <span key={skill} className="px-2.5 py-1 bg-slate-50 border border-slate-200/60 text-slate-600 rounded-lg text-xs font-semibold">
                             {skill}
                           </span>
@@ -582,9 +582,11 @@ export default function Home() {
 
                     {/* Footer line */}
                     <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-xs text-slate-400 font-medium">2d ago</span>
+                      <span className="text-xs text-slate-400 font-medium">{job.posted_time || "2d ago"}</span>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-[#2563eb] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider">Remote</span>
+                        <span className="text-xs font-bold text-[#2563eb] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                          {(job.location && job.location.toLowerCase().includes('remote')) ? 'Remote' : ((job.location && job.location.toLowerCase().includes('hybrid')) ? 'Hybrid' : 'On-site')}
+                        </span>
                         <button 
                           onClick={(e) => handleApply(e, job)}
                           disabled={applyingTo === job.id}

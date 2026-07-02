@@ -270,25 +270,22 @@ export default function JobsPage() {
 
   const parseJobDescription = (desc: string, company: string) => {
     if (!desc) {
-      return { aboutRole: 'No description available.', whatYoullDo: null, aboutYou: null, aboutCompany: null };
+      return { mainContent: 'No description available.', aboutCompany: null };
     }
     if (!desc.includes('<') && !desc.includes('>')) {
-      return { aboutRole: desc, whatYoullDo: null, aboutYou: null, aboutCompany: null };
+      return { mainContent: desc, aboutCompany: null };
     }
     if (typeof window === 'undefined') {
-      return { aboutRole: desc, whatYoullDo: null, aboutYou: null, aboutCompany: null };
+      return { mainContent: desc, aboutCompany: null };
     }
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(desc, 'text/html');
       let aboutCompany = '';
-      let whatYoullDo = '';
-      let aboutYou = '';
-      let aboutRole = '';
 
       const intro = doc.querySelector('.content-intro');
       if (intro) {
-        aboutCompany = intro.innerHTML;
+        aboutCompany += intro.innerHTML;
         intro.remove();
       }
 
@@ -321,10 +318,6 @@ export default function JobsPage() {
       headings.forEach(h => {
         if (headingMatches(h, ['about ' + company.toLowerCase(), 'about the company', 'about crunchyroll', 'about our values', 'why you will love working'])) {
           aboutCompany += `<h3>${h.textContent}</h3>` + extractSiblingContent(h);
-        } else if (headingMatches(h, ["what you'll do", 'what you do', 'responsibilities', 'duties', 'the role', 'role & responsibilities', 'key responsibilities'])) {
-          whatYoullDo += `<h3>${h.textContent}</h3>` + extractSiblingContent(h);
-        } else if (headingMatches(h, ['about you', 'requirements', 'qualifications', 'who you are', 'what you bring', 'experience'])) {
-          aboutYou += `<h3>${h.textContent}</h3>` + extractSiblingContent(h);
         }
       });
 
@@ -334,21 +327,18 @@ export default function JobsPage() {
         conclusion.remove();
       }
 
-      aboutRole = doc.body.innerHTML;
       return {
-        aboutRole: aboutRole.trim() || desc,
-        whatYoullDo: whatYoullDo.trim() || null,
-        aboutYou: aboutYou.trim() || null,
+        mainContent: doc.body.innerHTML.trim() || desc,
         aboutCompany: aboutCompany.trim() || null
       };
     } catch (e) {
-      return { aboutRole: desc, whatYoullDo: null, aboutYou: null, aboutCompany: null };
+      return { mainContent: desc, aboutCompany: null };
     }
   };
 
-  const { aboutRole, whatYoullDo, aboutYou, aboutCompany } = selectedJob
+  const { mainContent, aboutCompany } = selectedJob
     ? parseJobDescription(selectedJob.description || '', selectedJob.company_raw || '')
-    : { aboutRole: '', whatYoullDo: null, aboutYou: null, aboutCompany: null };
+    : { mainContent: '', aboutCompany: null };
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#0f172a] font-sans antialiased flex flex-col">
@@ -443,11 +433,11 @@ export default function JobsPage() {
                     margin-bottom: 0.25rem !important;
                     display: list-item !important;
                   }
-                  .hd-jd-content h3 {
+                  .hd-jd-content h2, .hd-jd-content h3 {
                     font-size: 1.125rem !important;
                     font-weight: 700 !important;
                     color: #0f172a !important;
-                    margin-top: 1.25rem !important;
+                    margin-top: 1.5rem !important;
                     margin-bottom: 0.5rem !important;
                   }
                   .hd-jd-content p {
@@ -457,32 +447,11 @@ export default function JobsPage() {
                 `}} />
 
                 <div className="space-y-3">
-                  <h2 className="text-lg font-bold text-slate-900">About the role</h2>
                   <div 
                     className="text-slate-600 leading-relaxed space-y-4 hd-jd-content"
-                    dangerouslySetInnerHTML={{ __html: aboutRole }}
+                    dangerouslySetInnerHTML={{ __html: mainContent }}
                   />
                 </div>
-
-                {whatYoullDo && (
-                  <div className="space-y-4 pt-4 border-t border-slate-100">
-                    <h2 className="text-lg font-bold text-slate-900">What you'll do</h2>
-                    <div 
-                      className="text-slate-600 leading-relaxed space-y-4 hd-jd-content"
-                      dangerouslySetInnerHTML={{ __html: whatYoullDo }}
-                    />
-                  </div>
-                )}
-
-                {aboutYou && (
-                  <div className="space-y-4 pt-4 border-t border-slate-100">
-                    <h2 className="text-lg font-bold text-slate-900">About You</h2>
-                    <div 
-                      className="text-slate-600 leading-relaxed space-y-4 hd-jd-content"
-                      dangerouslySetInnerHTML={{ __html: aboutYou }}
-                    />
-                  </div>
-                )}
               </div>
 
             </div>

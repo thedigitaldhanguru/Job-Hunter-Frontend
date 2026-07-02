@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -33,6 +33,9 @@ export default function JobsPage() {
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
   const [selectedExperience, setSelectedExperience] = useState('All');
   const [selectedWorkMode, setSelectedWorkMode] = useState('All');
+  const [selectedJobType, setSelectedJobType] = useState('All');
+  const [selectedDepartment, setSelectedDepartment] = useState('All');
+  const [sortBy, setSortBy] = useState('Most relevant');
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
 
   const LIMIT = 20;
@@ -45,7 +48,12 @@ export default function JobsPage() {
   }, [session, profileHasFetched, fetchProfile]);
 
   // --- DATA FETCHING (ZUSTAND) ---
+  const isFirstMount = useRef(true);
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     const delayDebounceFn = setTimeout(() => {
       fetchJobs(LIMIT, true);
     }, 300);
@@ -144,6 +152,9 @@ export default function JobsPage() {
       if (!job.location?.toLowerCase().includes(loc)) return false;
     }
 
+    const desc = (job.description || '').toLowerCase();
+    const title = (job.title || '').toLowerCase();
+
     // Work Mode Filter
     if (selectedWorkMode !== 'All') {
       const isRemote = job.location?.toLowerCase().includes('remote');
@@ -153,8 +164,40 @@ export default function JobsPage() {
       if (selectedWorkMode === 'On-site' && (isRemote || isHybrid)) return false;
     }
 
+    // Job Type Filter
+    if (selectedJobType !== 'All') {
+      const t = selectedJobType.toLowerCase().replace('-', '');
+      if (!desc.includes(t) && !title.includes(t)) return false;
+    }
+
+    // Department Filter
+    if (selectedDepartment !== 'All') {
+      const d = selectedDepartment.toLowerCase();
+      if (!desc.includes(d) && !title.includes(d)) return false;
+    }
+
+    // Experience Filter
+    if (selectedExperience !== 'All') {
+      const expString = selectedExperience.replace(' yrs', '');
+      if (job.experience_req) {
+        if (!job.experience_req.includes(expString)) return false;
+      } else {
+        if (!desc.includes(expString) && !desc.includes('years experience')) return false;
+      }
+    }
+
     return true;
   });
+
+  // Apply Sorting
+  if (sortBy === 'Newest first') {
+    filteredJobs.sort((a, b) => {
+      if (a.posted_time && b.posted_time) {
+        return new Date(b.posted_time).getTime() - new Date(a.posted_time).getTime();
+      }
+      return parseInt(b.id) - parseInt(a.id);
+    });
+  }
 
   // Detailed Card Details Mock fields helper
   const getJobExtraInfo = (job: JobListing) => {
@@ -536,7 +579,7 @@ export default function JobsPage() {
                     All filters
                   </h2>
                   <button 
-                    onClick={() => { setSelectedExperience('All'); setSelectedWorkMode('All'); setSearchQuery(''); }}
+                    onClick={() => { setSelectedExperience('All'); setSelectedWorkMode('All'); setSelectedJobType('All'); setSelectedDepartment('All'); setSearchQuery(''); }}
                     className="text-xs font-semibold text-[#2563eb] hover:underline"
                   >
                     Clear all
@@ -563,15 +606,15 @@ export default function JobsPage() {
                 {/* Job Type */}
                 <div className="space-y-3 pt-4 border-t border-slate-100">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Job Type</h3>
-                  {['Full-time', 'Part-time', 'Contract', 'Internship'].map((type, idx) => (
+                  {['Full-time', 'Part-time', 'Contract', 'Internship'].map((type) => (
                     <label key={type} className="flex items-center gap-2 text-sm text-slate-600 font-semibold cursor-pointer">
                       <input 
                         type="checkbox" 
-                        defaultChecked={idx === 0}
+                        checked={selectedJobType === type}
+                        onChange={() => setSelectedJobType(selectedJobType === type ? 'All' : type)}
                         className="h-4 w-4 rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]"
                       />
                       {type}
-                      <span className="ml-auto text-xs text-slate-400 font-medium">{idx === 0 ? '7' : idx === 2 ? '1' : '0'}</span>
                     </label>
                   ))}
                 </div>
@@ -579,15 +622,15 @@ export default function JobsPage() {
                 {/* Department */}
                 <div className="space-y-3 pt-4 border-t border-slate-100">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department</h3>
-                  {['Engineering', 'Design', 'Data', 'Marketing'].map((dept, idx) => (
+                  {['Engineering', 'Design', 'Data', 'Marketing'].map((dept) => (
                     <label key={dept} className="flex items-center gap-2 text-sm text-slate-600 font-semibold cursor-pointer">
                       <input 
                         type="checkbox" 
-                        defaultChecked={idx === 0}
+                        checked={selectedDepartment === dept}
+                        onChange={() => setSelectedDepartment(selectedDepartment === dept ? 'All' : dept)}
                         className="h-4 w-4 rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]"
                       />
                       {dept}
-                      <span className="ml-auto text-xs text-slate-400 font-medium">{idx === 0 ? '4' : '1'}</span>
                     </label>
                   ))}
                 </div>
@@ -599,6 +642,8 @@ export default function JobsPage() {
                     <label key={exp} className="flex items-center gap-2 text-sm text-slate-600 font-semibold cursor-pointer">
                       <input 
                         type="checkbox" 
+                        checked={selectedExperience === exp}
+                        onChange={() => setSelectedExperience(selectedExperience === exp ? 'All' : exp)}
                         className="h-4 w-4 rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]"
                       />
                       {exp}
@@ -643,7 +688,11 @@ export default function JobsPage() {
 
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
                   <span>Sort by</span>
-                  <select className="border border-[#e2e8f0] rounded-lg px-2.5 py-1.5 text-slate-700 outline-none bg-white">
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="border border-[#e2e8f0] rounded-lg px-2.5 py-1.5 text-slate-700 outline-none bg-white cursor-pointer"
+                  >
                     <option>Most relevant</option>
                     <option>Newest first</option>
                   </select>

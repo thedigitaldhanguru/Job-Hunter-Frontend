@@ -158,49 +158,24 @@ export default function JobsPage() {
 
   // Detailed Card Details Mock fields helper
   const getJobExtraInfo = (job: JobListing) => {
-    const title = job.title || '';
-    const company = job.company_raw || '';
-    const t = title.toLowerCase();
-    const c = company.toLowerCase();
-    
-    let base = { rating: '4.3', exp: '1-3 years', salary: '12-18 LPA', skills: ['React', 'TypeScript', 'Tailwind'], mode: 'Remote', count: '24' };
-    
-    if (c.includes('cred')) {
-      base = { rating: '4.5', exp: '2-5 years', salary: '28-45 LPA', skills: ['Swift', 'SwiftUI', 'iOS'], mode: 'On-site', count: '142' };
-    } else if (c.includes('razorpay')) {
-      base = { rating: '4.4', exp: '3-7 years', salary: '30-50 LPA', skills: ['Go', 'PostgreSQL', 'Kafka', 'AWS'], mode: 'Hybrid', count: '89' };
-    } else if (c.includes('swiggy')) {
-      base = { rating: '4.2', exp: '2-5 years', salary: '22-38 LPA', skills: ['Python', 'SQL', 'ML', 'Pandas'], mode: 'On-site', count: '256' };
-    } else if (c.includes('zomato')) {
-      base = { rating: '4.1', exp: '4-8 years', salary: '18-28 LPA', skills: ['Brand', 'Growth', 'Performance Marketing', 'Analytics'], mode: 'On-site', count: '104' };
-    } else if (c.includes('stripe')) {
-      base = { rating: '4.6', exp: '5-8 years', salary: '35-55 LPA', skills: ['React', 'TypeScript', 'Next.js', 'GraphQL'], mode: 'Hybrid', count: '67' };
-    } else if (c.includes('linear')) {
-      base = { rating: '4.8', exp: '3-6 years', salary: '28-42 LPA', skills: ['Figma', 'Design Systems', 'Prototyping', 'UX Research'], mode: 'Remote', count: '48' };
-    }
-    
-    // Override base with database fields if they are defined
-    if (job.skills && job.skills.length > 0) {
-      base.skills = job.skills;
-    }
-    if (job.experience_req) {
-      base.exp = job.experience_req;
-    }
-    if (job.salary_range) {
-      base.salary = job.salary_range;
-    }
-    
+    let mode: string | null = null;
     if (job.location) {
       const locLower = job.location.toLowerCase();
-      if (locLower.includes('remote')) {
-        base.mode = 'Remote';
-      } else if (locLower.includes('hybrid')) {
-        base.mode = 'Hybrid';
-      } else {
-        base.mode = 'On-site';
-      }
+      if (locLower.includes('remote')) mode = 'Remote';
+      else if (locLower.includes('hybrid')) mode = 'Hybrid';
+      else mode = 'On-site';
     }
-    return base;
+
+    return {
+      rating: null,
+      exp: job.experience_req || null,
+      salary: job.salary_range || null,
+      skills: job.skills || [],
+      mode: mode,
+      count: null,
+      type: null,
+      category: null
+    };
   };
 
   const parseJobDescription = (desc: string, company: string) => {
@@ -309,18 +284,26 @@ export default function JobsPage() {
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">{selectedJob.title}</h1>
                     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-slate-500 font-semibold">
                       <span className="text-slate-800">{selectedJob.company_raw || "Confidential"}</span>
-                      <div className="flex items-center gap-0.5 text-amber-500">
-                        <Star className="w-4 h-4 fill-amber-500" />
-                        <span>{getJobExtraInfo(selectedJob).rating}</span>
-                      </div>
-                      <span>·</span>
-                      <span>{getJobExtraInfo(selectedJob).count} applicants</span>
+                      {getJobExtraInfo(selectedJob).rating && (
+                        <>
+                          <div className="flex items-center gap-0.5 text-amber-500">
+                            <Star className="w-4 h-4 fill-amber-500" />
+                            <span>{getJobExtraInfo(selectedJob).rating}</span>
+                          </div>
+                          <span>·</span>
+                        </>
+                      )}
+                      {getJobExtraInfo(selectedJob).count && <span>{getJobExtraInfo(selectedJob).count} applicants</span>}
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-400 font-semibold pt-2">
                       <div className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 opacity-60" /> {selectedJob.location || "Remote"}</div>
-                      <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob).exp} · Full-time</div>
-                      <div className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob).salary}</div>
+                      {getJobExtraInfo(selectedJob).exp && (
+                        <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob).exp} {getJobExtraInfo(selectedJob).type ? `· ${getJobExtraInfo(selectedJob).type}` : ''}</div>
+                      )}
+                      {getJobExtraInfo(selectedJob).salary && (
+                        <div className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5 opacity-60" /> {getJobExtraInfo(selectedJob).salary}</div>
+                      )}
                       <span>·</span>
                       <span>Posted 3d ago</span>
                     </div>
@@ -406,26 +389,36 @@ export default function JobsPage() {
                 <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-3 text-sm uppercase tracking-wider">Job at a glance</h3>
                 
                 <div className="space-y-4 text-sm font-semibold">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Work mode</span>
-                    <span className="text-slate-800">{getJobExtraInfo(selectedJob).mode}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Experience</span>
-                    <span className="text-slate-800">{getJobExtraInfo(selectedJob).exp}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Type</span>
-                    <span className="text-slate-800">Full-time</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Applicants</span>
-                    <span className="text-slate-800">{getJobExtraInfo(selectedJob).count}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Category</span>
-                    <span className="text-[#2563eb]">Software</span>
-                  </div>
+                  {getJobExtraInfo(selectedJob).mode && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Work mode</span>
+                      <span className="text-slate-800">{getJobExtraInfo(selectedJob).mode}</span>
+                    </div>
+                  )}
+                  {getJobExtraInfo(selectedJob).exp && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Experience</span>
+                      <span className="text-slate-800">{getJobExtraInfo(selectedJob).exp}</span>
+                    </div>
+                  )}
+                  {getJobExtraInfo(selectedJob).type && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Type</span>
+                      <span className="text-slate-800">{getJobExtraInfo(selectedJob).type}</span>
+                    </div>
+                  )}
+                  {getJobExtraInfo(selectedJob).count && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Applicants</span>
+                      <span className="text-slate-800">{getJobExtraInfo(selectedJob).count}</span>
+                    </div>
+                  )}
+                  {getJobExtraInfo(selectedJob).category && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Category</span>
+                      <span className="text-[#2563eb]">{getJobExtraInfo(selectedJob).category}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -777,8 +770,12 @@ export default function JobsPage() {
                                   </h3>
                                   <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
                                     <span className="font-semibold text-slate-700">{job.company_raw || "Confidential"}</span>
-                                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                                    <span className="font-bold text-slate-600">{extra.rating}</span>
+                                    {extra.rating && (
+                                      <>
+                                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                                        <span className="font-bold text-slate-600">{extra.rating}</span>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -788,9 +785,9 @@ export default function JobsPage() {
                             </div>
 
                             <div className="flex items-center gap-3 flex-wrap text-xs text-slate-400 font-semibold">
-                              <div className="flex items-center gap-1"><Briefcase className="w-3.5 h-3.5 opacity-60" /> {extra.exp}</div>
-                              <div className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5 opacity-60" /> {extra.salary}</div>
-                              <div className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 opacity-60" /> {job.location || "Remote"}</div>
+                              {extra.exp && <div className="flex items-center gap-1"><Briefcase className="w-3.5 h-3.5 opacity-60" /> {extra.exp}</div>}
+                              {extra.salary && <div className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5 opacity-60" /> {extra.salary}</div>}
+                              {job.location && <div className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 opacity-60" /> {job.location}</div>}
                             </div>
 
                             {/* Skills Tags */}
@@ -804,9 +801,9 @@ export default function JobsPage() {
                           </div>
 
                           <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-semibold">
-                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 opacity-60" /> {extra.mode === 'Remote' ? '2d ago' : '6d ago'}</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 opacity-60" /> {job.posted_time || 'Just now'}</span>
                             <div className="flex items-center gap-3">
-                              <span className="text-[10px] font-bold text-[#2563eb] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md uppercase">{extra.mode}</span>
+                              {extra.mode && <span className="text-[10px] font-bold text-[#2563eb] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md uppercase">{extra.mode}</span>}
                               <button 
                                 onClick={(e) => handleApply(e, job)}
                                 disabled={applyingTo === job.id}

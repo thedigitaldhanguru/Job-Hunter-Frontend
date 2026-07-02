@@ -69,7 +69,7 @@ export const useJobsStore = create<JobsStore>((set, get) => ({
       const data = await res.json();
       
       set({ 
-        jobs: reset ? data : [...jobs, ...data], 
+        jobs: data, 
         offset: currentOffset,
         loading: false, 
         hasFetched: true 

@@ -762,11 +762,33 @@ export default function JobsPage() {
 
               {/* Slicing / Pagination footer results */}
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-5 shadow-sm flex items-center justify-between text-xs text-slate-400 font-semibold flex-wrap gap-4 mt-8">
-                <span>Showing 1–{filteredJobs.length} of {filteredJobs.length} results</span>
+                <span>Showing {dbJobs.length > 0 ? (offset + 1) : 0}–{offset + dbJobs.length} results</span>
                 <div className="flex items-center gap-2">
-                  <button className="px-3.5 py-2 border border-[#e2e8f0] rounded-xl hover:bg-slate-50 text-slate-500 disabled:opacity-40" disabled>Previous</button>
-                  <button className="w-8 h-8 rounded-full bg-[#0a4fcd] text-white flex items-center justify-center">1</button>
-                  <button className="px-3.5 py-2 border border-[#e2e8f0] rounded-xl hover:bg-slate-50 text-slate-500 disabled:opacity-40" disabled>Next</button>
+                  <button 
+                    onClick={() => {
+                      const prevOffset = Math.max(0, offset - LIMIT);
+                      setOffset(prevOffset);
+                      fetchJobs(LIMIT, false);
+                    }}
+                    disabled={offset === 0 || loading}
+                    className="px-3.5 py-2 border border-[#e2e8f0] rounded-xl hover:bg-slate-50 text-slate-500 disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed font-bold"
+                  >
+                    Previous
+                  </button>
+                  <button className="w-8 h-8 rounded-full bg-[#0a4fcd] text-white flex items-center justify-center font-bold">
+                    {Math.floor(offset / LIMIT) + 1}
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const nextOffset = offset + LIMIT;
+                      setOffset(nextOffset);
+                      fetchJobs(LIMIT, false);
+                    }}
+                    disabled={dbJobs.length < LIMIT || loading}
+                    className="px-3.5 py-2 border border-[#e2e8f0] rounded-xl hover:bg-slate-50 text-slate-500 disabled:opacity-40 transition-colors cursor-pointer disabled:cursor-not-allowed font-bold"
+                  >
+                    Next
+                  </button>
                 </div>
               </div>
 

@@ -126,71 +126,7 @@ export default function JobsPage() {
     }
   };
 
-  // Static Mock Jobs from the design specs to merge with DB jobs
-  const mockJobs: JobListing[] = [
-    {
-      id: 'mock-1',
-      title: 'iOS Engineer',
-      company_raw: 'CRED',
-      location: 'Bengaluru, India',
-      job_url: 'https://cred.club',
-      absolute_url: 'https://cred.club',
-      description: 'Design and build the next generation of CRED experiences on iOS. Work closely with product design and platform engineers to shape smooth, micro-animated user interfaces.'
-    },
-    {
-      id: 'mock-2',
-      title: 'Backend Engineer (Go)',
-      company_raw: 'Razorpay',
-      location: 'Bengaluru, India',
-      job_url: 'https://razorpay.com',
-      absolute_url: 'https://razorpay.com',
-      description: 'Scale financial products and services. Ensure high performance and low latency APIs while processing millions of checkouts daily.'
-    },
-    {
-      id: 'mock-3',
-      title: 'Data Scientist',
-      company_raw: 'Swiggy',
-      location: 'Hyderabad, India',
-      job_url: 'https://swiggy.com',
-      absolute_url: 'https://swiggy.com',
-      description: 'Drive insights and ML models for hyperlocal delivery at scale. Build forecasting and recommendation systems to maximize logistics efficiency.'
-    },
-    {
-      id: 'mock-4',
-      title: 'Marketing Manager',
-      company_raw: 'Zomato',
-      location: 'Gurugram, India',
-      job_url: 'https://zomato.com',
-      absolute_url: 'https://zomato.com',
-      description: 'Lead growth and branding campaigns. Monitor brand performance, user engagement, and design offline marketing activation tactics.'
-    },
-    {
-      id: 'mock-5',
-      title: 'Senior Frontend Engineer',
-      company_raw: 'Stripe',
-      location: 'Bengaluru, India',
-      job_url: 'https://stripe.com',
-      absolute_url: 'https://stripe.com',
-      description: 'Own user-facing portals and developer dashboards. Work on React, TypeScript, GraphQL, and design systems for global payments.'
-    },
-    {
-      id: 'mock-6',
-      title: 'Product Designer',
-      company_raw: 'Linear',
-      location: 'Remote Only',
-      job_url: 'https://linear.app',
-      absolute_url: 'https://linear.app',
-      description: 'Design interface primitives and tools that streamline developer tracking systems. Focus on keyboard shortcuts, layouts, and typography.'
-    }
-  ];
-
-  // Merge database jobs with mocks for full coverage
   const allJobsList = [...dbJobs];
-  mockJobs.forEach(mock => {
-    if (!allJobsList.some(j => j.title.toLowerCase() === mock.title.toLowerCase() && j.company_raw === mock.company_raw)) {
-      allJobsList.push(mock);
-    }
-  });
 
   // Apply filters
   const filteredJobs = allJobsList.filter(job => {
@@ -444,11 +380,18 @@ export default function JobsPage() {
                     margin-bottom: 0.75rem !important;
                     line-height: 1.625 !important;
                   }
+                  .hd-jd-content {
+                    overflow-wrap: break-word !important;
+                    word-wrap: break-word !important;
+                  }
+                  .hd-jd-content * {
+                    max-width: 100% !important;
+                  }
                 `}} />
 
                 <div className="space-y-3">
                   <div 
-                    className="text-slate-600 leading-relaxed space-y-4 hd-jd-content"
+                    className="text-slate-600 leading-relaxed space-y-4 hd-jd-content break-words overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: mainContent }}
                   />
                 </div>
@@ -492,7 +435,7 @@ export default function JobsPage() {
                 <h3 className="font-bold text-slate-900 uppercase tracking-wider text-xs">About {selectedJob.company_raw || "Company"}</h3>
                 {aboutCompany ? (
                   <div 
-                    className="text-slate-500 leading-relaxed space-y-3 hd-jd-content"
+                    className="text-slate-500 leading-relaxed space-y-3 hd-jd-content break-words overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: aboutCompany }}
                   />
                 ) : (
@@ -750,8 +693,40 @@ export default function JobsPage() {
 
               {/* Dynamic Job Cards List */}
               {loading ? (
-                <div className="flex justify-center items-center py-20 bg-white border border-[#e2e8f0] rounded-3xl shadow-sm">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#2563eb]" />
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-white border border-[#e2e8f0] rounded-3xl p-5 hover:shadow-md transition-all flex flex-col justify-between animate-pulse">
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-11 h-11 bg-slate-200 rounded-xl"></div>
+                            <div className="space-y-2">
+                              <div className="h-4 w-32 bg-slate-200 rounded-md"></div>
+                              <div className="h-3 w-24 bg-slate-200 rounded-md"></div>
+                            </div>
+                          </div>
+                          <div className="w-5 h-5 bg-slate-200 rounded-md"></div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="h-3 w-16 bg-slate-200 rounded-md"></div>
+                          <div className="h-3 w-16 bg-slate-200 rounded-md"></div>
+                          <div className="h-3 w-16 bg-slate-200 rounded-md"></div>
+                        </div>
+                        <div className="flex gap-1.5 pt-1">
+                          <div className="h-6 w-14 bg-slate-200 rounded-lg"></div>
+                          <div className="h-6 w-16 bg-slate-200 rounded-lg"></div>
+                          <div className="h-6 w-12 bg-slate-200 rounded-lg"></div>
+                        </div>
+                      </div>
+                      <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                        <div className="h-3 w-16 bg-slate-200 rounded-md"></div>
+                        <div className="flex gap-3 items-center">
+                          <div className="h-4 w-12 bg-slate-200 rounded-md"></div>
+                          <div className="h-8 w-20 bg-slate-200 rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : filteredJobs.length === 0 ? (
                 <div className="text-center py-20 bg-white border border-[#e2e8f0] rounded-3xl shadow-sm">

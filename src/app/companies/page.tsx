@@ -9,6 +9,7 @@ import {
 import { useJobsStore } from '@/store/useJobsStore';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import AdBanner from '@/components/AdBanner';
 
 export default function CompaniesPage() {
   const router = useRouter();
@@ -67,6 +68,8 @@ export default function CompaniesPage() {
 
       {/* Directory Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full flex-grow space-y-10">
+        {/* AdSense Placement - Companies Header */}
+        <AdBanner format="horizontal" className="mb-4" />
         <div className="border-b border-[#e2e8f0] pb-5 flex items-center justify-between">
           <h2 className="text-xl font-bold">Featured Brands ({filteredCompanies.length})</h2>
           <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Sorted by Rank</span>

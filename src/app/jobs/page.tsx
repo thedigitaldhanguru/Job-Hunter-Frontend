@@ -15,6 +15,7 @@ import Navbar from '@/components/Navbar';
 import { useApplicationsStore } from '@/store/useApplicationsStore';
 import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
 import { useProfileStore } from '@/store/useProfileStore';
+import AdBanner from '@/components/AdBanner';
 
 export default function JobsPage() {
   const { data: session } = useSession();
@@ -484,6 +485,9 @@ export default function JobsPage() {
                 </button>
               </div>
 
+              {/* AdSense Placement - Bottom of Job Details */}
+              <AdBanner format="horizontal" className="mt-6" />
+
             </div>
 
           </div>
@@ -651,6 +655,11 @@ export default function JobsPage() {
                   ))}
                 </div>
 
+                {/* AdSense Placement - Sidebar */}
+                <div className="pt-2 pb-4">
+                  <AdBanner format="rectangle" />
+                </div>
+
                 {/* Smart Match Card */}
                 <div className="bg-[#f1f5f9]/50 border border-[#e2e8f0] rounded-2xl p-4.5 space-y-3 text-xs">
                   <span className="flex items-center gap-1 font-bold text-slate-700">
@@ -780,6 +789,10 @@ export default function JobsPage() {
                     
                     return (
                       <div key={job.id} className="space-y-4">
+                        {/* Inject Ad Banner every 5 jobs */}
+                        {idx > 0 && idx % 5 === 0 && (
+                          <AdBanner format="horizontal" className="mb-4" />
+                        )}
                         {/* Inject Pro Tip Banner after 2nd job card */}
                         {idx === 2 && (
                           <div className="bg-gradient-to-r from-[#0a4fcd] to-[#051949] rounded-3xl p-6 text-white relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4 border border-blue-900/50 shadow-md">

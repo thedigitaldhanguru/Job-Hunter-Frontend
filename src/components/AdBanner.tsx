@@ -30,7 +30,7 @@ export default function AdBanner({ slotId, format = 'horizontal', className = ''
   if (!adSenseId) {
     return (
       <div 
-        className={lex flex-col items-center justify-center bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl text-slate-400 overflow-hidden }
+        className={`flex flex-col items-center justify-center bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl text-slate-400 overflow-hidden ${className}`}
         style={{ width, height: format === 'horizontal' ? 'auto' : height, minHeight: height }}
       >
         <span className="text-xs font-bold uppercase tracking-wider mb-1">AdSense Placement</span>
@@ -50,7 +50,7 @@ export default function AdBanner({ slotId, format = 'horizontal', className = ''
   }, []);
 
   return (
-    <div className={overflow-hidden }>
+    <div className={`overflow-hidden ${className}`}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}

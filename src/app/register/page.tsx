@@ -24,10 +24,25 @@ export default function HiredeckRegisterPage() {
     setIsLoading(true);
     
     try {
+      // 1. Register the user
+      const registerRes = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: fullName, email, password })
+      });
+
+      const registerData = await registerRes.json();
+
+      if (!registerRes.ok) {
+        alert(registerData.error || "Registration failed");
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Log them in automatically
       const res = await signIn('credentials', {
         email,
         password,
-        action: 'register',
         redirect: false,
       });
       

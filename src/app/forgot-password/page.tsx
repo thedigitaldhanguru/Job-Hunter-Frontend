@@ -2,23 +2,33 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Briefcase, ArrowLeft, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { Briefcase, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSent, setIsSent] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+    
     try {
-      // Simulate sending reset link
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setIsSent(true);
-    } catch (err) {
-      console.error(err);
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      if (res.ok) {
+        setSuccess(true);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Something went wrong.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -26,7 +36,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="hiredeck min-h-screen bg-white text-[#0f172a] font-sans antialiased flex flex-col">
-      {/* Site Header */}
       <header className="w-full border-b border-[#e2e8f0] bg-white py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -37,45 +46,37 @@ export default function ForgotPasswordPage() {
               hire<span className="text-[#f97316]">deck</span>
             </span>
           </Link>
-          <Link href="/login" className="text-sm font-semibold text-[#2563eb] hover:underline flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Login
-          </Link>
+          <Link href="/login" className="text-sm font-semibold text-slate-500 hover:text-slate-900">Back to Login</Link>
         </div>
       </header>
 
-      {/* Center Layout Container */}
-      <div className="flex-grow flex items-center justify-center p-8 bg-slate-50/50">
-        <div className="w-full max-w-md bg-white border border-[#e2e8f0] p-8 sm:p-10 rounded-3xl shadow-lg shadow-slate-100/50 space-y-6">
+      <div className="flex-grow flex items-center justify-center p-8">
+        <div className="w-full max-w-md space-y-8 bg-white border border-[#e2e8f0] p-8 sm:p-10 rounded-3xl shadow-xl shadow-slate-200/50">
           
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 bg-blue-50 text-[#2563eb] rounded-2xl flex items-center justify-center border border-blue-100 shadow-inner mx-auto mb-4">
-              <Briefcase className="w-6 h-6" />
-            </div>
-            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Reset password</h2>
+          <div className="space-y-3 text-center">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Reset Password</h2>
             <p className="text-sm text-slate-500">
-              We'll send you a secure link to reset your password.
+              Enter your email address and we'll send you a link to reset your password.
             </p>
           </div>
 
-          {isSent ? (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-center space-y-3">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
-              <h3 className="font-bold text-emerald-800 text-base">Check your inbox</h3>
-              <p className="text-xs text-emerald-600 leading-relaxed">
-                We've sent password reset instructions to <strong>{email}</strong>. Please check your email.
+          {success ? (
+            <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-4">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+              <div>
+                <h3 className="font-bold text-emerald-900 text-lg">Check your email</h3>
+                <p className="text-sm text-emerald-700 mt-1">
+                  We've sent a password reset link to <span className="font-semibold">{email}</span>.
+                </p>
+              </div>
+              <p className="text-xs text-emerald-600/80 mt-2">
+                (For this demo, check the server console for the reset link since emails aren't configured yet).
               </p>
-              <button 
-                onClick={() => setIsSent(false)}
-                className="text-xs font-bold text-[#2563eb] hover:underline pt-2 block mx-auto"
-              >
-                Try a different email
-              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-600">Email address</label>
+                <label className="text-xs font-bold text-slate-600">Email Address</label>
                 <input 
                   type="email" 
                   placeholder="you@email.com" 
@@ -90,7 +91,7 @@ export default function ForgotPasswordPage() {
               <button 
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.98] mt-2 disabled:opacity-50"
               >
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
@@ -103,12 +104,6 @@ export default function ForgotPasswordPage() {
               </button>
             </form>
           )}
-
-          <div className="text-center">
-            <Link href="/login" className="text-xs font-bold text-[#2563eb] hover:underline">
-              Return to log in
-            </Link>
-          </div>
 
         </div>
       </div>

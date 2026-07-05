@@ -24,7 +24,6 @@ export default function HiredeckLoginPage() {
       const res = await signIn('credentials', {
         email,
         password,
-        action: 'login',
         redirect: false,
       });
       

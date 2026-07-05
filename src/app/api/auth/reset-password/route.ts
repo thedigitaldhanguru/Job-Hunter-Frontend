@@ -37,10 +37,19 @@ export async function POST(req: Request) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Update user password
+      // Get user id
+      const userRes = await client.query('SELECT id FROM users WHERE email = $1', [email]);
+      if (userRes.rows.length === 0) {
+        return NextResponse.json({ error: 'User not found' }, { status: 400 });
+      }
+      const userId = userRes.rows[0].id;
+
+      // Upsert user credentials
       await client.query(
-        'UPDATE users SET password = $1 WHERE email = $2',
-        [hashedPassword, email]
+        `INSERT INTO user_credentials (user_id, password) 
+         VALUES ($1, $2)
+         ON CONFLICT (user_id) DO UPDATE SET password = EXCLUDED.password`,
+        [userId, hashedPassword]
       );
 
       // Mark token as used

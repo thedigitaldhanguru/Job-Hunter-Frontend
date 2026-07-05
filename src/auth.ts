@@ -32,7 +32,13 @@ export const authOptions: NextAuthOptions = {
         const client = await pool.connect();
         try {
           await client.query('SET search_path TO dbc, public');
-          const res = await client.query('SELECT * FROM users WHERE email = $1', [credentials.email]);
+          const res = await client.query(`
+            SELECT u.*, uc.password 
+            FROM users u
+            JOIN user_credentials uc ON u.id = uc.user_id
+            WHERE u.email = $1
+          `, [credentials.email]);
+          
           const user = res.rows[0];
 
           if (!user || !user.password) {

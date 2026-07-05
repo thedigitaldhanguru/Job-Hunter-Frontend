@@ -26,13 +26,21 @@ export async function POST(req: Request) {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Insert user
+      // Insert user without password
       const insertRes = await client.query(
-        'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
-        [name || '', email, hashedPassword]
+        'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id, name, email',
+        [name || '', email]
       );
 
-      return NextResponse.json({ user: insertRes.rows[0] }, { status: 201 });
+      const newUser = insertRes.rows[0];
+
+      // Insert credentials
+      await client.query(
+        'INSERT INTO user_credentials (user_id, password) VALUES ($1, $2)',
+        [newUser.id, hashedPassword]
+      );
+
+      return NextResponse.json({ user: newUser }, { status: 201 });
     } finally {
       client.release();
     }

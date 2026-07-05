@@ -27,6 +27,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Minor log to trigger Vercel deployment
+  console.log("Vercel Rebuild Trigger: Verifying reverted state");
+  
   return (
     <html lang="en">
       <body className={`${outfit.variable} ${instrumentSerif.variable} font-sans antialiased flex flex-col min-h-screen`}>

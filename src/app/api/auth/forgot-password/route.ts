@@ -4,7 +4,6 @@ import { Pool } from '@neondatabase/serverless';
 import { Resend } from 'resend';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
@@ -43,6 +42,7 @@ export async function POST(req: Request) {
 
       // Send actual email if API key exists
       if (process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
           from: 'Hiredeck <onboarding@resend.dev>',
           to: email,

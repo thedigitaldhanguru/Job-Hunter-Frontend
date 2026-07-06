@@ -102,9 +102,9 @@ export default function Footer() {
         <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <span>&copy; {currentYear} hiredeck Pro. All rights reserved.</span>
           <div className="flex flex-wrap items-center gap-4">
-            {['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Sitemap'].map(item => (
-              <span key={item} className="hover:text-slate-300 cursor-pointer transition-colors">{item}</span>
-            ))}
+            <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-slate-300 transition-colors">Cookie Policy</Link>
           </div>
         </div>
       </div>

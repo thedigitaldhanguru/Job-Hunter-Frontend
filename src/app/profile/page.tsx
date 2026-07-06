@@ -41,6 +41,7 @@ export default function ProfilePage() {
   const [recruiterVisibility, setRecruiterVisibility] = useState(true);
   
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [resumeVersion, setResumeVersion] = useState(0);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null); 
@@ -216,6 +217,9 @@ export default function ProfilePage() {
         alert("Upload failed.");
       } finally {
         setUploadingType(null);
+        if (e.target) {
+          e.target.value = '';
+        }
       }
     }
   };
@@ -227,14 +231,19 @@ export default function ProfilePage() {
         setUploadingType('resume');
         const s3FileUrl = await uploadToS3(file);
         setData((prev: any) => ({ ...prev, resumeName: file.name, resumeUrl: s3FileUrl }));
+        setResumeVersion(prev => prev + 1);
         alert("Resume uploaded successfully! Click save to update your profile.");
       } catch (err) {
         alert("Resume upload failed.");
       } finally {
         setUploadingType(null);
+        if (e.target) {
+          e.target.value = '';
+        }
       }
     }
   };
+
 
   const addSimpleItem = (field: 'skills' | 'languages', value: string, setter: (val: string) => void) => {
     const clean = String(value || '').trim();
@@ -385,19 +394,41 @@ export default function ProfilePage() {
                       </button>
                       
                       <input type="file" ref={resumeInputRef} onChange={handleResumeUpload} accept=".pdf,.doc,.docx" className="hidden" />
-                      <button 
-                        onClick={() => {
-                          if (data.resumeUrl) {
-                            setShowResumeModal(true);
-                          } else {
-                            resumeInputRef.current?.click();
-                          }
-                        }}
-                        className="px-4 py-2 border border-[#e2e8f0] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        {data.resumeUrl ? 'CV' : 'Upload CV'}
-                      </button>
+                      {uploadingType === 'resume' ? (
+                        <button 
+                          disabled
+                          className="px-4 py-2 border border-[#e2e8f0] rounded-xl text-xs font-bold text-slate-400 bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
+                        >
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563eb]" />
+                          Uploading...
+                        </button>
+                      ) : data.resumeUrl ? (
+                        <div className="flex items-center">
+                          <button 
+                            onClick={() => setShowResumeModal(true)}
+                            className="px-4 py-2 border border-[#e2e8f0] rounded-l-xl border-r-0 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#2563eb]" />
+                            View CV
+                          </button>
+                          <button 
+                            onClick={() => resumeInputRef.current?.click()}
+                            className="px-3 py-2 border border-[#e2e8f0] rounded-r-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#2563eb] transition-colors flex items-center gap-1 shadow-sm"
+                            title="Upload updated resume"
+                          >
+                            <UploadCloud className="w-3.5 h-3.5" />
+                            Update
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => resumeInputRef.current?.click()}
+                          className="px-4 py-2 border border-[#e2e8f0] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
+                        >
+                          <UploadCloud className="w-3.5 h-3.5" />
+                          Upload CV
+                        </button>
+                      )}
 
                       <button 
                         onClick={() => toggleEdit('identity')}
@@ -843,7 +874,21 @@ export default function ProfilePage() {
                 {data.resumeName || 'Resume Document'}
               </h2>
               <div className="flex items-center gap-3">
-                <a href={data.resumeUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl transition-colors">
+                {uploadingType === 'resume' ? (
+                  <span className="text-sm font-semibold text-slate-500 flex items-center gap-1.5 px-4 py-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    Uploading...
+                  </span>
+                ) : (
+                  <button 
+                    onClick={() => resumeInputRef.current?.click()}
+                    className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    Update Resume
+                  </button>
+                )}
+                <a href={data.resumeUrl} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-600 hover:text-slate-700 hover:bg-slate-100 px-4 py-2 rounded-xl transition-colors">
                   Open in new tab
                 </a>
                 <button onClick={() => setShowResumeModal(false)} className="text-slate-400 hover:text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 p-2 rounded-xl transition-all shadow-sm active:scale-95">
@@ -853,7 +898,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1 w-full bg-slate-100 relative">
               <iframe 
-                src={`${data.resumeUrl}#toolbar=0`} 
+                src={`${data.resumeUrl}${data.resumeUrl.includes('?') ? '&' : '?'}v=${resumeVersion}#toolbar=0`} 
                 className="absolute inset-0 w-full h-full border-0" 
                 title="Resume Viewer"
               />

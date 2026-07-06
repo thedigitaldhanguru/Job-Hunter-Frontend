@@ -4,10 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  MapPin, Briefcase, Phone, Mail, Trash2, FileText, Award, 
-  TrendingUp, CheckCircle2, User, Calendar, Camera, Check, 
-  Edit2, Plus, Save, Loader2, XCircle, Share2, UploadCloud, 
+import {
+  MapPin, Briefcase, Phone, Mail, Trash2, FileText, Award,
+  TrendingUp, CheckCircle2, User, Calendar, Camera, Check,
+  Edit2, Plus, Save, Loader2, XCircle, Share2, UploadCloud,
   ExternalLink, GraduationCap, LayoutGrid, CheckCircle, ArrowRight
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -39,18 +39,18 @@ export default function ProfilePage() {
   const [uploadingType, setUploadingType] = useState<'avatar' | 'resume' | null>(null);
   const [activeSection, setActiveSection] = useState('identity');
   const [recruiterVisibility, setRecruiterVisibility] = useState(true);
-  
+
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeVersion, setResumeVersion] = useState(0);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const resumeInputRef = useRef<HTMLInputElement>(null); 
+  const resumeInputRef = useRef<HTMLInputElement>(null);
   const smartFillInputRef = useRef<HTMLInputElement>(null);
 
   // --- FETCH DATA FROM ZUSTAND STORE ---
   useEffect(() => {
     if (sessionStatus === 'loading') return;
-    
+
     const email = session?.user?.email;
     if (!email) {
       setMounted(true);
@@ -78,7 +78,7 @@ export default function ProfilePage() {
         }
       } else {
         setData(profileData);
-        setInitialData(profileData); 
+        setInitialData(profileData);
       }
       setMounted(true);
     }
@@ -115,7 +115,7 @@ export default function ProfilePage() {
 
     const payload = {
       full_name: data.header.name,
-      email: data.header.email || session.user.email, 
+      email: data.header.email || session.user.email,
       degree: data.header.degree,
       university: data.header.university,
       location: data.header.location,
@@ -123,10 +123,10 @@ export default function ProfilePage() {
       phone: data.header.phone,
       gender: data.header.gender,
       dob: data.header.dob,
-      profile_summary: data.summary, 
+      profile_summary: data.summary,
       avatar_url: data.header.avatar,
-      current_ctc: data.preferences.currentCTC,   
-      expected_ctc: data.preferences.expectedCTC, 
+      current_ctc: data.preferences.currentCTC,
+      expected_ctc: data.preferences.expectedCTC,
       extended_profile: {
         employment: data.employment,
         internships: data.internships,
@@ -152,7 +152,7 @@ export default function ProfilePage() {
 
       if (response.ok) {
         localStorage.removeItem(`profile_draft_${session.user.email}`);
-        setInitialData(data); 
+        setInitialData(data);
         setProfileData(data);
         alert("Profile Saved Successfully! 🚀");
       } else {
@@ -195,7 +195,7 @@ export default function ProfilePage() {
 
   const handleArrayAdd = (section: keyof typeof data, template: any) => {
     setData((prev: any) => ({ ...prev, [section]: [template, ...(prev[section] as any[])] }));
-    setEditMode(prev => ({ ...prev, [section]: true })); 
+    setEditMode(prev => ({ ...prev, [section]: true }));
   };
 
   const handleArrayDelete = (section: keyof typeof data, id: string) => {
@@ -263,7 +263,7 @@ export default function ProfilePage() {
     setActiveSection(id);
     const element = document.getElementById(id);
     if (element) {
-      const y = element.getBoundingClientRect().top + window.scrollY - 100; 
+      const y = element.getBoundingClientRect().top + window.scrollY - 100;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
@@ -291,7 +291,7 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             {/* ================= LEFT SIDEBAR (SECTIONS & CONTACT) ================= */}
             <aside className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-5 space-y-6 shadow-sm">
@@ -305,11 +305,10 @@ export default function ProfilePage() {
                         <button
                           key={sec.id}
                           onClick={() => scrollToSection(sec.id)}
-                          className={`flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                            active 
-                              ? 'bg-blue-50/70 text-[#2563eb]' 
+                          className={`flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${active
+                              ? 'bg-blue-50/70 text-[#2563eb]'
                               : 'text-slate-500 hover:text-[#2563eb] hover:bg-slate-50'
-                          }`}
+                            }`}
                         >
                           <SecIcon className="w-4 h-4 shrink-0" />
                           {sec.label}
@@ -341,7 +340,7 @@ export default function ProfilePage() {
 
             {/* ================= MIDDLE MAIN PANEL ================= */}
             <section className="lg:col-span-6 space-y-6">
-              
+
               {/* IDENTITY CARD */}
               <article id="identity" className="bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden shadow-sm relative">
                 {/* Banner backdrop */}
@@ -356,28 +355,28 @@ export default function ProfilePage() {
                         {uploadingType === 'avatar' ? (
                           <Loader2 className="w-6 h-6 animate-spin text-[#2563eb]" />
                         ) : data.header.avatar ? (
-                          <img 
-                            src={data.header.avatar} 
-                            alt="Avatar" 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={data.header.avatar}
+                            alt="Avatar"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <span className="text-3xl font-extrabold text-[#2563eb]">
-                            {data.header.name ? data.header.name.substring(0,2).toUpperCase() : 'BJ'}
+                            {data.header.name ? data.header.name.substring(0, 2).toUpperCase() : 'BJ'}
                           </span>
                         )}
-                        
+
                         {/* Overlay camera trigger */}
-                        <div 
+                        <div
                           onClick={() => fileInputRef.current?.click()}
                           className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         >
                           <Camera className="w-5 h-5 text-white" />
                         </div>
                       </div>
-                      
+
                       {/* Badge badge overlay */}
-                      <button 
+                      <button
                         onClick={() => fileInputRef.current?.click()}
                         className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#2563eb] border-2 border-white shadow-sm flex items-center justify-center text-white cursor-pointer active:scale-95 transition-transform"
                       >
@@ -392,10 +391,10 @@ export default function ProfilePage() {
                         <Share2 className="w-3.5 h-3.5" />
                         Share
                       </button>
-                      
+
                       <input type="file" ref={resumeInputRef} onChange={handleResumeUpload} accept=".pdf,.doc,.docx" className="hidden" />
                       {uploadingType === 'resume' ? (
-                        <button 
+                        <button
                           disabled
                           className="px-4 py-2 border border-[#e2e8f0] rounded-xl text-xs font-bold text-slate-400 bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
                         >
@@ -404,24 +403,24 @@ export default function ProfilePage() {
                         </button>
                       ) : data.resumeUrl ? (
                         <div className="flex items-center">
-                          <button 
+                          <button
                             onClick={() => setShowResumeModal(true)}
                             className="px-4 py-2 border border-[#e2e8f0] rounded-l-xl border-r-0 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
                           >
                             <FileText className="w-3.5 h-3.5 text-[#2563eb]" />
-                            View CV
+                            View Resume
                           </button>
-                          <button 
+                          <button
                             onClick={() => resumeInputRef.current?.click()}
                             className="px-3 py-2 border border-[#e2e8f0] rounded-r-xl text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-[#2563eb] transition-colors flex items-center gap-1 shadow-sm"
                             title="Upload updated resume"
                           >
                             <UploadCloud className="w-3.5 h-3.5" />
-                            Update
+                            Update Resume
                           </button>
                         </div>
                       ) : (
-                        <button 
+                        <button
                           onClick={() => resumeInputRef.current?.click()}
                           className="px-4 py-2 border border-[#e2e8f0] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
                         >
@@ -430,7 +429,7 @@ export default function ProfilePage() {
                         </button>
                       )}
 
-                      <button 
+                      <button
                         onClick={() => toggleEdit('identity')}
                         className="px-5 py-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer select-none"
                       >
@@ -445,35 +444,35 @@ export default function ProfilePage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Full Name</label>
-                          <input type="text" value={data.header.name} onChange={e => setData({...data, header: {...data.header, name: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" />
+                          <input type="text" value={data.header.name} onChange={e => setData({ ...data, header: { ...data.header, name: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Headline</label>
-                          <input type="text" value={data.header.degree} onChange={e => setData({...data, header: {...data.header, degree: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. Full-Stack Web Developer" />
+                          <input type="text" value={data.header.degree} onChange={e => setData({ ...data, header: { ...data.header, degree: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. Full-Stack Web Developer" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Education summary</label>
-                          <input type="text" value={data.header.university} onChange={e => setData({...data, header: {...data.header, university: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. BCA - ADTU" />
+                          <input type="text" value={data.header.university} onChange={e => setData({ ...data, header: { ...data.header, university: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. BCA - ADTU" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Location</label>
-                          <input type="text" value={data.header.location} onChange={e => setData({...data, header: {...data.header, location: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" />
+                          <input type="text" value={data.header.location} onChange={e => setData({ ...data, header: { ...data.header, location: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Experience</label>
-                          <input type="text" value={data.header.experience} onChange={e => setData({...data, header: {...data.header, experience: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. 3 Years" />
+                          <input type="text" value={data.header.experience} onChange={e => setData({ ...data, header: { ...data.header, experience: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. 3 Years" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Availability Status</label>
-                          <input type="text" value={data.preferences.availability} onChange={e => setData({...data, preferences: {...data.preferences, availability: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. Immediate" />
+                          <input type="text" value={data.preferences.availability} onChange={e => setData({ ...data, preferences: { ...data.preferences, availability: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. Immediate" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Phone</label>
-                          <input type="text" value={data.header.phone} onChange={e => setData({...data, header: {...data.header, phone: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" />
+                          <input type="text" value={data.header.phone} onChange={e => setData({ ...data, header: { ...data.header, phone: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Current Employment</label>
-                          <input type="text" value={data.preferences.jobType} onChange={e => setData({...data, preferences: {...data.preferences, jobType: e.target.value}})} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. Self-Employed" />
+                          <input type="text" value={data.preferences.jobType} onChange={e => setData({ ...data, preferences: { ...data.preferences, jobType: e.target.value } })} className="w-full bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl outline-none focus:border-[#2563eb] font-semibold text-slate-800" placeholder="e.g. Self-Employed" />
                         </div>
                       </div>
                     </div>
@@ -528,7 +527,7 @@ export default function ProfilePage() {
                     <div className="w-1.5 h-5 bg-[#2563eb] rounded-full"></div>
                     <h3 className="font-extrabold text-slate-800 text-sm">Resume Headline</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => toggleEdit('summary')}
                     className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-1.5 select-none"
                   >
@@ -539,9 +538,9 @@ export default function ProfilePage() {
 
                 {editMode.summary ? (
                   <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/60 shadow-inner">
-                    <textarea 
-                      value={data.summary} 
-                      onChange={e => setData({...data, summary: e.target.value})} 
+                    <textarea
+                      value={data.summary}
+                      onChange={e => setData({ ...data, summary: e.target.value })}
                       className="w-full h-32 bg-white border border-[#e2e8f0] rounded-xl outline-none p-3.5 text-sm font-semibold text-slate-800 focus:border-[#2563eb] resize-none"
                       placeholder="Add a summary headline describing your focus area..."
                     />
@@ -560,7 +559,7 @@ export default function ProfilePage() {
                     <div className="w-1.5 h-5 bg-[#2563eb] rounded-full"></div>
                     <h3 className="font-extrabold text-slate-800 text-sm">Key Skills</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => toggleEdit('skills')}
                     className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-1.5 select-none"
                   >
@@ -571,8 +570,8 @@ export default function ProfilePage() {
 
                 <div className="flex flex-wrap gap-2 pt-1">
                   {(data.skills || []).map(skill => (
-                    <span 
-                      key={skill} 
+                    <span
+                      key={skill}
                       className="px-3.5 py-1.5 bg-slate-50 border border-slate-200/60 text-slate-600 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
                     >
                       {skill}
@@ -587,15 +586,15 @@ export default function ProfilePage() {
                   <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl shadow-inner space-y-2 mt-3">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Add custom skill</label>
                     <div className="flex items-center gap-2 max-w-sm">
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Type a skill (e.g. Next.js)..."
                         value={newSkill}
                         onChange={e => setNewSkill(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && addSimpleItem('skills', newSkill, setNewSkill)}
                         className="flex-grow bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-xl text-xs font-semibold outline-none focus:border-[#2563eb]"
                       />
-                      <button 
+                      <button
                         onClick={() => addSimpleItem('skills', newSkill, setNewSkill)}
                         className="px-4 py-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-xl text-xs font-bold transition-all shadow-sm shrink-0 active:scale-95"
                       >
@@ -613,7 +612,7 @@ export default function ProfilePage() {
                     <div className="w-1.5 h-5 bg-[#2563eb] rounded-full"></div>
                     <h3 className="font-extrabold text-slate-800 text-sm">Work History</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => handleArrayAdd('employment', { id: Date.now().toString(), title: '', company: '', duration: '', description: '' })}
                     className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-1 select-none"
                   >
@@ -625,7 +624,7 @@ export default function ProfilePage() {
                   {(data.employment || []).map(emp => (
                     <div key={emp.id} className="relative pl-5 border-l-2 border-slate-100 hover:border-blue-300 transition-colors py-1 group">
                       <div className="absolute -left-1.5 top-2.5 w-3 h-3 rounded-full bg-slate-200 border-2 border-white group-hover:bg-[#2563eb] transition-colors" />
-                      
+
                       {editMode.employment ? (
                         <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3 shadow-inner text-xs font-semibold">
                           <div className="flex justify-between items-center">
@@ -662,7 +661,7 @@ export default function ProfilePage() {
                     <div className="w-1.5 h-5 bg-[#2563eb] rounded-full"></div>
                     <h3 className="font-extrabold text-slate-800 text-sm">Education</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => handleArrayAdd('education', { id: Date.now().toString(), degree: '', institution: '', details: '' })}
                     className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-1 select-none"
                   >
@@ -674,7 +673,7 @@ export default function ProfilePage() {
                   {(data.education || []).map(edu => (
                     <div key={edu.id} className="relative pl-5 border-l-2 border-slate-100 hover:border-blue-300 transition-colors py-1 group">
                       <div className="absolute -left-1.5 top-2.5 w-3 h-3 rounded-full bg-slate-200 border-2 border-white group-hover:bg-[#2563eb] transition-colors" />
-                      
+
                       {editMode.education ? (
                         <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3 shadow-inner text-xs font-semibold">
                           <div className="flex justify-between items-center">
@@ -709,7 +708,7 @@ export default function ProfilePage() {
                     <div className="w-1.5 h-5 bg-[#2563eb] rounded-full"></div>
                     <h3 className="font-extrabold text-slate-800 text-sm">Projects</h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => handleArrayAdd('projects', { id: Date.now().toString(), title: '', duration: '', description: '' })}
                     className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-1 select-none animate-pulse-slow"
                   >
@@ -720,7 +719,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   {(data.projects || []).map(proj => (
                     <div key={proj.id} className="border border-slate-100 hover:border-blue-100 rounded-2xl p-5 hover:shadow-sm transition-all space-y-3 bg-slate-50/30 relative group">
-                      
+
                       {editMode.projects ? (
                         <div className="space-y-3 text-xs font-semibold">
                           <div className="flex justify-between items-center border-b border-slate-200/60 pb-2">
@@ -756,7 +755,7 @@ export default function ProfilePage() {
 
             {/* ================= RIGHT PANEL (STRENGTH & STATS) ================= */}
             <section className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
-              
+
               {/* Profile Strength Card */}
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-5 space-y-5 shadow-sm">
                 <div className="flex items-center justify-between">
@@ -786,7 +785,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
 
-                <button 
+                <button
                   onClick={() => scrollToSection(score < 50 ? 'identity' : 'skills')}
                   className="w-full py-2.5 border border-[#2563eb] hover:bg-blue-50 text-[#2563eb] rounded-xl text-center text-xs font-extrabold transition-colors cursor-pointer select-none"
                 >
@@ -797,7 +796,7 @@ export default function ProfilePage() {
               {/* Stats Card */}
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-5 space-y-5 shadow-sm text-xs font-semibold">
                 <h3 className="font-extrabold text-slate-800 text-sm">This Week</h3>
-                
+
                 <div className="grid grid-cols-3 gap-2 border-b border-slate-100 pb-4 text-center">
                   <div className="space-y-1">
                     <div className="font-extrabold text-base text-slate-800">142</div>
@@ -826,15 +825,13 @@ export default function ProfilePage() {
               <div className="bg-[#0b0f19] text-white rounded-3xl p-5 space-y-4 shadow-md border border-slate-800/80">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400">Recruiter Visibility</h3>
-                  <button 
+                  <button
                     onClick={() => setRecruiterVisibility(!recruiterVisibility)}
-                    className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 outline-none ${
-                      recruiterVisibility ? 'bg-[#2563eb]' : 'bg-slate-600'
-                    }`}
+                    className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 outline-none ${recruiterVisibility ? 'bg-[#2563eb]' : 'bg-slate-600'
+                      }`}
                   >
-                    <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                      recruiterVisibility ? 'translate-x-4' : 'translate-x-0'
-                    }`} />
+                    <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-200 ${recruiterVisibility ? 'translate-x-4' : 'translate-x-0'
+                      }`} />
                   </button>
                 </div>
                 <p className="text-slate-400 leading-relaxed text-[11px] font-medium">
@@ -854,7 +851,7 @@ export default function ProfilePage() {
 
       {/* --- SMART FLOATING SAVE BUTTON --- */}
       {showSaveButton && (
-        <button 
+        <button
           onClick={saveProfile}
           disabled={isSaving}
           className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 flex items-center gap-2 bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-50 text-white font-bold py-3.5 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 animate-bounce-slow cursor-pointer select-none active:scale-[0.97]"
@@ -870,7 +867,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden transform transition-all scale-100">
             <div className="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-blue-600"/>
+                <FileText className="w-5 h-5 text-blue-600" />
                 {data.resumeName || 'Resume Document'}
               </h2>
               <div className="flex items-center gap-3">
@@ -880,7 +877,7 @@ export default function ProfilePage() {
                     Uploading...
                   </span>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => resumeInputRef.current?.click()}
                     className="text-sm font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-xl transition-colors flex items-center gap-1.5"
                   >
@@ -897,16 +894,16 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="flex-1 w-full bg-slate-100 relative">
-              <iframe 
-                src={`${data.resumeUrl}${data.resumeUrl.includes('?') ? '&' : '?'}v=${resumeVersion}#toolbar=0`} 
-                className="absolute inset-0 w-full h-full border-0" 
+              <iframe
+                src={`${data.resumeUrl}${data.resumeUrl.includes('?') ? '&' : '?'}v=${resumeVersion}#toolbar=0`}
+                className="absolute inset-0 w-full h-full border-0"
                 title="Resume Viewer"
               />
             </div>
           </div>
         </div>
       )}
-      
+
     </div>
   );
 }

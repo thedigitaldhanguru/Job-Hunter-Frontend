@@ -348,7 +348,7 @@ export default function ProfilePage() {
 
                 <div className="px-6 pb-6 pt-0 space-y-5">
                   {/* Photo & Actions header container */}
-                  <div className="flex flex-col sm:flex-row sm:items-end justify-between -mt-16 gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between -mt-16 gap-4">
                     {/* Avatar Rounded Square Overlay */}
                     <div className="relative w-28 h-28 bg-white p-1 rounded-[2rem] shadow-md border-4 border-white shrink-0 group">
                       <div className="w-full h-full rounded-[1.75rem] overflow-hidden bg-slate-50 flex items-center justify-center relative">
@@ -386,7 +386,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-2 pt-2 sm:pt-0">
+                    <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-20">
                       <button className="px-4 py-2 border border-[#e2e8f0] rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm">
                         <Share2 className="w-3.5 h-3.5" />
                         Share

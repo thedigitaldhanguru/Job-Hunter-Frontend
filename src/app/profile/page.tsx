@@ -8,7 +8,8 @@ import {
   MapPin, Briefcase, Phone, Mail, Trash2, FileText, Award,
   TrendingUp, CheckCircle2, User, Calendar, Camera, Check,
   Edit2, Plus, Save, Loader2, XCircle, Share2, UploadCloud,
-  ExternalLink, GraduationCap, LayoutGrid, CheckCircle, ArrowRight
+  ExternalLink, GraduationCap, LayoutGrid, CheckCircle, ArrowRight,
+  X, Sparkles
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { API_BASE_URL } from '@/lib/config';
@@ -36,12 +37,13 @@ export default function ProfilePage() {
   const [newSkill, setNewSkill] = useState('');
   const [newLanguage, setNewLanguage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [uploadingType, setUploadingType] = useState<'avatar' | 'resume' | null>(null);
+  const [uploadingType, setUploadingType] = useState<'avatar' | 'resume' | 'parsing' | null>(null);
   const [activeSection, setActiveSection] = useState('identity');
   const [recruiterVisibility, setRecruiterVisibility] = useState(true);
 
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeVersion, setResumeVersion] = useState(0);
+  const [showVerifyBanner, setShowVerifyBanner] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +67,9 @@ export default function ProfilePage() {
   // Sync Zustand to local draft
   useEffect(() => {
     if (hasFetched && session?.user?.email) {
+      if (localStorage.getItem('pending_profile_verification') === 'true') {
+        setShowVerifyBanner(true);
+      }
       const draftKey = `profile_draft_${session.user.email}`;
       const localDraft = localStorage.getItem(draftKey);
       if (localDraft) {
@@ -152,6 +157,8 @@ export default function ProfilePage() {
 
       if (response.ok) {
         localStorage.removeItem(`profile_draft_${session.user.email}`);
+        localStorage.removeItem('pending_profile_verification');
+        setShowVerifyBanner(false);
         setInitialData(data);
         setProfileData(data);
         alert("Profile Saved Successfully! 🚀");
@@ -186,6 +193,42 @@ export default function ProfilePage() {
   };
 
   const { score, checklist } = getProfileCompleteness();
+
+  const mapBackendToProfile = (res: any, email: string, sessionName?: string | null, sessionImage?: string | null) => {
+    let extended = res.extended_profile;
+    while (typeof extended === 'string') {
+      try { extended = JSON.parse(extended); } catch { break; }
+    }
+    if (!extended || typeof extended !== 'object') extended = {}; 
+
+    return {
+      header: { 
+        name: res.full_name || sessionName || '',
+        email: res.email || email, 
+        degree: res.degree || '', 
+        university: res.university || '', 
+        location: res.location || '', 
+        experience: res.experience || '',
+        phone: res.phone || '', 
+        gender: res.gender || '', 
+        dob: res.dob || '', 
+        avatar: res.avatar_url && res.avatar_url !== 'null' ? res.avatar_url : (sessionImage || '') 
+      },
+      summary: res.profile_summary || '', 
+      resumeName: extended.resumeName || '',
+      resumeUrl: extended.resumeUrl || res.resume_url || '', 
+      employment: Array.isArray(extended.employment) ? extended.employment : [],
+      internships: Array.isArray(extended.internships) ? extended.internships : [],
+      education: Array.isArray(extended.education) ? extended.education : [],
+      skills: Array.isArray(extended.skills) ? extended.skills : [],
+      projects: Array.isArray(extended.projects) ? extended.projects : [],
+      languages: Array.isArray(extended.languages) ? extended.languages : [],
+      academicAchievements: Array.isArray(extended.academicAchievements) ? extended.academicAchievements : [],
+      accomplishments: Array.isArray(extended.accomplishments) ? extended.accomplishments : [],
+      exams: Array.isArray(extended.exams) ? extended.exams : [],
+      preferences: extended.preferences || { jobType: '', availability: '', location: '', currentCTC: '', expectedCTC: '' }
+    };
+  };
 
   const toggleEdit = (section: string) => setEditMode(prev => ({ ...prev, [section]: !prev[section] }));
 
@@ -227,16 +270,104 @@ export default function ProfilePage() {
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const email = session?.user?.email;
+      if (!email) {
+        alert("You must be logged in to upload your resume.");
+        return;
+      }
       try {
         setUploadingType('resume');
         const s3FileUrl = await uploadToS3(file);
+        
+        // Update local draft
         setData((prev: any) => ({ ...prev, resumeName: file.name, resumeUrl: s3FileUrl }));
         setResumeVersion(prev => prev + 1);
-        alert("Resume uploaded successfully! Click save to update your profile.");
+
+        // Update database profile with the new resumeUrl (triggers parsing in bg)
+        setUploadingType('parsing');
+        localStorage.setItem('pending_profile_verification', 'true');
+        
+        const payload = {
+          full_name: data.header.name || session?.user?.name || '',
+          email: email, 
+          degree: data.header.degree,
+          university: data.header.university,
+          location: data.header.location,
+          experience: data.header.experience,
+          phone: data.header.phone,
+          gender: data.header.gender,
+          dob: data.header.dob,
+          profile_summary: data.summary, 
+          avatar_url: data.header.avatar,
+          current_ctc: data.preferences.currentCTC,   
+          expected_ctc: data.preferences.expectedCTC, 
+          extended_profile: {
+            ...data.preferences,
+            employment: data.employment,
+            internships: data.internships,
+            education: data.education,
+            skills: data.skills,
+            projects: data.projects,
+            languages: data.languages,
+            academicAchievements: data.academicAchievements,
+            accomplishments: data.accomplishments,
+            exams: data.exams,
+            preferences: data.preferences,
+            resumeName: file.name,
+            resumeUrl: s3FileUrl
+          }
+        };
+
+        const response = await fetch(`${API_BASE_URL}/profile/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) throw new Error("Failed to save resume url");
+
+        // Now, poll for background parsing results
+        let attempts = 0;
+        const maxAttempts = 4; // poll for 12 seconds
+        const interval = setInterval(async () => {
+          attempts++;
+          try {
+            const pollResponse = await fetch(`${API_BASE_URL}/profile/${email}`);
+            if (pollResponse.ok) {
+              const res = await pollResponse.json();
+              // Check if parsing finished (for example, check if skills or projects or employment is populated)
+              let extended = res.extended_profile;
+              while (typeof extended === 'string') {
+                try { extended = JSON.parse(extended); } catch { break; }
+              }
+              if (!extended || typeof extended !== 'object') extended = {};
+              
+              const hasParsedData = (extended.skills && extended.skills.length > 0) || 
+                                    (extended.employment && extended.employment.length > 0) || 
+                                    (extended.projects && extended.projects.length > 0);
+              
+              if (hasParsedData || attempts >= maxAttempts) {
+                clearInterval(interval);
+                
+                // Format and load profile data
+                const formatted = mapBackendToProfile(res, email, session?.user?.name, session?.user?.image);
+                setData(formatted);
+                setInitialData(formatted);
+                setProfileData(formatted);
+                setUploadingType(null);
+                setShowVerifyBanner(true);
+                alert("Resume parsed successfully! Please verify and save your profile.");
+              }
+            }
+          } catch (pollErr) {
+            console.error("Polling error:", pollErr);
+          }
+        }, 3000);
+
       } catch (err) {
-        alert("Resume upload failed.");
-      } finally {
+        alert("Resume upload/parsing failed.");
         setUploadingType(null);
+      } finally {
         if (e.target) {
           e.target.value = '';
         }
@@ -341,6 +472,35 @@ export default function ProfilePage() {
             {/* ================= MIDDLE MAIN PANEL ================= */}
             <section className="lg:col-span-6 space-y-6">
 
+              {/* VERIFY PROFILE BANNER */}
+              {showVerifyBanner && (
+                <div className="bg-gradient-to-r from-blue-50/90 to-indigo-50/85 border border-blue-100 rounded-3xl p-5 shadow-sm flex items-start justify-between gap-4 animate-fade-in-up">
+                  <div className="flex gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-blue-600 shrink-0">
+                      <Sparkles className="w-5 h-5 animate-pulse text-blue-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                        Verify Profile Details
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+                        We successfully parsed your resume using AI! Please review the auto-filled details below, make any corrections, and click <strong className="text-blue-600">"Save Profile"</strong> to lock them in.
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      localStorage.removeItem('pending_profile_verification');
+                      setShowVerifyBanner(false);
+                    }}
+                    className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 shrink-0 transition-all active:scale-95"
+                    title="Dismiss notification"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
               {/* IDENTITY CARD */}
               <article id="identity" className="bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden shadow-sm relative">
                 {/* Banner backdrop */}
@@ -393,13 +553,13 @@ export default function ProfilePage() {
                       </button>
 
                       <input type="file" ref={resumeInputRef} onChange={handleResumeUpload} accept=".pdf,.doc,.docx" className="hidden" />
-                      {uploadingType === 'resume' ? (
+                      {uploadingType === 'resume' || uploadingType === 'parsing' ? (
                         <button
                           disabled
                           className="px-4 py-2 border border-[#e2e8f0] rounded-xl text-xs font-bold text-slate-400 bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
                         >
                           <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2563eb]" />
-                          Uploading...
+                          {uploadingType === 'resume' ? 'Uploading...' : 'AI Parsing...'}
                         </button>
                       ) : data.resumeUrl ? (
                         <div className="flex items-center">
@@ -871,10 +1031,10 @@ export default function ProfilePage() {
                 {data.resumeName || 'Resume Document'}
               </h2>
               <div className="flex items-center gap-3">
-                {uploadingType === 'resume' ? (
+                {uploadingType === 'resume' || uploadingType === 'parsing' ? (
                   <span className="text-sm font-semibold text-slate-500 flex items-center gap-1.5 px-4 py-2">
                     <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                    Uploading...
+                    {uploadingType === 'resume' ? 'Uploading...' : 'AI Parsing...'}
                   </span>
                 ) : (
                   <button

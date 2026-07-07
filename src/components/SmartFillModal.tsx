@@ -102,6 +102,10 @@ export default function SmartFillModal() {
 
       if (!response.ok) throw new Error("Failed to save resume URL to profile database");
 
+      // Set pending verification flag for Profile page
+      localStorage.setItem('pending_profile_verification', 'true');
+      window.dispatchEvent(new Event('pending_profile_updated'));
+
       // 5. Update store state locally
       useProfileStore.getState().setProfileData(updatedProfile);
 

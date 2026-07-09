@@ -27,8 +27,8 @@ export default function JobsPage() {
   } = useProfileStore();
 
   const {
-    jobs: dbJobs, loading, offset, searchQuery, locationQuery, hasFetched,
-    setSearchQuery, setLocationQuery, setOffset, fetchJobs
+    jobs: dbJobs, loading, offset, searchQuery, locationQuery, categoryQuery, hasFetched,
+    setSearchQuery, setLocationQuery, setCategoryQuery, setOffset, fetchJobs
   } = useJobsStore();
 
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
@@ -49,24 +49,13 @@ export default function JobsPage() {
   }, [session, profileHasFetched, fetchProfile]);
 
   // --- DATA FETCHING (ZUSTAND) ---
-  const isFirstMount = useRef(true);
   useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
-    }
     const delayDebounceFn = setTimeout(() => {
       fetchJobs(LIMIT, true);
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, locationQuery]);
-
-  useEffect(() => {
-    if (!hasFetched) {
-      fetchJobs(LIMIT, true);
-    }
-  }, [hasFetched, fetchJobs]);
+  }, [searchQuery, locationQuery, categoryQuery]);
 
   // Handle Apply Logic
   const handleApply = async (e: React.MouseEvent | React.FormEvent, job: JobListing) => {
@@ -511,7 +500,7 @@ export default function JobsPage() {
                 <div className="space-y-1">
                   <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Discover your next role</h1>
                   <p className="text-xs sm:text-sm text-blue-100/70 font-semibold">
-                    8+ openings · 2 remote · 3 posted in the last 48h
+                    {filteredJobs.length} live role{filteredJobs.length === 1 ? '' : 's'} available now
                   </p>
                 </div>
                 <button className="w-fit bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 rounded-full text-xs font-bold transition-all shadow-inner flex items-center gap-1.5">
@@ -707,6 +696,21 @@ export default function JobsPage() {
                   </select>
                 </div>
               </div>
+
+              {categoryQuery && (
+                <div className="flex items-center gap-2 px-1">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Category:</span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-100 text-[#2563eb] rounded-xl text-xs font-bold">
+                    {categoryQuery}
+                    <button 
+                      onClick={() => setCategoryQuery('')}
+                      className="text-[#2563eb] hover:text-blue-800 font-bold ml-1 text-xs focus:outline-none cursor-pointer"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                </div>
+              )}
 
               {/* Metrics strip cards row */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

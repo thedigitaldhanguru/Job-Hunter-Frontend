@@ -10,10 +10,12 @@ interface JobsStore {
   offset: number;
   searchQuery: string;
   locationQuery: string;
+  categoryQuery: string;
   hasFetched: boolean;
 
   setSearchQuery: (query: string) => void;
   setLocationQuery: (query: string) => void;
+  setCategoryQuery: (category: string) => void;
   setOffset: (offset: number) => void;
   fetchJobs: (limit: number, reset?: boolean) => Promise<void>;
   reset: () => void;
@@ -26,16 +28,18 @@ export const useJobsStore = create<JobsStore>((set, get) => ({
   offset: 0,
   searchQuery: '',
   locationQuery: '',
+  categoryQuery: '',
   hasFetched: false,
 
-  reset: () => set({ jobs: [], loading: false, error: null, offset: 0, searchQuery: '', locationQuery: '', hasFetched: false }),
+  reset: () => set({ jobs: [], loading: false, error: null, offset: 0, searchQuery: '', locationQuery: '', categoryQuery: '', hasFetched: false }),
 
   setSearchQuery: (query) => set({ searchQuery: query }),
   setLocationQuery: (query) => set({ locationQuery: query }),
+  setCategoryQuery: (category) => set({ categoryQuery: category }),
   setOffset: (offset) => set({ offset }),
 
   fetchJobs: async (limit: number, reset = false) => {
-    const { searchQuery, locationQuery, offset, jobs, loading } = get();
+    const { searchQuery, locationQuery, categoryQuery, offset, jobs, loading } = get();
     
     if (loading) return;
     
@@ -46,6 +50,10 @@ export const useJobsStore = create<JobsStore>((set, get) => ({
 
     try {
       let url = `${API_BASE_URL}/jobs?limit=${limit}&offset=${currentOffset}`;
+      
+      if (categoryQuery.trim() !== '') {
+        url += `&category=${encodeURIComponent(categoryQuery.trim())}`;
+      }
       
       let combinedQuery = searchQuery.trim();
       if (locationQuery.trim() !== '') {

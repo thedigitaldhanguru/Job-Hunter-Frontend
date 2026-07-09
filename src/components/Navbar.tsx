@@ -74,8 +74,8 @@ export default function Navbar() {
                 label: 'Companies', 
                 href: '/companies',
                 subItems: [
-                  { label: 'MNCs', href: '/companies' },
-                  { label: 'Startups', href: '/companies' },
+                  { label: 'MNCs', href: '/companies/mncs' },
+                  { label: 'Startups', href: '/companies/startups' },
                   { label: 'Review and ratings', href: '/companies' }
                 ]
               },
@@ -90,12 +90,12 @@ export default function Navbar() {
               },
               { 
                 label: 'Services', 
-                href: '#',
+                href: '/services/resume-building',
                 subItems: [
-                  { label: 'Resume building', href: '#' },
-                  { label: 'Mock interviews', href: '#' },
-                  { label: 'Profile boost', href: '#' },
-                  { label: 'Career coaching', href: '#' }
+                  { label: 'Resume building', href: '/services/resume-building' },
+                  { label: 'Mock interviews', href: '/services/mock-interviews' },
+                  { label: 'Profile boost', href: '/services/profile-boost' },
+                  { label: 'Career coaching', href: '/services/career-coaching' }
                 ]
               }
             ].map((item) => {

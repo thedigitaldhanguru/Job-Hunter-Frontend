@@ -8,7 +8,7 @@ import {
   Search, MapPin, Star, ArrowRight, TrendingUp, Palette, BarChart3, 
   Megaphone, Box, PenTool, Wallet, Clock, Loader2, ArrowUpRight,
   Sparkles, FileText, Shield, Zap, Database, Monitor, MousePointer, 
-  Globe, Check, Eye, Bell
+  Globe, Check, Eye, Bell, Briefcase, Server, Layers, Cloud, Brain, Compass
 } from 'lucide-react';
 import { JobListing } from '@/types/job';
 import { API_BASE_URL } from '@/lib/config';
@@ -31,7 +31,7 @@ export default function Home() {
 
   const {
     jobs, loading, offset, searchQuery, locationQuery, hasFetched,
-    setSearchQuery, setLocationQuery, setOffset, fetchJobs
+    setSearchQuery, setLocationQuery, setCategoryQuery, setOffset, fetchJobs
   } = useJobsStore();
 
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
@@ -442,22 +442,24 @@ export default function Home() {
             <div className="space-y-4">
               <span className="px-3 py-1 bg-white/15 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">Trending</span>
               <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 shadow-inner">
-                <Code2Icon className="w-6 h-6" />
+                <Briefcase className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-4xl font-bold tracking-tight mt-4">Engineering</h3>
+              <h3 className="text-4xl font-bold tracking-tight mt-4">Software Engineering</h3>
               <p className="text-sm text-blue-100/80 leading-relaxed max-w-xs">
-                From frontend to platform — 1,240 live openings across India and remote.
+                Solve algorithmic challenges, manage technical lifecycles, and design system patterns.
               </p>
             </div>
 
             <div className="flex items-end justify-between pt-10">
               <div>
-                <div className="text-3xl font-extrabold">1,240</div>
+                <div className="text-3xl font-extrabold">980</div>
                 <div className="text-xs uppercase font-bold tracking-wider text-blue-200 mt-1">Open Roles</div>
               </div>
               <button 
                 onClick={() => {
-                  setSearchQuery('Engineering');
+                  setCategoryQuery('Software Engineering');
+                  setSearchQuery('');
+                  setLocationQuery('');
                   router.push('/jobs');
                 }}
                 className="w-12 h-12 bg-white text-[#2563eb] rounded-full flex items-center justify-center shadow-md hover:scale-105 transition-transform active:scale-95"
@@ -470,19 +472,21 @@ export default function Home() {
           {/* Categories grid block */}
           <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { title: 'Design', count: '320 jobs', icon: Palette, color: 'from-rose-500/15 to-rose-500/5 text-rose-600' },
-              { title: 'Data', count: '480 jobs', icon: BarChart3, color: 'from-amber-500/15 to-amber-500/5 text-amber-600' },
-              { title: 'Marketing', count: '560 jobs', icon: Megaphone, color: 'from-emerald-500/15 to-emerald-500/5 text-emerald-600' },
-              { title: 'Sales', count: '720 jobs', icon: TrendingUp, color: 'from-purple-500/15 to-purple-500/5 text-purple-600' },
-              { title: 'Product', count: '290 jobs', icon: Box, color: 'from-cyan-500/15 to-cyan-500/5 text-cyan-600', active: true },
-              { title: 'Content', count: '180 jobs', icon: PenTool, color: 'from-indigo-500/15 to-indigo-500/5 text-indigo-600' },
+              { title: 'Frontend', count: '840 jobs', icon: Code2Icon, color: 'from-blue-500/15 to-blue-500/5 text-[#2563eb]' },
+              { title: 'Backend', count: '1,120 jobs', icon: Server, color: 'from-amber-500/15 to-amber-500/5 text-amber-600' },
+              { title: 'Full Stack', count: '1,450 jobs', icon: Layers, color: 'from-purple-500/15 to-purple-500/5 text-purple-600' },
+              { title: 'AI / Data', count: '620 jobs', icon: Brain, color: 'from-emerald-500/15 to-emerald-500/5 text-emerald-600' },
+              { title: 'DevOps / Cloud', count: '420 jobs', icon: Cloud, color: 'from-rose-500/15 to-rose-500/5 text-rose-600' },
+              { title: 'Other', count: '1,680 jobs', icon: Compass, color: 'from-indigo-500/15 to-indigo-500/5 text-indigo-600', active: true },
             ].slice(0, 6).map((cat) => {
               const Icon = cat.icon;
               return (
                 <div 
                   key={cat.title} 
                   onClick={() => {
-                    setSearchQuery(cat.title);
+                    setCategoryQuery(cat.title);
+                    setSearchQuery('');
+                    setLocationQuery('');
                     router.push('/jobs');
                   }}
                   className={`group bg-white border rounded-2xl p-5 flex items-center justify-between hover:border-[#2563eb] hover:shadow-md transition-all duration-300 cursor-pointer ${cat.active ? 'border-blue-400 shadow-sm shadow-blue-500/5' : 'border-[#e2e8f0]'}`}

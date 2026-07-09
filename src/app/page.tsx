@@ -35,6 +35,46 @@ export default function Home() {
   } = useJobsStore();
 
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
+
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('recent_jobs_searches');
+    if (stored) {
+      try {
+        setRecentSearches(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const handleSaveSearch = (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    
+    setRecentSearches(prev => {
+      const filtered = prev.filter(item => item.toLowerCase() !== trimmed.toLowerCase());
+      const updated = [trimmed, ...filtered].slice(0, 6);
+      localStorage.setItem('recent_jobs_searches', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const getTrendingTags = () => {
+    const defaultTrending = ['Remote', 'Full-time', 'React', 'Node.js', 'AWS', '0-1 yrs'];
+    const combined = [...recentSearches];
+    
+    defaultTrending.forEach(tag => {
+      const exists = combined.some(item => item.toLowerCase() === tag.toLowerCase());
+      if (!exists) {
+        combined.push(tag);
+      }
+    });
+    
+    return combined.slice(0, 6);
+  };
+
   const LIMIT = 20;
 
   // Load profile details on mount/login
@@ -178,6 +218,12 @@ export default function Home() {
                 placeholder="Job title, company or keyword" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveSearch(searchQuery);
+                    router.push('/jobs');
+                  }
+                }}
                 className="bg-transparent outline-none w-full text-sm font-medium placeholder-slate-400" 
               />
             </div>
@@ -191,12 +237,21 @@ export default function Home() {
                 placeholder="City or remote" 
                 value={locationQuery}
                 onChange={(e) => setLocationQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveSearch(searchQuery);
+                    router.push('/jobs');
+                  }
+                }}
                 className="bg-transparent outline-none w-full text-sm font-medium placeholder-slate-400" 
               />
             </div>
             
             <button 
-              onClick={() => router.push('/jobs')}
+              onClick={() => {
+                handleSaveSearch(searchQuery);
+                router.push('/jobs');
+              }}
               className="w-full sm:w-auto bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-7 py-3.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 shrink-0"
             >
               Search Jobs
@@ -207,11 +262,12 @@ export default function Home() {
           {/* Trending labels */}
           <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-sm text-blue-200/80">
             <span className="font-semibold text-white">Trending:</span>
-            {['React', 'Product Manager', 'Data Scientist', 'Designer', 'DevOps'].map(tag => (
+            {getTrendingTags().map(tag => (
               <span 
                 key={tag} 
                 onClick={() => {
-                  setSearchQuery(tag);
+                  setCategoryQuery('');
+                  setSearchQuery(tag === '0-1 yrs' ? '' : tag);
                   router.push('/jobs');
                 }}
                 className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition-colors text-white font-medium text-xs shadow-inner"

@@ -28,7 +28,7 @@ export default function JobsPage() {
 
   const {
     jobs: dbJobs, loading, offset, searchQuery, locationQuery, categoryQuery, hasFetched,
-    setSearchQuery, setLocationQuery, setCategoryQuery, setOffset, fetchJobs
+    searchHistory, setSearchQuery, setLocationQuery, setCategoryQuery, setOffset, fetchJobs
   } = useJobsStore();
 
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
@@ -39,42 +39,31 @@ export default function JobsPage() {
   const [sortBy, setSortBy] = useState('Most relevant');
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
 
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('recent_jobs_searches');
-    if (stored) {
-      try {
-        setRecentSearches(JSON.parse(stored));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, []);
-
-  const handleSaveSearch = (query: string) => {
-    const trimmed = query.trim();
-    if (!trimmed) return;
-    
-    setRecentSearches(prev => {
-      const filtered = prev.filter(item => item.toLowerCase() !== trimmed.toLowerCase());
-      const updated = [trimmed, ...filtered].slice(0, 6);
-      localStorage.setItem('recent_jobs_searches', JSON.stringify(updated));
-      return updated;
-    });
-  };
-
   const getTrendingTags = () => {
     const defaultTrending = ['Remote', 'Full-time', 'React', 'Node.js', 'AWS', '0-1 yrs'];
-    const combined = [...recentSearches];
     
-    defaultTrending.forEach(tag => {
-      const exists = combined.some(item => item.toLowerCase() === tag.toLowerCase());
+    const topSearches = Object.values(searchHistory || {})
+      .filter(item => item.count > 10)
+      .sort((a, b) => b.count - a.count)
+      .map(item => item.term);
+      
+    const growingSearches = Object.values(searchHistory || {})
+      .filter(item => item.count >= 3 && item.count <= 10)
+      .sort((a, b) => b.count - a.count)
+      .map(item => item.term);
+
+    const combined: string[] = [];
+    const addUnique = (term: string) => {
+      const exists = combined.some(item => item.toLowerCase() === term.toLowerCase());
       if (!exists) {
-        combined.push(tag);
+        combined.push(term);
       }
-    });
-    
+    };
+
+    topSearches.forEach(addUnique);
+    defaultTrending.forEach(addUnique);
+    growingSearches.forEach(addUnique);
+
     return combined.slice(0, 6);
   };
 
@@ -559,7 +548,6 @@ export default function JobsPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        handleSaveSearch(searchQuery);
                         fetchJobs(LIMIT, true);
                       }
                     }}
@@ -578,7 +566,6 @@ export default function JobsPage() {
                     onChange={(e) => setLocationQuery(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        handleSaveSearch(searchQuery);
                         fetchJobs(LIMIT, true);
                       }
                     }}
@@ -587,10 +574,7 @@ export default function JobsPage() {
                 </div>
                 
                 <button 
-                  onClick={() => {
-                    handleSaveSearch(searchQuery);
-                    fetchJobs(LIMIT, true);
-                  }}
+                  onClick={() => fetchJobs(LIMIT, true)}
                   className="w-full sm:w-auto bg-[#f97316] hover:bg-[#ea580c] text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 shrink-0"
                 >
                   Search jobs

@@ -12,14 +12,26 @@ interface JobsStore {
   locationQuery: string;
   categoryQuery: string;
   hasFetched: boolean;
+  searchHistory: Record<string, { term: string; count: number }>;
 
   setSearchQuery: (query: string) => void;
   setLocationQuery: (query: string) => void;
   setCategoryQuery: (category: string) => void;
   setOffset: (offset: number) => void;
   fetchJobs: (limit: number, reset?: boolean) => Promise<void>;
+  recordSearch: (query: string) => void;
   reset: () => void;
 }
+
+const getInitialSearchHistory = (): Record<string, { term: string; count: number }> => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const stored = localStorage.getItem('jobs_search_history_counts');
+    return stored ? JSON.parse(stored) : {};
+  } catch (e) {
+    return {};
+  }
+};
 
 export const useJobsStore = create<JobsStore>((set, get) => ({
   jobs: [],
@@ -30,6 +42,7 @@ export const useJobsStore = create<JobsStore>((set, get) => ({
   locationQuery: '',
   categoryQuery: '',
   hasFetched: false,
+  searchHistory: getInitialSearchHistory(),
 
   reset: () => set({ jobs: [], loading: false, error: null, offset: 0, searchQuery: '', locationQuery: '', categoryQuery: '', hasFetched: false }),
 
@@ -37,6 +50,28 @@ export const useJobsStore = create<JobsStore>((set, get) => ({
   setLocationQuery: (query) => set({ locationQuery: query }),
   setCategoryQuery: (category) => set({ categoryQuery: category }),
   setOffset: (offset) => set({ offset }),
+
+  recordSearch: (query) => {
+    const trimmed = query.trim();
+    if (!trimmed || typeof window === 'undefined') return;
+    try {
+      const storedHistory = localStorage.getItem('jobs_search_history_counts');
+      let history: Record<string, { term: string; count: number }> = {};
+      if (storedHistory) {
+        history = JSON.parse(storedHistory);
+      }
+      const key = trimmed.toLowerCase();
+      if (history[key]) {
+        history[key].count += 1;
+      } else {
+        history[key] = { term: trimmed, count: 1 };
+      }
+      localStorage.setItem('jobs_search_history_counts', JSON.stringify(history));
+      set({ searchHistory: history });
+    } catch (e) {
+      console.error("Failed to record search history:", e);
+    }
+  },
 
   fetchJobs: async (limit: number, reset = false) => {
     const { searchQuery, locationQuery, categoryQuery, offset, jobs, loading } = get();
@@ -82,6 +117,11 @@ export const useJobsStore = create<JobsStore>((set, get) => ({
         loading: false, 
         hasFetched: true 
       });
+
+      // Record query if search returned results
+      if (data && data.length > 0 && searchQuery.trim() !== '') {
+        get().recordSearch(searchQuery.trim());
+      }
       
     } catch (err: any) {
       set({ error: err.message, loading: false, hasFetched: true });

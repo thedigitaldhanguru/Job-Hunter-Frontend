@@ -37,29 +37,11 @@ export default function Home() {
   const [applyingTo, setApplyingTo] = useState<number | string | null>(null);
 
   const getTrendingTags = () => {
-    const defaultTrending = ['Remote', 'Full-time', 'React', 'Node.js', 'AWS', '0-1 yrs'];
-    
-    // 1. Get all searches with count >= 3, sorted by count descending
-    const dynamicSearches = Object.values(searchHistory || {})
-      .filter(item => item.count >= 3)
-      .sort((a, b) => b.count - a.count)
+    return Object.values(searchHistory || {})
+      .filter(item => item.count >= 1)
+      .sort((a, b) => a.count - b.count)
+      .slice(0, 6)
       .map(item => item.term);
-
-    // 2. Fill the remaining spots at the front with default items
-    const finalTags: string[] = [];
-    const dynamicToAdd = dynamicSearches.slice(0, 6);
-    
-    defaultTrending.forEach(tag => {
-      const exists = dynamicToAdd.some(item => item.toLowerCase() === tag.toLowerCase());
-      if (!exists && finalTags.length + dynamicToAdd.length < 6) {
-        finalTags.push(tag);
-      }
-    });
-    
-    // 3. Append the dynamic searches at the end
-    finalTags.push(...dynamicToAdd);
-    
-    return finalTags;
   };
 
   const LIMIT = 20;

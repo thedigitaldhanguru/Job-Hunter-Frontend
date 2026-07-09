@@ -42,29 +42,27 @@ export default function JobsPage() {
   const getTrendingTags = () => {
     const defaultTrending = ['Remote', 'Full-time', 'React', 'Node.js', 'AWS', '0-1 yrs'];
     
-    const topSearches = Object.values(searchHistory || {})
-      .filter(item => item.count > 10)
-      .sort((a, b) => b.count - a.count)
-      .map(item => item.term);
-      
-    const growingSearches = Object.values(searchHistory || {})
-      .filter(item => item.count >= 3 && item.count <= 10)
+    // 1. Get all searches with count >= 3, sorted by count descending
+    const dynamicSearches = Object.values(searchHistory || {})
+      .filter(item => item.count >= 3)
       .sort((a, b) => b.count - a.count)
       .map(item => item.term);
 
-    const combined: string[] = [];
-    const addUnique = (term: string) => {
-      const exists = combined.some(item => item.toLowerCase() === term.toLowerCase());
-      if (!exists) {
-        combined.push(term);
+    // 2. Fill the remaining spots at the front with default items
+    const finalTags: string[] = [];
+    const dynamicToAdd = dynamicSearches.slice(0, 6);
+    
+    defaultTrending.forEach(tag => {
+      const exists = dynamicToAdd.some(item => item.toLowerCase() === tag.toLowerCase());
+      if (!exists && finalTags.length + dynamicToAdd.length < 6) {
+        finalTags.push(tag);
       }
-    };
-
-    topSearches.forEach(addUnique);
-    defaultTrending.forEach(addUnique);
-    growingSearches.forEach(addUnique);
-
-    return combined.slice(0, 6);
+    });
+    
+    // 3. Append the dynamic searches at the end
+    finalTags.push(...dynamicToAdd);
+    
+    return finalTags;
   };
 
   const LIMIT = 20;

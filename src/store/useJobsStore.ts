@@ -118,9 +118,22 @@ export const useJobsStore = create<JobsStore>((set, get) => ({
         hasFetched: true 
       });
 
-      // Record query if search returned results
+      // Record query if search returned results and is an exact whole-word match
       if (data && data.length > 0 && searchQuery.trim() !== '') {
-        get().recordSearch(searchQuery.trim());
+        const query = searchQuery.trim();
+        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = `(?:^|[^a-zA-Z0-9_])${escaped}(?:$|[^a-zA-Z0-9_])`;
+        const regex = new RegExp(pattern, 'i');
+        
+        const hasWholeWord = data.some((job: JobListing) => {
+          const title = (job.title || '').toLowerCase();
+          const company = (job.company_raw || '').toLowerCase();
+          return regex.test(title) || regex.test(company);
+        });
+
+        if (hasWholeWord && query.length >= 2) {
+          get().recordSearch(query);
+        }
       }
       
     } catch (err: any) {

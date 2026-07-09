@@ -39,6 +39,45 @@ export default function JobsPage() {
   const [sortBy, setSortBy] = useState('Most relevant');
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
 
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('recent_jobs_searches');
+    if (stored) {
+      try {
+        setRecentSearches(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const handleSaveSearch = (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    
+    setRecentSearches(prev => {
+      const filtered = prev.filter(item => item.toLowerCase() !== trimmed.toLowerCase());
+      const updated = [trimmed, ...filtered].slice(0, 6);
+      localStorage.setItem('recent_jobs_searches', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const getTrendingTags = () => {
+    const defaultTrending = ['Remote', 'Full-time', 'React', 'Node.js', 'AWS', '0-1 yrs'];
+    const combined = [...recentSearches];
+    
+    defaultTrending.forEach(tag => {
+      const exists = combined.some(item => item.toLowerCase() === tag.toLowerCase());
+      if (!exists) {
+        combined.push(tag);
+      }
+    });
+    
+    return combined.slice(0, 6);
+  };
+
   const LIMIT = 20;
 
   // Load profile details on mount/login
@@ -518,6 +557,12 @@ export default function JobsPage() {
                     placeholder="Job title, skills, or company" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveSearch(searchQuery);
+                        fetchJobs(LIMIT, true);
+                      }
+                    }}
                     className="bg-transparent outline-none w-full text-sm font-semibold placeholder-slate-400" 
                   />
                 </div>
@@ -531,12 +576,21 @@ export default function JobsPage() {
                     placeholder="City, state, or 'Remote'" 
                     value={locationQuery}
                     onChange={(e) => setLocationQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveSearch(searchQuery);
+                        fetchJobs(LIMIT, true);
+                      }
+                    }}
                     className="bg-transparent outline-none w-full text-sm font-semibold placeholder-slate-400" 
                   />
                 </div>
                 
                 <button 
-                  onClick={() => fetchJobs(LIMIT, true)}
+                  onClick={() => {
+                    handleSaveSearch(searchQuery);
+                    fetchJobs(LIMIT, true);
+                  }}
                   className="w-full sm:w-auto bg-[#f97316] hover:bg-[#ea580c] text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 shrink-0"
                 >
                   Search jobs
@@ -546,10 +600,13 @@ export default function JobsPage() {
               {/* Trending buttons */}
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-blue-200/80 pt-1">
                 <span>Trending:</span>
-                {['Remote', 'Full-time', 'Engineering', 'Design', 'Data', '0-1 yrs'].map(tag => (
+                {getTrendingTags().map(tag => (
                   <span 
                     key={tag}
-                    onClick={() => setSearchQuery(tag === '0-1 yrs' ? '' : tag)}
+                    onClick={() => {
+                      setCategoryQuery('');
+                      setSearchQuery(tag === '0-1 yrs' ? '' : tag);
+                    }}
                     className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-md cursor-pointer transition-colors shadow-inner"
                   >
                     {tag}

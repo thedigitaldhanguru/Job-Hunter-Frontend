@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
-  Code, Paintbrush, BarChart3, Megaphone, TrendingUp, Box, 
+import {
+  Code, Paintbrush, BarChart3, Megaphone, TrendingUp, Box,
   DollarSign, Activity, Search, Sparkles, ArrowRight, ArrowLeft,
   Server, Layers, Cloud, Brain, Compass, Briefcase
 } from 'lucide-react';
@@ -41,7 +41,7 @@ export default function SpecializationsPage() {
       description: 'Craft interactive, visual interfaces for modern web applications using cutting-edge frameworks.',
       category: 'Tech',
       skills: ['React', 'Next.js', 'TypeScript', 'Tailwind'],
-      openRoles: '840',
+      openRoles: '100+',
       avgPay: '₹10-25 LPA',
       trend: '+16%',
       icon: Code,
@@ -53,7 +53,7 @@ export default function SpecializationsPage() {
       description: 'Design robust database systems, APIs, server architectures, and background processes.',
       category: 'Tech',
       skills: ['Node.js', 'Python', 'Java', 'Go', 'SQL'],
-      openRoles: '1,120',
+      openRoles: '200+',
       avgPay: '₹12-32 LPA',
       trend: '+20%',
       icon: Server,
@@ -65,7 +65,7 @@ export default function SpecializationsPage() {
       description: 'Deliver end-to-end applications bridging interactive interfaces with scalable databases.',
       category: 'Tech',
       skills: ['React', 'Node.js', 'Next.js', 'PostgreSQL'],
-      openRoles: '1,450',
+      openRoles: '100+',
       avgPay: '₹14-38 LPA',
       trend: '+22%',
       icon: Layers,
@@ -77,7 +77,7 @@ export default function SpecializationsPage() {
       description: 'Build intelligent algorithms, large language models, data pipelines, and analytics engines.',
       category: 'Tech',
       skills: ['Python', 'PyTorch', 'Data Pipelines', 'LLMs'],
-      openRoles: '620',
+      openRoles: '300+',
       avgPay: '₹18-45 LPA',
       trend: '+35%',
       icon: Brain,
@@ -89,7 +89,7 @@ export default function SpecializationsPage() {
       description: 'Automate software deployments, optimize cloud infrastructure, and maintain site reliability.',
       category: 'Tech',
       skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-      openRoles: '420',
+      openRoles: '200+',
       avgPay: '₹15-35 LPA',
       trend: '+18%',
       icon: Cloud,
@@ -101,7 +101,7 @@ export default function SpecializationsPage() {
       description: 'Solve algorithmic challenges, manage technical lifecycles, and design system patterns.',
       category: 'Tech',
       skills: ['System Design', 'OOP', 'Data Structures', 'Algorithms'],
-      openRoles: '980',
+      openRoles: '500+',
       avgPay: '₹16-42 LPA',
       trend: '+12%',
       icon: Briefcase,
@@ -113,7 +113,7 @@ export default function SpecializationsPage() {
       description: 'Non-technical tracks including UI/UX design, accounts, digital marketing, sales, and content creation.',
       category: 'Operations',
       skills: ['Design', 'Accounts', 'Marketing', 'Sales', 'Product'],
-      openRoles: '1,680',
+      openRoles: '1500+',
       avgPay: '₹8-20 LPA',
       trend: '+10%',
       icon: Compass,
@@ -156,7 +156,7 @@ export default function SpecializationsPage() {
             <Sparkles className="w-3.5 h-3.5 fill-orange-400" />
             Specializations
           </div>
-          
+
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">Browse Roles by Specialization</h1>
           <p className="text-sm sm:text-base text-blue-100/80 max-w-lg mx-auto">
             {specializations.length} specializations · 4,200+ open roles
@@ -168,12 +168,12 @@ export default function SpecializationsPage() {
           {/* Search bar */}
           <div className="bg-white rounded-xl p-1.5 shadow-lg flex items-center max-w-md mx-auto border border-blue-500/20 text-slate-800">
             <Search className="w-4.5 h-4.5 text-slate-400 ml-3.5 shrink-0" />
-            <input 
-              type="text" 
-              placeholder="Search specializations, roles or skills" 
+            <input
+              type="text"
+              placeholder="Search specializations, roles or skills"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent outline-none w-full text-sm font-semibold px-2.5 py-2 placeholder-slate-400" 
+              className="bg-transparent outline-none w-full text-sm font-semibold px-2.5 py-2 placeholder-slate-400"
             />
           </div>
         </div>
@@ -193,11 +193,10 @@ export default function SpecializationsPage() {
                 <button
                   key={tab.label}
                   onClick={() => setSelectedCategory(tab.value as any)}
-                  className={`px-4.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 select-none ${
-                    isActive 
-                      ? 'bg-[#0a4fcd] text-white shadow-md shadow-blue-500/10' 
-                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                  }`}
+                  className={`px-4.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 select-none ${isActive
+                    ? 'bg-[#0a4fcd] text-white shadow-md shadow-blue-500/10'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                    }`}
                 >
                   {tab.label}
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-extrabold ${isActive ? 'bg-white/20 text-white' : 'bg-slate-200/60 text-slate-500'}`}>
@@ -221,7 +220,7 @@ export default function SpecializationsPage() {
             {filtered.map(spec => {
               const IconComp = spec.icon;
               return (
-                <article 
+                <article
                   key={spec.id}
                   className="bg-white border border-[#e2e8f0] rounded-3xl p-6 hover:shadow-md hover:border-[#2563eb]/20 transition-all flex flex-col justify-between group"
                 >
@@ -270,7 +269,7 @@ export default function SpecializationsPage() {
                       </div>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => {
                         setCategoryQuery(spec.title);
                         setGlobalSearchQuery('');
@@ -302,14 +301,14 @@ export default function SpecializationsPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3.5 z-10 shrink-0">
-            <button 
+            <button
               onClick={() => router.push('/profile')}
               className="px-6 py-3 bg-white hover:bg-slate-50 text-[#2563eb] font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] flex items-center gap-1.5"
             >
               Upload resume
               <ArrowRight className="w-4 h-4 text-[#2563eb]" />
             </button>
-            <button 
+            <button
               onClick={() => router.push('/jobs')}
               className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-[0.98] flex items-center gap-1.5"
             >

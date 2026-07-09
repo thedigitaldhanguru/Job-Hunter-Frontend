@@ -242,22 +242,24 @@ export default function Home() {
           </div>
 
           {/* Trending labels */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-sm text-blue-200/80">
-            <span className="font-semibold text-white">Trending:</span>
-            {getTrendingTags().map(tag => (
-              <span 
-                key={tag} 
-                onClick={() => {
-                  setCategoryQuery('');
-                  setSearchQuery(tag === '0-1 yrs' ? '' : tag);
-                  router.push('/jobs');
-                }}
-                className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition-colors text-white font-medium text-xs shadow-inner"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+          {getTrendingTags().length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-sm text-blue-200/80">
+              <span className="font-semibold text-white">Trending:</span>
+              {getTrendingTags().map(tag => (
+                <span 
+                  key={tag} 
+                  onClick={() => {
+                    setCategoryQuery('');
+                    setSearchQuery(tag);
+                    router.push('/jobs');
+                  }}
+                  className="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition-colors text-white font-medium text-xs shadow-inner"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

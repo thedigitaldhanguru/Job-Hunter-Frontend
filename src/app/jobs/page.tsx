@@ -40,29 +40,11 @@ export default function JobsPage() {
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
 
   const getTrendingTags = () => {
-    const defaultTrending = ['Remote', 'Full-time', 'React', 'Node.js', 'AWS', '0-1 yrs'];
-    
-    // 1. Get all searches with count >= 3, sorted by count descending
-    const dynamicSearches = Object.values(searchHistory || {})
-      .filter(item => item.count >= 3)
-      .sort((a, b) => b.count - a.count)
+    return Object.values(searchHistory || {})
+      .filter(item => item.count >= 1)
+      .sort((a, b) => a.count - b.count)
+      .slice(0, 6)
       .map(item => item.term);
-
-    // 2. Fill the remaining spots at the front with default items
-    const finalTags: string[] = [];
-    const dynamicToAdd = dynamicSearches.slice(0, 6);
-    
-    defaultTrending.forEach(tag => {
-      const exists = dynamicToAdd.some(item => item.toLowerCase() === tag.toLowerCase());
-      if (!exists && finalTags.length + dynamicToAdd.length < 6) {
-        finalTags.push(tag);
-      }
-    });
-    
-    // 3. Append the dynamic searches at the end
-    finalTags.push(...dynamicToAdd);
-    
-    return finalTags;
   };
 
   const LIMIT = 20;
@@ -580,21 +562,23 @@ export default function JobsPage() {
               </div>
 
               {/* Trending buttons */}
-              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-blue-200/80 pt-1">
-                <span>Trending:</span>
-                {getTrendingTags().map(tag => (
-                  <span 
-                    key={tag}
-                    onClick={() => {
-                      setCategoryQuery('');
-                      setSearchQuery(tag === '0-1 yrs' ? '' : tag);
-                    }}
-                    className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-md cursor-pointer transition-colors shadow-inner"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              {getTrendingTags().length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-blue-200/80 pt-1">
+                  <span>Trending:</span>
+                  {getTrendingTags().map(tag => (
+                    <span 
+                      key={tag}
+                      onClick={() => {
+                        setCategoryQuery('');
+                        setSearchQuery(tag);
+                      }}
+                      className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-md cursor-pointer transition-colors shadow-inner"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
 
             </div>
           </section>

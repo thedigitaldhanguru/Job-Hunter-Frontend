@@ -4,7 +4,6 @@ import "./globals.css";
 import Footer from "@/components/Footer"; 
 import SessionWrapper from "@/components/SessionWrapper"; 
 import SmartFillModal from "@/components/SmartFillModal";
-import VerifyProfileModal from "@/components/VerifyProfileModal";
 
 const outfit = Outfit({ 
   subsets: ["latin"],
@@ -43,7 +42,6 @@ export default function RootLayout({
           </div>
           <Footer />
           <SmartFillModal />
-          <VerifyProfileModal />
         </SessionWrapper>
 
       </body>

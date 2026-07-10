@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
-  Briefcase, ChevronDown, Bell, Menu, X, Loader2, User 
+  Briefcase, ChevronDown, Bell, Menu, X, Loader2, User, Sparkles, AlertTriangle
 } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { useProfileStore } from '@/store/useProfileStore';
@@ -21,6 +21,27 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+
+  // Sync pending_profile_verification from local storage
+  useEffect(() => {
+    const checkPending = () => {
+      if (session?.user?.email) {
+        const pending = localStorage.getItem('pending_profile_verification') === 'true';
+        setPendingVerification(pending);
+      } else {
+        setPendingVerification(false);
+      }
+    };
+
+    checkPending();
+
+    // Listen for background updates
+    window.addEventListener('pending_profile_updated', checkPending);
+    return () => {
+      window.removeEventListener('pending_profile_updated', checkPending);
+    };
+  }, [session]);
 
   const getNotifications = () => {
     interface NotificationItem {
@@ -28,12 +49,25 @@ export default function Navbar() {
       title: string;
       description: string;
       timestamp: string;
-      type: 'info' | 'warning' | 'success';
+      type: 'info' | 'warning' | 'success' | 'sparkles';
       link: string;
     }
     const list: NotificationItem[] = [];
     if (!session) return list;
 
+    // 1. Add verification alert if pending_profile_verification is active in local storage
+    if (pendingVerification) {
+      list.push({
+        id: 'verify-profile',
+        title: 'Verify Profile Details',
+        description: 'AI successfully parsed your resume! Review the changes to save and complete your setup.',
+        timestamp: 'Action required',
+        type: 'sparkles' as const,
+        link: '/profile'
+      });
+    }
+
+    // 2. Add profile state status notification
     if (isBackgroundExtracting) {
       list.push({
         id: 'parsing',
@@ -67,6 +101,14 @@ export default function Navbar() {
   };
 
   const notificationsList = getNotifications();
+
+  const handleNotifClick = (notifId: string) => {
+    if (notifId === 'verify-profile') {
+      localStorage.removeItem('pending_profile_verification');
+      setPendingVerification(false);
+    }
+    setIsNotificationOpen(false);
+  };
 
   // globally fetch profile details once user logs in
   useEffect(() => {
@@ -202,7 +244,7 @@ export default function Navbar() {
                   className="fixed inset-0 z-40" 
                   onClick={() => setIsNotificationOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-2.5 w-80 bg-white border border-[#e2e8f0] rounded-2xl shadow-xl p-1.5 z-50 animate-fade-in text-sm font-semibold">
+                <div className="absolute right-0 top-full mt-2.5 w-[380px] bg-white border border-[#e2e8f0] rounded-2xl shadow-xl p-1.5 z-50 animate-fade-in text-sm font-semibold">
                   <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
                     <span>Notifications</span>
                     {notificationsList.length > 0 && (
@@ -212,33 +254,38 @@ export default function Navbar() {
                     )}
                   </div>
 
-                  <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
+                  <div className="max-h-[420px] overflow-y-auto divide-y divide-slate-100">
                     {notificationsList.length > 0 ? (
                       notificationsList.map((notif) => {
                         return (
                           <Link
                             key={notif.id}
                             href={notif.link}
-                            onClick={() => setIsNotificationOpen(false)}
+                            onClick={() => handleNotifClick(notif.id)}
                             className="flex items-start gap-3 p-3.5 hover:bg-slate-50/80 rounded-xl transition-all"
                           >
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-inner ${
                               notif.type === 'info' ? 'bg-blue-50 text-[#2563eb]' :
                               notif.type === 'success' ? 'bg-emerald-50 text-emerald-600' :
+                              notif.type === 'sparkles' ? 'bg-amber-50 text-amber-500' :
                               'bg-amber-50 text-amber-500'
                             }`}>
                               {notif.type === 'info' ? (
                                 <Loader2 className="w-4 h-4 animate-spin text-[#2563eb]" />
                               ) : notif.type === 'success' ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                              ) : notif.type === 'sparkles' ? (
+                                <Sparkles className="w-4 h-4 animate-pulse text-amber-500" />
                               ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                                <AlertTriangle className="w-4 h-4 text-amber-500" />
                               )}
                             </div>
                             <div className="space-y-0.5 text-left">
                               <h4 className="font-bold text-slate-800 text-[13px] leading-snug">{notif.title}</h4>
                               <p className="text-xs text-slate-500 font-medium leading-relaxed">{notif.description}</p>
-                              <span className="text-[10px] text-slate-400 font-semibold block pt-1">{notif.timestamp}</span>
+                              <span className={`text-[10px] font-semibold block pt-1 ${
+                                notif.type === 'sparkles' ? 'text-red-500' : 'text-slate-400'
+                              }`}>{notif.timestamp}</span>
                             </div>
                           </Link>
                         );

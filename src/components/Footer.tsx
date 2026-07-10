@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Briefcase } from 'lucide-react';
@@ -7,6 +8,14 @@ import { Briefcase } from 'lucide-react';
 export default function Footer() {
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (title: string) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
 
   // Hide the footer on full-screen login / register screens
   if (pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') {
@@ -84,9 +93,17 @@ export default function Footer() {
               ]
             }
           ].map(col => (
-            <div key={col.title} className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-[0.16em] text-white">{col.title}</h4>
-              <ul className="space-y-2 text-sm text-slate-500">
+            <div key={col.title} className="space-y-4 border-b border-slate-900/60 pb-4 md:border-b-0 md:pb-0">
+              <h4 
+                onClick={() => toggleSection(col.title)}
+                className="text-xs font-bold uppercase tracking-[0.16em] text-white flex items-center justify-between cursor-pointer md:cursor-default"
+              >
+                <span>{col.title}</span>
+                <span className="md:hidden text-slate-500 text-base font-normal leading-none select-none">
+                  {openSections[col.title] ? '−' : '+'}
+                </span>
+              </h4>
+              <ul className={`space-y-2 text-sm text-slate-500 md:block ${openSections[col.title] ? 'block' : 'hidden'}`}>
                 {col.links.map(link => (
                   <li key={link.label}>
                     <Link href={link.href} className="hover:text-white transition-colors">

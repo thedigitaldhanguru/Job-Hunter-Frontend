@@ -244,7 +244,7 @@ export default function Navbar() {
                   className="fixed inset-0 z-40" 
                   onClick={() => setIsNotificationOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-2.5 w-[380px] bg-white border border-[#e2e8f0] rounded-2xl shadow-xl p-1.5 z-50 animate-fade-in text-sm font-semibold">
+                <div className="fixed left-4 right-4 sm:absolute sm:left-auto sm:right-0 top-16 sm:top-full mt-2.5 w-auto sm:w-[380px] bg-white border border-[#e2e8f0] rounded-2xl shadow-xl p-1.5 z-50 animate-fade-in text-sm font-semibold">
                   <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
                     <span>Notifications</span>
                     {notificationsList.length > 0 && (

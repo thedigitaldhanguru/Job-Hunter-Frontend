@@ -156,7 +156,7 @@ export default function Home() {
       <Navbar />
 
       {/* ================= HERO SECTION ================= */}
-      <section className="bg-[image:var(--hd-gradient-hero)] text-white relative overflow-hidden py-12 sm:py-16 lg:py-20 w-full">
+      <section className="hidden md:block bg-[image:var(--hd-gradient-hero)] text-white relative overflow-hidden py-12 sm:py-16 lg:py-20 w-full">
         {/* Background Dot Overlays */}
         <div className="absolute inset-0 hd-dots-overlay opacity-80 pointer-events-none"></div>
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-400/20 rounded-full blur-[100px]" />
@@ -246,7 +246,7 @@ export default function Home() {
       </section>
 
       {/* ================= AI RESUME BUILDER SECTION ================= */}
-      <section className="bg-[#030712] text-white relative overflow-hidden py-20 w-full border-b border-slate-900/60">
+      <section className="hidden md:block bg-[#030712] text-white relative overflow-hidden py-20 w-full border-b border-slate-900/60">
         {/* Subtle grid lines background overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293715_1px,transparent_1px),linear-gradient(to_bottom,#1f293715_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-40"></div>
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px]" />
@@ -439,7 +439,7 @@ export default function Home() {
       </section>
 
       {/* ================= BROWSE SPECIALIZATIONS ================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-12">
+      <section className="hidden md:block py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-12">
         <div className="flex items-end justify-between border-b border-[#e2e8f0] pb-6">
           <div>
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]/80 mb-2 block">Specializations</span>
@@ -533,7 +533,7 @@ export default function Home() {
       </section>
 
       {/* ================= JOB FEED SECTION ================= */}
-      <section className="bg-[#f8fafc] border-y border-[#e2e8f0] py-20 w-full">
+      <section className="hidden md:block bg-[#f8fafc] border-y border-[#e2e8f0] py-20 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="flex items-end justify-between">
             <div>
@@ -646,7 +646,7 @@ export default function Home() {
       </section>
 
       {/* ================= BROWSER EXTENSION SECTION ================= */}
-      <section className="bg-[#0a4fcd] text-white relative overflow-hidden py-24 w-full">
+      <section className="hidden md:block bg-[#0a4fcd] text-white relative overflow-hidden py-24 w-full">
         {/* Dotted background overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.15)_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-70"></div>
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-white/10 rounded-full blur-[100px]" />
@@ -883,7 +883,7 @@ export default function Home() {
     </section>
 
       {/* ================= CTA SECTION ================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <section className="hidden md:block py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="bg-[#0f172a] rounded-3xl p-8 sm:p-14 text-white relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8 border border-slate-800 shadow-xl group">
           {/* Blurred Background blobs */}
           <div className="absolute -top-16 -right-16 w-80 h-80 bg-blue-500/25 rounded-full blur-[90px]" />
@@ -920,6 +920,260 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ================= STREAMLINED MOBILE LANDING VIEW ================= */}
+      <div className="block md:hidden">
+        {/* ================= MOBILE HERO SECTION ================= */}
+        <section className="bg-[image:var(--hd-gradient-hero)] text-white relative overflow-hidden py-10 px-6 w-full">
+          <div className="absolute inset-0 hd-dots-overlay opacity-80 pointer-events-none"></div>
+          <div className="space-y-6 text-center max-w-sm mx-auto">
+            {/* Eyebrow badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur-md text-[11px] font-semibold text-blue-100 shadow-sm mx-auto">
+              <TrendingUp className="w-3.5 h-3.5 text-[#f97316]" />
+              42,500+ active openings
+            </div>
+
+            <h1 className="text-3xl font-extrabold tracking-tight leading-tight text-white">
+              Find a job built for <br/>
+              <span className="text-[#f97316]">where you're going</span>
+            </h1>
+
+            <p className="text-xs text-blue-100/80 leading-relaxed font-semibold">
+              Curated roles from India's top product companies. Apply once, track everywhere.
+            </p>
+
+            {/* Compact Mobile Search */}
+            <div className="bg-white rounded-2xl p-1.5 shadow-lg flex flex-col gap-1 w-full border border-blue-500/20 text-slate-800">
+              <div className="flex items-center pl-3 py-2 w-full">
+                <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
+                <input 
+                  type="text" 
+                  placeholder="Job title or company" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      router.push('/jobs');
+                    }
+                  }}
+                  className="bg-transparent outline-none w-full text-xs font-semibold placeholder-slate-400" 
+                />
+              </div>
+              <div className="h-[1px] bg-slate-100 mx-3"></div>
+              <div className="flex items-center pl-3 py-2 w-full">
+                <MapPin className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
+                <input 
+                  type="text" 
+                  placeholder="City or remote" 
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      router.push('/jobs');
+                    }
+                  }}
+                  className="bg-transparent outline-none w-full text-xs font-semibold placeholder-slate-400" 
+                />
+              </div>
+              <button 
+                onClick={() => router.push('/jobs')}
+                className="w-full bg-[#2563eb] text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95"
+              >
+                Search Jobs
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Mobile Trending */}
+            {getTrendingTags().length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-xs text-blue-200/80">
+                <span className="font-semibold text-white text-[11px]">Trending:</span>
+                {getTrendingTags().map(tag => (
+                  <span 
+                    key={tag} 
+                    onClick={() => {
+                      setCategoryQuery('');
+                      setSearchQuery(tag);
+                      router.push('/jobs');
+                    }}
+                    className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-[10px] shadow-inner"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ================= MOBILE SPECIALIZATIONS ================= */}
+        <section className="py-6 space-y-4">
+          <div className="px-6 flex items-baseline justify-between">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb]/80">Categories</span>
+              <h3 className="text-lg font-extrabold text-[#0f172a] mt-0.5">Explore by specialization</h3>
+            </div>
+            <Link href="/specializations" className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-0.5">
+              All <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 px-6">
+            {[
+              { title: 'Frontend', count: '840 jobs', icon: Code2Icon, color: 'text-blue-600 bg-blue-50 border-blue-100/60' },
+              { title: 'Backend', count: '1,120 jobs', icon: Server, color: 'text-amber-600 bg-amber-50 border-amber-100/60' },
+              { title: 'Full Stack', count: '1,450 jobs', icon: Layers, color: 'text-purple-600 bg-purple-50 border-purple-100/60' },
+              { title: 'AI / Data', count: '620 jobs', icon: Brain, color: 'text-emerald-600 bg-emerald-50 border-emerald-100/60' },
+              { title: 'DevOps', count: '420 jobs', icon: Cloud, color: 'text-rose-600 bg-rose-50 border-rose-100/60' },
+              { title: 'Other', count: '1,680 jobs', icon: Compass, color: 'text-indigo-600 bg-indigo-50 border-indigo-100/60' },
+            ].map(spec => {
+              const Icon = spec.icon;
+              return (
+                <div 
+                  key={spec.title}
+                  onClick={() => {
+                    setCategoryQuery(spec.title === 'DevOps' ? 'DevOps / Cloud' : spec.title);
+                    setSearchQuery('');
+                    setLocationQuery('');
+                    router.push('/jobs');
+                  }}
+                  className="bg-white border border-[#e2e8f0] rounded-2xl p-3 flex items-center gap-2.5 shadow-sm active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${spec.color}`}>
+                    <Icon className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="text-left min-w-0">
+                    <h4 className="font-extrabold text-slate-800 text-[13px] leading-tight truncate">{spec.title}</h4>
+                    <span className="text-[10px] text-slate-400 font-bold block mt-0.5">{spec.count}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ================= MOBILE FEATURE HIGHLIGHTS ================= */}
+        <section className="px-6 py-4 space-y-4">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb]/80 block">Tools</span>
+          <div className="grid grid-cols-1 gap-4">
+            {/* AI Resume Builder Card */}
+            <div className="bg-slate-900 text-white rounded-3xl p-5 border border-slate-800 relative overflow-hidden shadow-md select-none">
+              <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#f97316]/10 rounded-full blur-xl" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-[#f97316] shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <h4 className="font-extrabold text-[15px]">AI Resume Builder</h4>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-semibold">
+                Generate a tailored resume matched to any job description in seconds. Optimized to pass recruiter screens and ATS.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {['ATS Ready', 'AI Tailored', 'PDF Export'].map(tag => (
+                  <span key={tag} className="px-2 py-0.5 bg-white/5 border border-white/10 rounded-md text-[9px] font-bold text-slate-300">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <button disabled className="mt-4 w-full bg-white/10 border border-white/10 text-white/90 py-2.5 rounded-xl text-[11px] font-extrabold flex items-center justify-center cursor-not-allowed select-none">
+                Launching soon
+              </button>
+            </div>
+
+            {/* Track Jobs Anywhere Card */}
+            <div className="bg-white border border-[#e2e8f0] rounded-3xl p-5 relative overflow-hidden shadow-sm select-none">
+              <div className="absolute -top-12 -right-12 w-28 h-28 bg-blue-500/5 rounded-full blur-xl" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 text-[#2563eb] shrink-0">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <h4 className="font-extrabold text-[15px] text-slate-800">Track Jobs Anywhere</h4>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                Auto-save applications from LinkedIn, Indeed, and Naukri directly to your HireDeck. No copy-pasting required.
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {['1-Click Track', 'Works on 40+ Sites', 'Auto-Stages'].map(tag => (
+                  <span key={tag} className="px-2 py-0.5 bg-blue-50/50 border border-blue-100 rounded-md text-[9px] font-extrabold text-[#2563eb]">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <button disabled className="mt-4 w-full bg-slate-50 border border-slate-200 text-slate-400 py-2.5 rounded-xl text-[11px] font-extrabold flex items-center justify-center cursor-not-allowed select-none">
+                Launching soon
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ================= MOBILE COMPACT JOB FEED LIST ================= */}
+        <section className="py-6 px-6 space-y-4">
+          <div className="flex justify-between items-baseline">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563eb]/80">Featured</span>
+              <h3 className="text-lg font-extrabold text-[#0f172a] mt-0.5">Hiring right now</h3>
+            </div>
+            <Link href="/jobs" className="text-xs font-bold text-[#2563eb] hover:underline flex items-center gap-0.5">
+              View All <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="w-6 h-6 animate-spin text-[#2563eb]" />
+            </div>
+          ) : jobs.length === 0 ? (
+            <div className="text-center py-10 border border-slate-200 rounded-2xl bg-white">
+              <p className="text-slate-400 font-semibold text-xs">No active positions right now.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {jobs.slice(0, 6).map(job => (
+                <div 
+                  key={job.id}
+                  onClick={() => {
+                    router.push('/jobs');
+                  }}
+                  className="bg-white border border-[#e2e8f0] rounded-2xl p-4 flex items-center justify-between shadow-sm active:scale-[0.99] transition-transform cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#2563eb] flex items-center justify-center font-bold text-sm shrink-0 border border-blue-100">
+                      {job.company_raw ? job.company_raw.charAt(0).toUpperCase() : 'J'}
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-bold text-slate-800 text-[13px] leading-tight line-clamp-1">{job.title}</h4>
+                      <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{job.company_raw || "Confidential"} · {job.location || "Remote"}</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* ================= MOBILE PROFILE ACTION CARD ================= */}
+        <section className="px-6 py-2">
+          <div className="bg-gradient-to-br from-[#0c1a30] to-[#081224] rounded-3xl p-6 border border-white/10 text-white relative overflow-hidden shadow-lg select-none">
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-[10px] font-bold text-[#f97316] mb-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              AI Smart Fill
+            </div>
+            <h3 className="text-base font-extrabold tracking-tight">Auto-Match & Rank Jobs</h3>
+            <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed font-semibold">
+              Upload your resume once and match automatically. Check out what works on top startup platforms.
+            </p>
+            <Link 
+              href="/profile" 
+              className="mt-4 w-full bg-[#f97316] hover:bg-[#ea580c] text-white py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-md"
+            >
+              <Sparkles className="w-3.5 h-3.5 fill-white/10" />
+              Tailor Your Profile
+            </Link>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

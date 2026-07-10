@@ -61,6 +61,11 @@
   --hd-gradient-accent: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
 }
 
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   background-color: var(--kindling-paper);
   color: var(--kindling-ink);
@@ -68,6 +73,7 @@ body {
   position: relative;
   z-index: 0;
   overflow-x: hidden;
+  max-width: 100%;
 }
 
 .paperGrid {

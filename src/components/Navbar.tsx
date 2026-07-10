@@ -20,6 +20,53 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  const getNotifications = () => {
+    interface NotificationItem {
+      id: string;
+      title: string;
+      description: string;
+      timestamp: string;
+      type: 'info' | 'warning' | 'success';
+      link: string;
+    }
+    const list: NotificationItem[] = [];
+    if (!session) return list;
+
+    if (isBackgroundExtracting) {
+      list.push({
+        id: 'parsing',
+        title: 'Parsing Resume...',
+        description: 'AI is extracting your skills and work experience from your PDF.',
+        timestamp: 'In progress',
+        type: 'info' as const,
+        link: '/profile'
+      });
+    } else if (!isComplete) {
+      list.push({
+        id: 'incomplete',
+        title: 'Profile Incomplete',
+        description: 'Please upload a resume or fill details to unlock AI job matchmaking.',
+        timestamp: 'Action required',
+        type: 'warning' as const,
+        link: '/profile'
+      });
+    } else {
+      list.push({
+        id: 'complete',
+        title: 'Smart Fill Successful!',
+        description: 'Your profile has been updated. Auto-ranked jobs are now active.',
+        timestamp: 'Active',
+        type: 'success' as const,
+        link: '/profile'
+      });
+    }
+
+    return list;
+  };
+
+  const notificationsList = getNotifications();
 
   // globally fetch profile details once user logs in
   useEffect(() => {
@@ -134,12 +181,84 @@ export default function Navbar() {
 
         {/* Right cluster */}
         <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-all relative">
-            <Bell className="w-5 h-5" />
-            {(isBackgroundExtracting || !isComplete) && session && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#f97316] border-2 border-white rounded-full animate-pulse" />
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className={`p-2 hover:bg-slate-50 rounded-full transition-all relative ${isNotificationOpen ? 'text-[#2563eb] bg-slate-50' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <Bell className="w-5 h-5" />
+              {session && notificationsList.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-1 bg-red-500 border border-white rounded-full flex items-center justify-center text-[9px] font-extrabold text-white shadow-sm select-none">
+                  {notificationsList.length}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            {isNotificationOpen && (
+              <>
+                {/* Backdrop Click Close */}
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setIsNotificationOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-2.5 w-80 bg-white border border-[#e2e8f0] rounded-2xl shadow-xl p-1.5 z-50 animate-fade-in text-sm font-semibold">
+                  <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-wider">
+                    <span>Notifications</span>
+                    {notificationsList.length > 0 && (
+                      <span className="text-[10px] text-[#2563eb] hover:underline cursor-pointer lowercase" onClick={() => setIsNotificationOpen(false)}>
+                        dismiss
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
+                    {notificationsList.length > 0 ? (
+                      notificationsList.map((notif) => {
+                        return (
+                          <Link
+                            key={notif.id}
+                            href={notif.link}
+                            onClick={() => setIsNotificationOpen(false)}
+                            className="flex items-start gap-3 p-3.5 hover:bg-slate-50/80 rounded-xl transition-all"
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-inner ${
+                              notif.type === 'info' ? 'bg-blue-50 text-[#2563eb]' :
+                              notif.type === 'success' ? 'bg-emerald-50 text-emerald-600' :
+                              'bg-amber-50 text-amber-500'
+                            }`}>
+                              {notif.type === 'info' ? (
+                                <Loader2 className="w-4 h-4 animate-spin text-[#2563eb]" />
+                              ) : notif.type === 'success' ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                              ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                              )}
+                            </div>
+                            <div className="space-y-0.5 text-left">
+                              <h4 className="font-bold text-slate-800 text-[13px] leading-snug">{notif.title}</h4>
+                              <p className="text-xs text-slate-500 font-medium leading-relaxed">{notif.description}</p>
+                              <span className="text-[10px] text-slate-400 font-semibold block pt-1">{notif.timestamp}</span>
+                            </div>
+                          </Link>
+                        );
+                      })
+                    ) : (
+                      <div className="py-8 px-4 text-center space-y-2">
+                        <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                          <Bell className="w-4.5 h-4.5 opacity-60" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <h4 className="font-bold text-slate-700 text-xs">All caught up!</h4>
+                          <p className="text-[11px] text-slate-400 font-medium max-w-[200px] mx-auto">No pending status alerts or profile updates right now.</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
             )}
-          </button>
+          </div>
 
           {session ? (
             <div className="relative">

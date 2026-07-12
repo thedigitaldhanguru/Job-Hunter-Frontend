@@ -409,8 +409,8 @@ export default function Navbar() {
         <div className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-[#e2e8f0] p-4 flex flex-col gap-4 shadow-lg animate-fade-in">
           {[
             { label: 'Jobs', href: '/jobs' },
-            { label: 'Companies', href: '/companies' },
-            { label: 'Applications', href: '/applications' }
+            { label: 'Applications', href: '/applications' },
+            { label: 'Services', href: '/services/resume-building' }
           ].map((item) => {
             return (
               <Link 

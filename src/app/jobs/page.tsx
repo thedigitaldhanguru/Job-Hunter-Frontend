@@ -38,6 +38,8 @@ export default function JobsPage() {
   const [selectedDepartment, setSelectedDepartment] = useState('All');
   const [sortBy, setSortBy] = useState('Most relevant');
   const [selectedJob, setSelectedJob] = useState<JobListing | null>(null);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
   const getTrendingTags = () => {
     return Object.values(searchHistory || {})
@@ -587,7 +589,7 @@ export default function JobsPage() {
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-grow flex flex-col lg:flex-row gap-8">
             
             {/* Left Sidebar Filters */}
-            <aside className="w-full lg:w-64 shrink-0 space-y-6">
+            <aside className="hidden lg:block w-full lg:w-64 shrink-0 space-y-6">
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 space-y-6 shadow-sm">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h2 className="font-bold text-sm text-slate-800 flex items-center gap-1.5">
@@ -707,16 +709,64 @@ export default function JobsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-                  <span>Sort by</span>
-                  <select 
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="border border-[#e2e8f0] rounded-lg px-2.5 py-1.5 text-slate-700 outline-none bg-white cursor-pointer"
+                <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 relative">
+                  {/* Filters Button (Mobile only) */}
+                  <button 
+                    onClick={() => setIsMobileFiltersOpen(true)}
+                    className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 border border-[#e2e8f0] hover:border-slate-300 rounded-xl text-slate-700 text-xs font-bold bg-white active:scale-[0.97] transition-all select-none shadow-sm h-9"
                   >
-                    <option>Most relevant</option>
-                    <option>Newest first</option>
-                  </select>
+                    <Filter className="w-3.5 h-3.5 text-slate-500" />
+                    Filters
+                  </button>
+
+                  {/* Custom Sort Dropdown */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 border border-[#e2e8f0] hover:border-slate-300 rounded-xl text-slate-700 text-xs font-bold bg-white active:scale-[0.97] transition-all select-none shadow-sm h-9"
+                    >
+                      <span className="text-slate-400 font-semibold">Sort:</span>
+                      <span>{sortBy}</span>
+                      <svg 
+                        className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${isSortDropdownOpen ? 'rotate-180' : ''}`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2.5" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </button>
+
+                    {isSortDropdownOpen && (
+                      <>
+                        {/* Backdrop to close click */}
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setIsSortDropdownOpen(false)}
+                        />
+                        {/* Dropdown Menu Card */}
+                        <div className="absolute right-0 mt-1.5 w-40 bg-white border border-[#e2e8f0] rounded-xl shadow-lg py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-100">
+                          {['Most relevant', 'Newest first'].map((option) => (
+                            <button
+                              key={option}
+                              onClick={() => {
+                                setSortBy(option);
+                                setIsSortDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${
+                                sortBy === option 
+                                  ? 'text-[#2563eb] bg-blue-50/50' 
+                                  : 'text-slate-600 hover:bg-slate-50'
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -736,8 +786,8 @@ export default function JobsPage() {
               )}
 
               {/* Metrics strip cards row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white border border-[#e2e8f0] p-4.5 rounded-2xl shadow-sm flex items-center gap-3">
+              <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-none sm:grid sm:grid-cols-3 w-full">
+                <div className="bg-white border border-[#e2e8f0] p-4.5 rounded-2xl shadow-sm flex items-center gap-3 shrink-0 min-w-[200px] sm:min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#2563eb] flex items-center justify-center border border-blue-100 shadow-inner">
                     <TrendingUp className="w-4 h-4" />
                   </div>
@@ -747,7 +797,7 @@ export default function JobsPage() {
                   </div>
                 </div>
 
-                <div className="bg-white border border-[#e2e8f0] p-4.5 rounded-2xl shadow-sm flex items-center gap-3">
+                <div className="bg-white border border-[#e2e8f0] p-4.5 rounded-2xl shadow-sm flex items-center gap-3 shrink-0 min-w-[200px] sm:min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#2563eb] flex items-center justify-center border border-blue-100 shadow-inner">
                     <Building2Icon className="w-4 h-4" />
                   </div>
@@ -757,7 +807,7 @@ export default function JobsPage() {
                   </div>
                 </div>
 
-                <div className="bg-white border border-[#e2e8f0] p-4.5 rounded-2xl shadow-sm flex items-center gap-3">
+                <div className="bg-white border border-[#e2e8f0] p-4.5 rounded-2xl shadow-sm flex items-center gap-3 shrink-0 min-w-[200px] sm:min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#2563eb] flex items-center justify-center border border-blue-100 shadow-inner">
                     <CheckCircleIcon className="w-4 h-4" />
                   </div>
@@ -948,9 +998,117 @@ export default function JobsPage() {
               </div>
 
             </section>
-
-          </main>
+ 
+           </main>
         </>
+      )}
+      {/* ================= MOBILE FILTERS DRAWER ================= */}
+      {isMobileFiltersOpen && (
+        <div className="fixed inset-0 z-[100] lg:hidden flex justify-end">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsMobileFiltersOpen(false)}
+          />
+          {/* Drawer content */}
+          <div className="relative w-[85vw] max-w-[340px] bg-white h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between z-10">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 className="font-extrabold text-sm text-slate-800 flex items-center gap-1.5">
+                  <Filter className="w-4 h-4 text-slate-500" />
+                  All Filters
+                </h3>
+                <button 
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 font-bold text-xl select-none"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Work Mode */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Work Mode</h3>
+                {['Remote', 'Hybrid', 'On-site'].map(mode => (
+                  <label key={mode} className="flex items-center gap-2 text-sm text-slate-600 font-semibold cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedWorkMode === mode}
+                      onChange={() => setSelectedWorkMode(selectedWorkMode === mode ? 'All' : mode)}
+                      className="h-4 w-4 rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]"
+                    />
+                    {mode}
+                  </label>
+                ))}
+              </div>
+
+              {/* Job Type */}
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Job Type</h3>
+                {['Full-time', 'Part-time', 'Contract', 'Internship'].map((type) => (
+                  <label key={type} className="flex items-center gap-2 text-sm text-slate-600 font-semibold cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedJobType === type}
+                      onChange={() => setSelectedJobType(selectedJobType === type ? 'All' : type)}
+                      className="h-4 w-4 rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]"
+                    />
+                    {type}
+                  </label>
+                ))}
+              </div>
+
+              {/* Department */}
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department</h3>
+                {['Engineering', 'Design', 'Data', 'Marketing'].map((dept) => (
+                  <label key={dept} className="flex items-center gap-2 text-sm text-slate-600 font-semibold cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedDepartment === dept}
+                      onChange={() => setSelectedDepartment(selectedDepartment === dept ? 'All' : dept)}
+                      className="h-4 w-4 rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]"
+                    />
+                    {dept}
+                  </label>
+                ))}
+              </div>
+
+              {/* Experience Levels */}
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Experience</h3>
+                {['3-5 yrs', '5-10 yrs', '10+ yrs'].map((exp) => (
+                  <label key={exp} className="flex items-center gap-2 text-sm text-slate-600 font-semibold cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedExperience === exp}
+                      onChange={() => setSelectedExperience(selectedExperience === exp ? 'All' : exp)}
+                      className="h-4 w-4 rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]"
+                    />
+                    {exp}
+                  </label>
+                ))}
+              </div>
+
+              {/* Clear button inside drawer */}
+              <div className="pt-2">
+                <button 
+                  onClick={() => { setSelectedExperience('All'); setSelectedWorkMode('All'); setSelectedJobType('All'); setSelectedDepartment('All'); setSearchQuery(''); setIsMobileFiltersOpen(false); }}
+                  className="w-full py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setIsMobileFiltersOpen(false)}
+              className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white py-3 rounded-xl text-xs font-bold text-center shadow-md mt-6 select-none active:scale-[0.98] transition-all"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

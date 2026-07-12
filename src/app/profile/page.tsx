@@ -199,24 +199,24 @@ export default function ProfilePage() {
     while (typeof extended === 'string') {
       try { extended = JSON.parse(extended); } catch { break; }
     }
-    if (!extended || typeof extended !== 'object') extended = {}; 
+    if (!extended || typeof extended !== 'object') extended = {};
 
     return {
-      header: { 
+      header: {
         name: res.full_name || sessionName || '',
-        email: res.email || email, 
-        degree: res.degree || '', 
-        university: res.university || '', 
-        location: res.location || '', 
+        email: res.email || email,
+        degree: res.degree || '',
+        university: res.university || '',
+        location: res.location || '',
         experience: res.experience || '',
-        phone: res.phone || '', 
-        gender: res.gender || '', 
-        dob: res.dob || '', 
-        avatar: res.avatar_url && res.avatar_url !== 'null' ? res.avatar_url : (sessionImage || '') 
+        phone: res.phone || '',
+        gender: res.gender || '',
+        dob: res.dob || '',
+        avatar: res.avatar_url && res.avatar_url !== 'null' ? res.avatar_url : (sessionImage || '')
       },
-      summary: res.profile_summary || '', 
+      summary: res.profile_summary || '',
       resumeName: extended.resumeName || '',
-      resumeUrl: extended.resumeUrl || res.resume_url || '', 
+      resumeUrl: extended.resumeUrl || res.resume_url || '',
       employment: Array.isArray(extended.employment) ? extended.employment : [],
       internships: Array.isArray(extended.internships) ? extended.internships : [],
       education: Array.isArray(extended.education) ? extended.education : [],
@@ -278,7 +278,7 @@ export default function ProfilePage() {
       try {
         setUploadingType('resume');
         const s3FileUrl = await uploadToS3(file);
-        
+
         // Update local draft
         setData((prev: any) => ({ ...prev, resumeName: file.name, resumeUrl: s3FileUrl }));
         setResumeVersion(prev => prev + 1);
@@ -286,10 +286,10 @@ export default function ProfilePage() {
         // Update database profile with the new resumeUrl (triggers parsing in bg)
         setUploadingType('parsing');
         localStorage.setItem('pending_profile_verification', 'true');
-        
+
         const payload = {
           full_name: data.header.name || session?.user?.name || '',
-          email: email, 
+          email: email,
           degree: data.header.degree,
           university: data.header.university,
           location: data.header.location,
@@ -297,10 +297,10 @@ export default function ProfilePage() {
           phone: data.header.phone,
           gender: data.header.gender,
           dob: data.header.dob,
-          profile_summary: data.summary, 
+          profile_summary: data.summary,
           avatar_url: data.header.avatar,
-          current_ctc: data.preferences.currentCTC,   
-          expected_ctc: data.preferences.expectedCTC, 
+          current_ctc: data.preferences.currentCTC,
+          expected_ctc: data.preferences.expectedCTC,
           extended_profile: {
             ...data.preferences,
             employment: data.employment,
@@ -341,14 +341,14 @@ export default function ProfilePage() {
                 try { extended = JSON.parse(extended); } catch { break; }
               }
               if (!extended || typeof extended !== 'object') extended = {};
-              
-              const hasParsedData = (extended.skills && extended.skills.length > 0) || 
-                                    (extended.employment && extended.employment.length > 0) || 
-                                    (extended.projects && extended.projects.length > 0);
-              
+
+              const hasParsedData = (extended.skills && extended.skills.length > 0) ||
+                (extended.employment && extended.employment.length > 0) ||
+                (extended.projects && extended.projects.length > 0);
+
               if (hasParsedData || attempts >= maxAttempts) {
                 clearInterval(interval);
-                
+
                 // Format and load profile data
                 const formatted = mapBackendToProfile(res, email, session?.user?.name, session?.user?.image);
                 setData(formatted);
@@ -424,7 +424,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
             {/* ================= LEFT SIDEBAR (SECTIONS & CONTACT) ================= */}
-            <aside className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
+            <aside className="hidden lg:block lg:col-span-3 space-y-6 lg:sticky lg:top-24">
               <div className="bg-white border border-[#e2e8f0] rounded-3xl p-5 space-y-6 shadow-sm">
                 <div>
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Profile Sections</h3>
@@ -437,8 +437,8 @@ export default function ProfilePage() {
                           key={sec.id}
                           onClick={() => scrollToSection(sec.id)}
                           className={`flex items-center gap-2.5 w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${active
-                              ? 'bg-blue-50/70 text-[#2563eb]'
-                              : 'text-slate-500 hover:text-[#2563eb] hover:bg-slate-50'
+                            ? 'bg-blue-50/70 text-[#2563eb]'
+                            : 'text-slate-500 hover:text-[#2563eb] hover:bg-slate-50'
                             }`}
                         >
                           <SecIcon className="w-4 h-4 shrink-0" />
@@ -472,6 +472,42 @@ export default function ProfilePage() {
             {/* ================= MIDDLE MAIN PANEL ================= */}
             <section className="lg:col-span-6 space-y-6">
 
+              {/* MOBILE DASHBOARD WIDGET (ONLY ON MOBILE/TABLET) */}
+              <div className="lg:hidden bg-white border border-[#e2e8f0] rounded-3xl p-5 space-y-4 shadow-sm select-none">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Profile Dashboard</span>
+                    <h3 className="font-extrabold text-sm text-slate-800 flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
+                      Welcome, {data.header.name || "Developer"}
+                    </h3>
+                  </div>
+                  <span className="px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-lg text-xs font-bold text-[#2563eb]">
+                    {score}% complete
+                  </span>
+                </div>
+
+                {/* Progress bar */}
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="bg-[#2563eb] h-full rounded-full transition-all duration-500" style={{ width: `${score}%` }}></div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold pt-1">
+                  <div className="p-2 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div className="font-extrabold text-slate-800">142</div>
+                    <div className="text-[9px] uppercase font-bold text-slate-400 mt-0.5">Views</div>
+                  </div>
+                  <div className="p-2 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div className="font-extrabold text-slate-800">89</div>
+                    <div className="text-[9px] uppercase font-bold text-slate-400 mt-0.5">Searches</div>
+                  </div>
+                  <div className="p-2 bg-slate-50 border border-slate-100 rounded-xl">
+                    <div className="font-extrabold text-emerald-600">Active</div>
+                    <div className="text-[9px] uppercase font-bold text-slate-400 mt-0.5">Visibility</div>
+                  </div>
+                </div>
+              </div>
+
               {/* VERIFY PROFILE BANNER */}
               {showVerifyBanner && (
                 <div className="bg-gradient-to-r from-blue-50/90 to-indigo-50/85 border border-blue-100 rounded-3xl p-5 shadow-sm flex items-start justify-between gap-4 animate-fade-in-up">
@@ -488,7 +524,7 @@ export default function ProfilePage() {
                       </p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => {
                       localStorage.removeItem('pending_profile_verification');
                       setShowVerifyBanner(false);
@@ -656,20 +692,20 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Specs grids */}
-                      <div className="grid grid-cols-4 border border-[#e2e8f0] rounded-2xl overflow-hidden divide-x divide-[#e2e8f0] text-center bg-slate-50/50">
-                        <div className="p-4 space-y-1">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Experience</div>
                           <div className="text-xs font-extrabold text-slate-800 truncate">{data.header.experience || "3 Years"}</div>
                         </div>
-                        <div className="p-4 space-y-1">
+                        <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Current</div>
                           <div className="text-xs font-extrabold text-slate-800 truncate">{data.preferences.jobType || "Self-Employed"}</div>
                         </div>
-                        <div className="p-4 space-y-1">
+                        <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Education</div>
                           <div className="text-xs font-extrabold text-slate-800 truncate">{data.header.university || "BCA - ADTU"}</div>
                         </div>
-                        <div className="p-4 space-y-1">
+                        <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Notice</div>
                           <div className="text-xs font-extrabold text-orange-600 truncate">{data.preferences.availability || "Immediate"}</div>
                         </div>
@@ -953,55 +989,6 @@ export default function ProfilePage() {
                 </button>
               </div>
 
-              {/* Stats Card */}
-              <div className="bg-white border border-[#e2e8f0] rounded-3xl p-5 space-y-5 shadow-sm text-xs font-semibold">
-                <h3 className="font-extrabold text-slate-800 text-sm">This Week</h3>
-
-                <div className="grid grid-cols-3 gap-2 border-b border-slate-100 pb-4 text-center">
-                  <div className="space-y-1">
-                    <div className="font-extrabold text-base text-slate-800">142</div>
-                    <div className="text-[9px] uppercase font-bold text-slate-400">Views</div>
-                    <div className="text-[9px] font-bold text-emerald-600">+12%</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="font-extrabold text-base text-slate-800">89</div>
-                    <div className="text-[9px] uppercase font-bold text-slate-400">Searches</div>
-                    <div className="text-[9px] font-bold text-emerald-600">+5%</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="font-extrabold text-base text-slate-800">7</div>
-                    <div className="text-[9px] uppercase font-bold text-slate-400">Pings</div>
-                    <div className="text-[9px] font-bold text-emerald-600">+2</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between font-bold pt-1">
-                  <span className="text-slate-400">Applications</span>
-                  <span className="text-slate-800">4 sent</span>
-                </div>
-              </div>
-
-              {/* Recruiter Visibility toggles */}
-              <div className="bg-[#0b0f19] text-white rounded-3xl p-5 space-y-4 shadow-md border border-slate-800/80">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400">Recruiter Visibility</h3>
-                  <button
-                    onClick={() => setRecruiterVisibility(!recruiterVisibility)}
-                    className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 outline-none ${recruiterVisibility ? 'bg-[#2563eb]' : 'bg-slate-600'
-                      }`}
-                  >
-                    <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-200 ${recruiterVisibility ? 'translate-x-4' : 'translate-x-0'
-                      }`} />
-                  </button>
-                </div>
-                <p className="text-slate-400 leading-relaxed text-[11px] font-medium">
-                  Actively appearing in search results for verified tech recruiters on hiredeck.
-                </p>
-                <button className="text-[11px] font-bold text-[#2563eb] hover:underline flex items-center gap-1 select-none">
-                  Manage settings
-                  <ArrowRight className="w-3 h-3 text-[#2563eb]" />
-                </button>
-              </div>
 
             </section>
 

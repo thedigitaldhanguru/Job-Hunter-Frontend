@@ -127,7 +127,7 @@ export default function Navbar() {
   }, []);
 
   // Hide global navbar on full-screen login / register screens
-  if (pathname === '/login' || pathname === '/register' || pathname === '/forgot-password') {
+  if (pathname === '/forgot-password') {
     return null;
   }
 

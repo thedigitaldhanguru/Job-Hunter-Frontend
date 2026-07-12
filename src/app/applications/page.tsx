@@ -400,8 +400,8 @@ export default function ApplicationsPage() {
               </div>
             </div>
 
-            {/* Responsive Table */}
-            <div className="overflow-x-auto w-full">
+            {/* Responsive Table (Desktop) */}
+            <div className="hidden md:block overflow-x-auto w-full">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-[#e2e8f0] text-[10px] font-bold text-slate-400 uppercase tracking-widest select-none">
@@ -515,9 +515,98 @@ export default function ApplicationsPage() {
               </table>
             </div>
 
+            {/* Mobile View Card List */}
+            <div className="block md:hidden divide-y divide-slate-100 bg-white">
+              {filteredApps.map(app => (
+                <div key={app.id} className="p-5 space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-serif text-base pt-0.5 shrink-0 shadow-sm select-none">
+                        {app.company ? app.company.charAt(0).toUpperCase() : 'C'}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm leading-snug">{app.role}</h4>
+                        <p className="text-xs text-slate-400 mt-0.5 font-medium">{app.company} · {app.location || 'Remote'}</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete(app.id)}
+                      className="text-slate-300 hover:text-rose-500 p-1.5 hover:bg-rose-50 rounded-lg transition-all shrink-0 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Applied Date</span>
+                      <div className="text-xs text-slate-600 font-bold flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-slate-300" />
+                        {app.dateApplied || 'Just now'}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pipeline Status</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${getStatusColorClasses(app.status)}`}>
+                          {app.status}
+                        </span>
+                        <div className="relative">
+                          <select 
+                            value={app.status}
+                            onChange={(e) => handleStatusChange(app.id, e.target.value as Status)}
+                            className="appearance-none text-[9px] font-bold bg-slate-50 border border-slate-200 text-slate-600 rounded-lg pl-2 pr-5 py-0.5 outline-none cursor-pointer"
+                          >
+                            <option value="Applied">Applied</option>
+                            <option value="Shortlisted">Shortlisted</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Offer">Offer</option>
+                            <option value="Rejected">Rejected</option>
+                          </select>
+                          <ChevronDown className="w-2.5 h-2.5 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Next Step</span>
+                    <input 
+                      type="text" 
+                      value={app.nextStep || ''} 
+                      onChange={(e) => handleNextStepChange(app.id, e.target.value)}
+                      placeholder="e.g. Prepare for technical round..."
+                      className="w-full bg-slate-50 border border-slate-200/60 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-blue-500 transition-all placeholder-slate-300"
+                    />
+                  </div>
+
+                  {app.jobUrl && (
+                    <div className="pt-2">
+                      <a 
+                        href={app.jobUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full justify-center bg-blue-50/50 hover:bg-blue-50 border border-blue-100 text-blue-600 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all text-center"
+                      >
+                        View Job Posting <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {filteredApps.length === 0 && (
+                <div className="py-20 text-center text-slate-400">
+                  <Briefcase className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+                  <h3 className="text-[14px] font-extrabold text-slate-700 leading-none">No applications found</h3>
+                  <p className="text-xs text-slate-400 mt-1 font-semibold">Try modifying your filters or search query.</p>
+                </div>
+              )}
+            </div>
+
             {/* Table Footer Bookmarklet Help */}
             {mounted && session?.user && (
-              <div className="bg-slate-50/50 p-5 border-t border-[#e2e8f0] flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-500">
+              <div className="bg-slate-50/50 p-5 border-t border-[#e2e8f0] hidden md:flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-500">
                 <p className="max-w-2xl leading-relaxed text-center md:text-left text-slate-400">
                   💡 Install the tracker bookmarklet! Drag the <strong className="text-slate-600">Job Hunter Track</strong> link in the header block to your browser bookmarks bar to instantly save job postings.
                 </p>

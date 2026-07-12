@@ -164,12 +164,12 @@ export default function SmartFillModal() {
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/45 backdrop-blur-[6px] animate-fade-in">
       <div 
-        className="relative w-full max-w-[850px] bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.18)] border border-slate-200 overflow-hidden transform scale-100 transition-all duration-300 animate-fade-in-up flex flex-col md:flex-row min-h-[460px]"
+        className="relative w-full max-w-[850px] bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.18)] border border-slate-200 overflow-hidden transform scale-100 transition-all duration-300 animate-fade-in-up flex flex-col md:flex-row md:min-h-[460px]"
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* ================= LEFT BLUE BENEFIT COLUMN (45% width) ================= */}
-        <div className="w-full md:w-[45%] bg-gradient-to-br from-[#0c1a30] to-[#081224] text-white p-8 flex flex-col justify-between relative overflow-hidden select-none animate-fade-in">
+        <div className="w-full md:w-[45%] bg-gradient-to-br from-[#0c1a30] to-[#081224] text-white p-8 hidden md:flex flex-col justify-between relative overflow-hidden select-none animate-fade-in">
           {/* Blurred Background blobs */}
           <div className="absolute -top-16 -left-16 w-44 h-44 bg-blue-500/10 rounded-full blur-[60px]" />
           <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-orange-500/10 rounded-full blur-[60px]" />
@@ -239,7 +239,7 @@ export default function SmartFillModal() {
         </div>
 
         {/* ================= RIGHT WHITE UPLOAD COLUMN (55% width) ================= */}
-        <div className="w-full md:w-[55%] p-8 flex flex-col justify-between relative bg-white min-h-[400px]">
+        <div className="w-full md:w-[55%] p-8 flex flex-col justify-between relative bg-white min-h-[360px] md:min-h-[400px]">
           
           {/* Close button (Redirects to manual profile completion on click) */}
           <button 

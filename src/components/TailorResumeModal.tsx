@@ -759,8 +759,14 @@ ${tailoredData.languages.length > 0 ? `
                   Our AI matches your experiences directly with the job description keywords to bypass Applicant Tracking Systems (ATS) and catch hiring managers' eyes.
                 </p>
               </div>
-
               <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleUploadResume}
+                  accept=".pdf,.docx" 
+                  className="hidden" 
+                />
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-800">Your Base Resume</span>
                   {profileData?.resumeUrl && (
@@ -790,13 +796,6 @@ ${tailoredData.languages.length > 0 ? `
                   </div>
                 ) : (
                   <div>
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      onChange={handleUploadResume}
-                      accept=".pdf,.docx" 
-                      className="hidden" 
-                    />
                     <div 
                       onClick={() => !uploading && fileInputRef.current?.click()}
                       className={`border-2 border-dashed border-blue-200 bg-blue-50/10 rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-50/20 hover:border-blue-300 transition-all group animate-fade-in ${

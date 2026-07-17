@@ -749,7 +749,7 @@ ${tailoredData.languages.length > 0 ? `
 
           {/* 1. Resume selection/upload state (when not tailored yet) */}
           {!tailoring && !tailoredData && (
-            <div className="space-y-6 max-w-xl mx-auto py-8">
+            <div className="space-y-6 max-w-xl mx-auto py-4 sm:py-8 w-full px-1 sm:px-0">
               <div className="text-center space-y-2">
                 <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-7 h-7" />
@@ -797,27 +797,46 @@ ${tailoredData.languages.length > 0 ? `
                       accept=".pdf,.docx" 
                       className="hidden" 
                     />
-                    <button 
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      className="w-full border-2 border-dashed border-slate-200 hover:border-blue-400 bg-white hover:bg-blue-50/10 p-8 rounded-xl transition-all flex flex-col items-center justify-center gap-2 group disabled:opacity-50"
+                    <div 
+                      onClick={() => !uploading && fileInputRef.current?.click()}
+                      className={`border-2 border-dashed border-blue-200 bg-blue-50/10 rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-50/20 hover:border-blue-300 transition-all group animate-fade-in ${
+                        uploading ? 'pointer-events-none opacity-80' : ''
+                      }`}
                     >
                       {uploading ? (
-                        <>
-                          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                          <p className="text-sm font-bold text-slate-700 mt-2">Uploading resume...</p>
-                          <p className="text-xs text-slate-400 font-semibold">Adding to your profile secure storage</p>
-                        </>
+                        <div className="flex flex-col items-center text-center space-y-4 py-2 animate-pulse">
+                          <div className="relative flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-full border-4 border-blue-100 border-t-blue-500 animate-spin" />
+                            <div className="absolute w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
+                              <FileText className="w-4 h-4 animate-pulse" />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-extrabold text-slate-800">Uploading your resume</p>
+                            <p className="text-xs text-slate-400 font-medium">Adding to secure cloud storage...</p>
+                          </div>
+                        </div>
                       ) : (
                         <>
-                          <div className="p-3 bg-slate-50 text-slate-500 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
+                          <div className="w-12 h-12 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 transition-colors shrink-0 group-hover:scale-105 duration-200">
                             <UploadCloud className="w-6 h-6" />
                           </div>
-                          <p className="text-sm font-bold text-slate-700">Click to upload your resume</p>
-                          <p className="text-xs text-slate-400 font-semibold">Supports PDF and Word formats up to 10MB</p>
+
+                          <div className="text-center space-y-1">
+                            <p className="text-sm font-extrabold text-slate-800">
+                              Drop your resume here
+                            </p>
+                            <p className="text-xs font-bold text-blue-500 hover:underline">
+                              or browse files
+                            </p>
+                          </div>
+
+                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                            PDF · DOCX
+                          </span>
                         </>
                       )}
-                    </button>
+                    </div>
                   </div>
                 )}
               </div>

@@ -15,6 +15,7 @@ import Navbar from '@/components/Navbar';
 import { useApplicationsStore } from '@/store/useApplicationsStore';
 import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
 import { useProfileStore } from '@/store/useProfileStore';
+import { useTailorResumeModalStore } from '@/store/useTailorResumeModalStore';
 import AdBanner from '@/components/AdBanner';
 
 export default function JobsPage() {
@@ -22,6 +23,7 @@ export default function JobsPage() {
   const router = useRouter();
   const { addApplicationLocal } = useApplicationsStore();
   const { openModal: openSmartFillModal, isBackgroundExtracting } = useSmartFillModalStore();
+  const { openModal: openTailorResumeModal } = useTailorResumeModalStore();
   const { 
     isComplete, profileData, fetchProfile, hasFetched: profileHasFetched 
   } = useProfileStore();
@@ -368,6 +370,20 @@ export default function JobsPage() {
                         <ArrowUpRight className="w-4 h-4" />
                       </>
                     )}
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!session?.user?.email) {
+                        router.push('/login');
+                        return;
+                      }
+                      openTailorResumeModal(selectedJob);
+                    }}
+                    className="px-6 py-3.5 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 text-indigo-700 hover:text-indigo-800 border border-indigo-100 hover:border-indigo-200 font-bold rounded-xl text-sm transition-all active:scale-[0.98] flex items-center gap-2"
+                  >
+                    <Sparkles className="w-4 h-4 text-indigo-600 animate-pulse" />
+                    Tailor Resume
                   </button>
                   <button className="px-5 py-3.5 border border-[#e2e8f0] text-slate-700 hover:bg-slate-50 font-bold rounded-xl text-sm transition-all flex items-center gap-2">
                     <Bookmark className="w-4 h-4" />
@@ -943,6 +959,20 @@ export default function JobsPage() {
                             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 opacity-60" /> {job.posted_time || 'Just now'}</span>
                             <div className="flex items-center gap-3">
                               {extra.mode && <span className="text-[10px] font-bold text-[#2563eb] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md uppercase">{extra.mode}</span>}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!session?.user?.email) {
+                                    router.push('/login');
+                                    return;
+                                  }
+                                  openTailorResumeModal(job);
+                                }}
+                                className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full font-bold transition-all flex items-center gap-1 active:scale-[0.98]"
+                              >
+                                <Sparkles className="w-3 h-3 text-indigo-600" />
+                                Tailor
+                              </button>
                               <button 
                                 onClick={(e) => handleApply(e, job)}
                                 disabled={applyingTo === job.id}

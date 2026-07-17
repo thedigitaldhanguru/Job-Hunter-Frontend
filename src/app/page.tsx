@@ -18,6 +18,7 @@ import { useAuthModalStore } from '@/store/useAuthModalStore';
 import { useApplicationsStore } from '@/store/useApplicationsStore';
 import { useSmartFillModalStore } from '@/store/useSmartFillModalStore';
 import { useProfileStore } from '@/store/useProfileStore';
+import { useTailorResumeModalStore } from '@/store/useTailorResumeModalStore';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -25,6 +26,7 @@ export default function Home() {
   const { openModal } = useAuthModalStore();
   const { addApplicationLocal } = useApplicationsStore();
   const { openModal: openSmartFillModal, isBackgroundExtracting } = useSmartFillModalStore();
+  const { openModal: openTailorResumeModal } = useTailorResumeModalStore();
   const { 
     isComplete, profileData, fetchProfile, hasFetched: profileHasFetched 
   } = useProfileStore();
@@ -613,6 +615,20 @@ export default function Home() {
                         <span className="text-xs font-bold text-[#2563eb] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
                           {(job.location && job.location.toLowerCase().includes('remote')) ? 'Remote' : ((job.location && job.location.toLowerCase().includes('hybrid')) ? 'Hybrid' : 'On-site')}
                         </span>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!session?.user?.email) {
+                              router.push('/login');
+                              return;
+                            }
+                            openTailorResumeModal(job);
+                          }}
+                          className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold transition-all flex items-center gap-1 active:scale-[0.98]"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                          Tailor
+                        </button>
                         <button 
                           onClick={(e) => handleApply(e, job)}
                           disabled={applyingTo === job.id}

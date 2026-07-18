@@ -14,6 +14,7 @@ import { API_BASE_URL } from '@/lib/config';
 
 interface TailoredResponse {
   contact: {
+    name: string;
     email: string;
     phone: string;
     location: string;
@@ -135,8 +136,8 @@ export default function TailorResumeModal() {
 
       if (!res.ok) throw new Error("Failed to save resume url");
 
-      // Refetch profile to sync store
-      await fetchProfile(session.user.email, session.user.name, session.user.image);
+      // Refetch profile to sync store and force update state
+      await fetchProfile(session.user.email, session.user.name, session.user.image, true);
     } catch (err: any) {
       console.error(err);
       setErrorMsg("Resume upload failed. Please try again.");
@@ -178,6 +179,7 @@ export default function TailorResumeModal() {
         
         // Defensive key mapping to handle any variation from AWS Bedrock AI
         const contactObj = t.contact || t.contact_info || {};
+        const nameVal = contactObj.name || contactObj.full_name || contactObj.candidate_name || profileData?.header?.name || session?.user?.name || 'Candidate Name';
         const phoneVal = contactObj.phone || contactObj.phone_number || contactObj.mobile || contactObj.telephone || contactObj.tel || profileData?.header?.phone || '';
         const emailVal = contactObj.email || contactObj.email_address || profileData?.header?.email || session?.user?.email || '';
         const locVal = contactObj.location || contactObj.city_country || contactObj.address || profileData?.header?.location || '';
@@ -232,6 +234,7 @@ export default function TailorResumeModal() {
 
         const normalized: TailoredResponse = {
           contact: {
+            name: nameVal,
             email: emailVal,
             phone: phoneVal,
             location: locVal,
@@ -425,7 +428,7 @@ export default function TailorResumeModal() {
 
   const getFullMarkdown = () => {
     if (!tailoredData) return '';
-    return `# ${profileData?.header?.name || session?.user?.name || 'My Name'}
+    return `# ${tailoredData.contact.name || profileData?.header?.name || session?.user?.name || 'My Name'}
 ${tailoredData.contact.email} | ${tailoredData.contact.phone} | ${tailoredData.contact.location}
 ${tailoredData.contact.linkedin ? `LinkedIn: ${tailoredData.contact.linkedin}` : ''} | ${tailoredData.contact.github ? `GitHub: ${tailoredData.contact.github}` : ''} | ${tailoredData.contact.portfolio ? `Portfolio: ${tailoredData.contact.portfolio}` : ''}
 
@@ -466,11 +469,11 @@ ${tailoredData.languages.length > 0 ? `
 `;
   };
 
-  // GENERATES SINGLE-COLUMN, ATS-FRIENDLY PDF (IFRAME METHOD)
+  // GENERATES SINGLE-COLUMN, ATS-FRIENDLY PDF (IFRAME METHOD FOR DESKTOP, WINDOW.OPEN FOR MOBILE)
   const generatePdf = () => {
     if (!tailoredData) return;
 
-    const name = profileData?.header?.name || session?.user?.name || 'Candidate Name';
+    const name = tailoredData.contact.name || profileData?.header?.name || session?.user?.name || 'Candidate Name';
     const email = tailoredData.contact.email;
     const phone = tailoredData.contact.phone;
     const location = tailoredData.contact.location;
@@ -549,24 +552,7 @@ ${tailoredData.languages.length > 0 ? `
       `
       : '';
 
-    // Create a hidden iframe inside the same page context
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document || iframe.contentDocument;
-    if (!doc) {
-      alert("Failed to generate PDF. Please try again.");
-      document.body.removeChild(iframe);
-      return;
-    }
-
-    doc.write(`
+    const htmlContent = `
       <html>
         <head>
           <title>${name} - Resume</title>
@@ -582,6 +568,28 @@ ${tailoredData.languages.length > 0 ? `
               padding: 0;
               margin: 0;
               font-size: 12.5px;
+            }
+            .no-print {
+              background: #eef2ff; 
+              border: 1px solid #c7d2fe; 
+              color: #1e3a8a; 
+              padding: 14px; 
+              text-align: center; 
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+              font-size: 13px; 
+              font-weight: 600; 
+              margin: 15px; 
+              border-radius: 12px; 
+              box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            }
+            @media print {
+              .no-print {
+                display: none !important;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+              }
             }
             .header {
               text-align: center;
@@ -645,6 +653,9 @@ ${tailoredData.languages.length > 0 ? `
           </style>
         </head>
         <body>
+          <div class="no-print">
+            ℹ️ To save as PDF: Tap your browser's <strong style="color: #2563eb;">Share / Menu</strong> button and choose <strong style="color: #2563eb;">Print</strong>.
+          </div>
           <div class="header">
             <h1 class="name">${name}</h1>
             <p class="contact">${contactLineHtml}</p>
@@ -673,18 +684,56 @@ ${tailoredData.languages.length > 0 ? `
           ${languagesHtml}
         </body>
       </html>
-    `);
-    doc.close();
+    `;
 
-    // Trigger printing safely from the iframe window context
-    setTimeout(() => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-      // Remove iframe from DOM after printing dialog closes
-      setTimeout(() => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert("Please allow popups to download/print the PDF.");
+        return;
+      }
+      printWindow.document.write(htmlContent);
+      printWindow.document.write(`
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 500);
+          }
+        </script>
+      `);
+      printWindow.document.close();
+    } else {
+      // Desktop: Hidden iframe printing
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (!doc) {
+        alert("Failed to generate PDF. Please try again.");
         document.body.removeChild(iframe);
-      }, 1000);
-    }, 500);
+        return;
+      }
+
+      doc.write(htmlContent);
+      doc.close();
+
+      setTimeout(() => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      }, 500);
+    }
   };
 
   const downloadTextFile = () => {
@@ -771,15 +820,28 @@ ${tailoredData.languages.length > 0 ? `
                   <span className="text-sm font-bold text-slate-800">Your Base Resume</span>
                   {profileData?.resumeUrl && (
                     <button 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-all flex items-center gap-1"
+                      onClick={() => !uploading && fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      <RefreshCw className="w-3 h-3" /> Change File
+                      <RefreshCw className={`w-3 h-3 ${uploading ? 'animate-spin' : ''}`} /> Change File
                     </button>
                   )}
                 </div>
 
-                {profileData?.resumeUrl ? (
+                {uploading ? (
+                  <div className="flex items-center gap-3 p-3.5 bg-blue-50/20 border border-blue-100 rounded-xl shadow-sm animate-pulse">
+                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-blue-900 truncate">
+                        Uploading new resume...
+                      </p>
+                      <p className="text-xs text-blue-500 font-medium font-semibold">Saving to secure storage</p>
+                    </div>
+                  </div>
+                ) : profileData?.resumeUrl ? (
                   <div className="flex items-center gap-3 p-3.5 bg-white border border-slate-100 rounded-xl shadow-sm">
                     <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                       <FileText className="w-5 h-5" />
@@ -978,6 +1040,16 @@ ${tailoredData.languages.length > 0 ? `
                       <span className="text-xs text-slate-400">Prefilled from resume / profile</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-xs font-bold text-slate-500">Full Name (Candidate Name)</label>
+                        <input 
+                          type="text" 
+                          value={tailoredData.contact.name} 
+                          onChange={(e) => handleUpdateContact('name', e.target.value)}
+                          className="w-full text-sm font-semibold text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all bg-blue-50/20"
+                          placeholder="Candidate Full Name"
+                        />
+                      </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">Email Address</label>
                         <input 

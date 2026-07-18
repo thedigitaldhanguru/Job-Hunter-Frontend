@@ -13,7 +13,7 @@ interface ProfileStore {
   isComplete: boolean;
   hasFetched: boolean;
   isFetching: boolean;
-  fetchProfile: (email: string, sessionName?: string | null, sessionImage?: string | null) => Promise<void>;
+  fetchProfile: (email: string, sessionName?: string | null, sessionImage?: string | null, forceRefetch?: boolean) => Promise<void>;
   setProfileData: (data: typeof EMPTY_PROFILE) => void;
   reset: () => void;
 }
@@ -28,8 +28,8 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 
   setProfileData: (data) => set({ profileData: data }),
 
-  fetchProfile: async (email: string, sessionName?: string | null, sessionImage?: string | null) => {
-    if (get().hasFetched || get().isFetching) return;
+  fetchProfile: async (email: string, sessionName?: string | null, sessionImage?: string | null, forceRefetch?: boolean) => {
+    if ((get().hasFetched && !forceRefetch) || get().isFetching) return;
     
     set({ isFetching: true });
     

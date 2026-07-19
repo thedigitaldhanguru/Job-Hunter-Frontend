@@ -559,7 +559,7 @@ ${tailoredData.languages.length > 0 ? `
           <style>
             @page {
               size: A4;
-              margin: 15mm 20mm 15mm 20mm;
+              margin: 0;
             }
             body {
               font-family: Arial, sans-serif;
@@ -588,7 +588,9 @@ ${tailoredData.languages.length > 0 ? `
               }
               body {
                 margin: 0;
-                padding: 0;
+                padding: 15mm 20mm 15mm 20mm;
+                box-decoration-break: clone;
+                -webkit-box-decoration-break: clone;
               }
             }
             .header {

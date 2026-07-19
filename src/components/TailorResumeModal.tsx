@@ -706,12 +706,20 @@ ${tailoredData.languages.length > 0 ? `
           body > *:not(#mobile-print-area) {
             display: none !important;
           }
+          .no-print-modal {
+            display: none !important;
+          }
           #mobile-print-area {
             display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 100% !important;
             height: auto !important;
-            position: static !important;
-            overflow: visible !important;
+            z-index: 999999 !important;
+            background: white !important;
+            font-family: Arial, sans-serif !important;
+            color: #111111 !important;
           }
           body {
             background: white !important;
@@ -792,7 +800,7 @@ ${tailoredData.languages.length > 0 ? `
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300 no-print-modal">
       <div className="relative w-full max-w-5xl max-h-[92vh] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}

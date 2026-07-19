@@ -3,8 +3,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { useSession as useAuthSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { 
-  Sparkles, UploadCloud, Check, ArrowUpRight, 
+import {
+  Sparkles, UploadCloud, Check, ArrowUpRight,
   X, FileText, Loader2, Copy, Download, Briefcase, Award, FolderGit2, RefreshCw, AlertCircle, Trash2, Plus, Mail, Phone, MapPin, Link
 } from 'lucide-react';
 import { useTailorResumeModalStore } from '@/store/useTailorResumeModalStore';
@@ -66,7 +66,7 @@ export default function TailorResumeModal() {
       setLoadingPhase(0);
       const phases = [1, 2, 3];
       let currentPhaseIdx = 0;
-      
+
       timer = setInterval(() => {
         if (currentPhaseIdx < phases.length - 1) {
           currentPhaseIdx++;
@@ -176,7 +176,7 @@ export default function TailorResumeModal() {
       const data = await res.json();
       if (data.status === 'success' && data.tailored) {
         const t = data.tailored;
-        
+
         // Defensive key mapping to handle any variation from AWS Bedrock AI
         const contactObj = t.contact || t.contact_info || {};
         const nameVal = contactObj.name || contactObj.full_name || contactObj.candidate_name || profileData?.header?.name || session?.user?.name || 'Candidate Name';
@@ -493,7 +493,7 @@ ${tailoredData.languages.length > 0 ? `
     const contactLineHtml = contactParts.join(' &nbsp;•&nbsp; ');
 
     const skillsHtml = tailoredData.skills.join(', ');
-    
+
     const employmentHtml = tailoredData.employment.map(emp => {
       const bulletsHtml = emp.description.map(desc => '<li>' + desc + '</li>').join('');
       return `
@@ -534,13 +534,13 @@ ${tailoredData.languages.length > 0 ? `
       </div>
     `).join('');
 
-    const accomplishmentsHtml = tailoredData.accomplishments.length > 0 
+    const accomplishmentsHtml = tailoredData.accomplishments.length > 0
       ? `
         <h2>Certifications & Accomplishments</h2>
         <ul>
           ${tailoredData.accomplishments.map(acc => '<li>' + acc + '</li>').join('')}
         </ul>
-      ` 
+      `
       : '';
 
     const languagesHtml = tailoredData.languages.length > 0
@@ -689,38 +689,22 @@ ${tailoredData.languages.length > 0 ? `
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     if (isMobile) {
-      const downloadPdfMobile = async () => {
-        try {
-          const response = await fetch(`${API_BASE_URL}/resume/generate-pdf`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html: htmlContent })
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to generate PDF on server");
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert("Please allow popups to download/print the PDF.");
+        return;
+      }
+      printWindow.document.write(htmlContent);
+      printWindow.document.write(`
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 500);
           }
-
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', `Tailored_Resume_${selectedJob.company_raw.replace(/\s+/g, '_')}_${selectedJob.title.replace(/\s+/g, '_')}.pdf`);
-          document.body.appendChild(link);
-          link.click();
-          
-          // Cleanup URL reference and DOM child
-          setTimeout(() => {
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-          }, 100);
-        } catch (err: any) {
-          console.error(err);
-          alert("Failed to download PDF. Please try again.");
-        }
-      };
-
-      downloadPdfMobile();
+        </script>
+      `);
+      printWindow.document.close();
     } else {
       // Desktop: Hidden iframe printing
       const iframe = document.createElement('iframe');
@@ -775,9 +759,9 @@ ${tailoredData.languages.length > 0 ? `
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300 no-print-modal">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300">
       <div className="relative w-full max-w-5xl max-h-[92vh] bg-white rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-2.5">
@@ -791,8 +775,8 @@ ${tailoredData.languages.length > 0 ? `
               </p>
             </div>
           </div>
-          <button 
-            onClick={closeModal} 
+          <button
+            onClick={closeModal}
             className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-all"
           >
             <X className="w-5 h-5" />
@@ -801,7 +785,7 @@ ${tailoredData.languages.length > 0 ? `
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
+
           {errorMsg && (
             <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 text-rose-800 text-sm">
               <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
@@ -825,17 +809,17 @@ ${tailoredData.languages.length > 0 ? `
                 </p>
               </div>
               <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-5 space-y-4">
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
+                <input
+                  type="file"
+                  ref={fileInputRef}
                   onChange={handleUploadResume}
-                  accept=".pdf,.docx" 
-                  className="hidden" 
+                  accept=".pdf,.docx"
+                  className="hidden"
                 />
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-800">Your Base Resume</span>
                   {profileData?.resumeUrl && (
-                    <button 
+                    <button
                       onClick={() => !uploading && fileInputRef.current?.click()}
                       disabled={uploading}
                       className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-all flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -874,11 +858,10 @@ ${tailoredData.languages.length > 0 ? `
                   </div>
                 ) : (
                   <div>
-                    <div 
+                    <div
                       onClick={() => !uploading && fileInputRef.current?.click()}
-                      className={`border-2 border-dashed border-blue-200 bg-blue-50/10 rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-50/20 hover:border-blue-300 transition-all group animate-fade-in ${
-                        uploading ? 'pointer-events-none opacity-80' : ''
-                      }`}
+                      className={`border-2 border-dashed border-blue-200 bg-blue-50/10 rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-blue-50/20 hover:border-blue-300 transition-all group animate-fade-in ${uploading ? 'pointer-events-none opacity-80' : ''
+                        }`}
                     >
                       {uploading ? (
                         <div className="flex flex-col items-center text-center space-y-4 py-2 animate-pulse">
@@ -918,7 +901,7 @@ ${tailoredData.languages.length > 0 ? `
                 )}
               </div>
 
-              <button 
+              <button
                 onClick={handleTailorResume}
                 disabled={!profileData?.resumeUrl || uploading}
                 className="w-full py-4 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold rounded-2xl text-sm shadow-md hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
@@ -949,11 +932,10 @@ ${tailoredData.languages.length > 0 ? `
               </div>
               <div className="flex justify-center gap-1">
                 {[0, 1, 2, 3].map((idx) => (
-                  <span 
-                    key={idx} 
-                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                      idx === loadingPhase ? 'bg-blue-600 scale-125' : 'bg-slate-200'
-                    }`}
+                  <span
+                    key={idx}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${idx === loadingPhase ? 'bg-blue-600 scale-125' : 'bg-slate-200'
+                      }`}
                   />
                 ))}
               </div>
@@ -963,82 +945,75 @@ ${tailoredData.languages.length > 0 ? `
           {/* 3. Results Tabbed View (EDITABLE) */}
           {tailoredData && (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-              
+
               {/* Tab selector */}
               <div className="lg:col-span-1 flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible pb-3 lg:pb-0 border-b lg:border-b-0 border-slate-100 lg:pr-2">
-                <button 
+                <button
                   onClick={() => setActiveTab('contact')}
-                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${
-                    activeTab === 'contact' 
-                      ? 'bg-blue-50 text-[#2563eb] shadow-sm' 
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${activeTab === 'contact'
+                      ? 'bg-blue-50 text-[#2563eb] shadow-sm'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <Mail className="w-4 h-4" />
                   Contact Info
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('summary')}
-                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${
-                    activeTab === 'summary' 
-                      ? 'bg-blue-50 text-[#2563eb] shadow-sm' 
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${activeTab === 'summary'
+                      ? 'bg-blue-50 text-[#2563eb] shadow-sm'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <FileText className="w-4 h-4" />
                   Summary
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('skills')}
-                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${
-                    activeTab === 'skills' 
-                      ? 'bg-blue-50 text-[#2563eb] shadow-sm' 
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${activeTab === 'skills'
+                      ? 'bg-blue-50 text-[#2563eb] shadow-sm'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <Award className="w-4 h-4" />
                   Skills
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('experience')}
-                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${
-                    activeTab === 'experience' 
-                      ? 'bg-blue-50 text-[#2563eb] shadow-sm' 
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${activeTab === 'experience'
+                      ? 'bg-blue-50 text-[#2563eb] shadow-sm'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <Briefcase className="w-4 h-4" />
                   Experience
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('projects')}
-                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${
-                    activeTab === 'projects' 
-                      ? 'bg-blue-50 text-[#2563eb] shadow-sm' 
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${activeTab === 'projects'
+                      ? 'bg-blue-50 text-[#2563eb] shadow-sm'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <FolderGit2 className="w-4 h-4" />
                   Projects
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('education')}
-                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${
-                    activeTab === 'education' 
-                      ? 'bg-blue-50 text-[#2563eb] shadow-sm' 
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${activeTab === 'education'
+                      ? 'bg-blue-50 text-[#2563eb] shadow-sm'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <FileText className="w-4 h-4" />
                   Education
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('accomplishments')}
-                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${
-                    activeTab === 'accomplishments' 
-                      ? 'bg-blue-50 text-[#2563eb] shadow-sm' 
+                  className={`px-4 py-3 rounded-xl text-xs font-bold transition-all text-left flex items-center gap-2 shrink-0 ${activeTab === 'accomplishments'
+                      ? 'bg-blue-50 text-[#2563eb] shadow-sm'
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   <Award className="w-4 h-4" />
                   Honors & Languages
@@ -1047,7 +1022,7 @@ ${tailoredData.languages.length > 0 ? `
 
               {/* Tab details container (EDIT PANEL) */}
               <div className="lg:col-span-3 bg-slate-50 border border-slate-200/60 rounded-2xl p-6 min-h-[420px] flex flex-col justify-between">
-                
+
                 {/* 1. CONTACT INFO TAB */}
                 {activeTab === 'contact' && (
                   <div className="space-y-4">
@@ -1058,9 +1033,9 @@ ${tailoredData.languages.length > 0 ? `
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
                       <div className="space-y-1.5 md:col-span-2">
                         <label className="text-xs font-bold text-slate-500">Full Name (Candidate Name)</label>
-                        <input 
-                          type="text" 
-                          value={tailoredData.contact.name} 
+                        <input
+                          type="text"
+                          value={tailoredData.contact.name}
                           onChange={(e) => handleUpdateContact('name', e.target.value)}
                           className="w-full text-sm font-semibold text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all bg-blue-50/20"
                           placeholder="Candidate Full Name"
@@ -1068,9 +1043,9 @@ ${tailoredData.languages.length > 0 ? `
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">Email Address</label>
-                        <input 
-                          type="email" 
-                          value={tailoredData.contact.email} 
+                        <input
+                          type="email"
+                          value={tailoredData.contact.email}
                           onChange={(e) => handleUpdateContact('email', e.target.value)}
                           className="w-full text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                           placeholder="email@example.com"
@@ -1078,9 +1053,9 @@ ${tailoredData.languages.length > 0 ? `
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">Phone Number</label>
-                        <input 
-                          type="text" 
-                          value={tailoredData.contact.phone} 
+                        <input
+                          type="text"
+                          value={tailoredData.contact.phone}
                           onChange={(e) => handleUpdateContact('phone', e.target.value)}
                           className="w-full text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                           placeholder="+91 XXXXX XXXXX"
@@ -1088,9 +1063,9 @@ ${tailoredData.languages.length > 0 ? `
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">Location (City, Country)</label>
-                        <input 
-                          type="text" 
-                          value={tailoredData.contact.location} 
+                        <input
+                          type="text"
+                          value={tailoredData.contact.location}
                           onChange={(e) => handleUpdateContact('location', e.target.value)}
                           className="w-full text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                           placeholder="Bangalore, India"
@@ -1098,9 +1073,9 @@ ${tailoredData.languages.length > 0 ? `
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">LinkedIn Profile URL</label>
-                        <input 
-                          type="text" 
-                          value={tailoredData.contact.linkedin} 
+                        <input
+                          type="text"
+                          value={tailoredData.contact.linkedin}
                           onChange={(e) => handleUpdateContact('linkedin', e.target.value)}
                           className="w-full text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                           placeholder="linkedin.com/in/username"
@@ -1108,9 +1083,9 @@ ${tailoredData.languages.length > 0 ? `
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">GitHub Profile URL</label>
-                        <input 
-                          type="text" 
-                          value={tailoredData.contact.github} 
+                        <input
+                          type="text"
+                          value={tailoredData.contact.github}
                           onChange={(e) => handleUpdateContact('github', e.target.value)}
                           className="w-full text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                           placeholder="github.com/username"
@@ -1118,9 +1093,9 @@ ${tailoredData.languages.length > 0 ? `
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500">Portfolio Website URL</label>
-                        <input 
-                          type="text" 
-                          value={tailoredData.contact.portfolio} 
+                        <input
+                          type="text"
+                          value={tailoredData.contact.portfolio}
                           onChange={(e) => handleUpdateContact('portfolio', e.target.value)}
                           className="w-full text-sm font-medium text-slate-800 border border-slate-200 rounded-lg p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                           placeholder="myportfolio.dev"
@@ -1137,7 +1112,7 @@ ${tailoredData.languages.length > 0 ? `
                       <h4 className="text-sm font-bold text-slate-800">Edit Professional Summary</h4>
                       <span className="text-xs text-slate-400">Click below to refine AI text</span>
                     </div>
-                    <textarea 
+                    <textarea
                       value={tailoredData.summary}
                       onChange={(e) => handleUpdateSummary(e.target.value)}
                       className="w-full text-sm text-slate-600 bg-white border border-slate-200 rounded-xl p-4.5 leading-relaxed shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all min-h-[220px]"
@@ -1153,7 +1128,7 @@ ${tailoredData.languages.length > 0 ? `
                       <h4 className="text-sm font-bold text-slate-800">Edit Skills List</h4>
                       <span className="text-xs text-slate-400">Separate values with commas</span>
                     </div>
-                    <textarea 
+                    <textarea
                       value={tailoredData.skills.join(', ')}
                       onChange={(e) => handleUpdateSkills(e.target.value)}
                       className="w-full text-sm text-slate-600 bg-white border border-slate-200 rounded-xl p-4.5 leading-relaxed shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all min-h-[160px]"
@@ -1161,8 +1136,8 @@ ${tailoredData.languages.length > 0 ? `
                     />
                     <div className="flex flex-wrap gap-2 pt-2">
                       {tailoredData.skills.filter(Boolean).map((skill) => (
-                        <span 
-                          key={skill} 
+                        <span
+                          key={skill}
                           className="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-600 rounded-md text-[10px] font-bold"
                         >
                           {skill}
@@ -1177,7 +1152,7 @@ ${tailoredData.languages.length > 0 ? `
                   <div className="space-y-5">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-slate-800">Edit Work Experience</h4>
-                      <button 
+                      <button
                         onClick={handleAddEmployment}
                         className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-all flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg"
                       >
@@ -1188,18 +1163,18 @@ ${tailoredData.languages.length > 0 ? `
                     <div className="space-y-6 max-h-[50vh] overflow-y-auto pr-1">
                       {tailoredData.employment.map((emp, empIdx) => (
                         <div key={empIdx} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 relative">
-                          <button 
+                          <button
                             onClick={() => handleRemoveEmployment(empIdx)}
                             className="absolute top-4 right-4 text-slate-400 hover:text-rose-600 transition-all p-1 hover:bg-slate-50 rounded-lg"
                             title="Delete Position"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
-                          
+
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-slate-400 uppercase">Role Title</label>
-                              <input 
+                              <input
                                 type="text"
                                 value={emp.title}
                                 onChange={(e) => handleUpdateEmployment(empIdx, 'title', e.target.value)}
@@ -1209,7 +1184,7 @@ ${tailoredData.languages.length > 0 ? `
                             </div>
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-slate-400 uppercase">Company Name</label>
-                              <input 
+                              <input
                                 type="text"
                                 value={emp.company}
                                 onChange={(e) => handleUpdateEmployment(empIdx, 'company', e.target.value)}
@@ -1219,7 +1194,7 @@ ${tailoredData.languages.length > 0 ? `
                             </div>
                             <div className="space-y-1">
                               <label className="text-[10px] font-bold text-slate-400 uppercase">Duration</label>
-                              <input 
+                              <input
                                 type="text"
                                 value={emp.duration}
                                 onChange={(e) => handleUpdateEmployment(empIdx, 'duration', e.target.value)}
@@ -1232,7 +1207,7 @@ ${tailoredData.languages.length > 0 ? `
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <label className="text-[10px] font-bold text-slate-400 uppercase">Bullet Points</label>
-                              <button 
+                              <button
                                 onClick={() => handleAddEmploymentBullet(empIdx)}
                                 className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-0.5"
                               >
@@ -1242,13 +1217,13 @@ ${tailoredData.languages.length > 0 ? `
                             <div className="space-y-2">
                               {emp.description.map((bullet, bulletIdx) => (
                                 <div key={bulletIdx} className="flex items-center gap-2">
-                                  <textarea 
+                                  <textarea
                                     value={bullet}
                                     onChange={(e) => handleUpdateEmploymentBullet(empIdx, bulletIdx, e.target.value)}
                                     className="flex-1 text-xs text-slate-600 border border-slate-200 rounded-lg p-2 focus:border-blue-500 outline-none min-h-[40px] resize-y"
                                     placeholder="Write accomplishment bullet point..."
                                   />
-                                  <button 
+                                  <button
                                     onClick={() => handleRemoveEmploymentBullet(empIdx, bulletIdx)}
                                     className="text-slate-400 hover:text-rose-500 p-1"
                                   >
@@ -1269,7 +1244,7 @@ ${tailoredData.languages.length > 0 ? `
                   <div className="space-y-5">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-slate-800">Edit Key Projects</h4>
-                      <button 
+                      <button
                         onClick={handleAddProject}
                         className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-all flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg"
                       >
@@ -1280,17 +1255,17 @@ ${tailoredData.languages.length > 0 ? `
                     <div className="space-y-6 max-h-[50vh] overflow-y-auto pr-1">
                       {tailoredData.projects.map((proj, projIdx) => (
                         <div key={projIdx} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 relative">
-                          <button 
+                          <button
                             onClick={() => handleRemoveProject(projIdx)}
                             className="absolute top-4 right-4 text-slate-400 hover:text-rose-600 transition-all p-1 hover:bg-slate-50 rounded-lg"
                             title="Delete Project"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
-                          
+
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Project Title</label>
-                            <input 
+                            <input
                               type="text"
                               value={proj.title}
                               onChange={(e) => handleUpdateProject(projIdx, 'title', e.target.value)}
@@ -1302,7 +1277,7 @@ ${tailoredData.languages.length > 0 ? `
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <label className="text-[10px] font-bold text-slate-400 uppercase">Project Highlights</label>
-                              <button 
+                              <button
                                 onClick={() => handleAddProjectBullet(projIdx)}
                                 className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-0.5"
                               >
@@ -1312,13 +1287,13 @@ ${tailoredData.languages.length > 0 ? `
                             <div className="space-y-2">
                               {proj.description.map((bullet, bulletIdx) => (
                                 <div key={bulletIdx} className="flex items-center gap-2">
-                                  <textarea 
+                                  <textarea
                                     value={bullet}
                                     onChange={(e) => handleUpdateProjectBullet(projIdx, bulletIdx, e.target.value)}
                                     className="flex-1 text-xs text-slate-600 border border-slate-200 rounded-lg p-2 focus:border-blue-500 outline-none min-h-[40px] resize-y"
                                     placeholder="Write project highlight..."
                                   />
-                                  <button 
+                                  <button
                                     onClick={() => handleRemoveProjectBullet(projIdx, bulletIdx)}
                                     className="text-slate-400 hover:text-rose-500 p-1"
                                   >
@@ -1339,7 +1314,7 @@ ${tailoredData.languages.length > 0 ? `
                   <div className="space-y-5">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-bold text-slate-800">Edit Education</h4>
-                      <button 
+                      <button
                         onClick={handleAddEducation}
                         className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-all flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg"
                       >
@@ -1350,7 +1325,7 @@ ${tailoredData.languages.length > 0 ? `
                     <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
                       {tailoredData.education.map((edu, eduIdx) => (
                         <div key={eduIdx} className="bg-white border border-slate-200 rounded-xl p-4.5 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-3 relative pt-8 md:pt-4">
-                          <button 
+                          <button
                             onClick={() => handleRemoveEducation(eduIdx)}
                             className="absolute top-2 right-2 text-slate-400 hover:text-rose-600 transition-all p-1"
                           >
@@ -1358,7 +1333,7 @@ ${tailoredData.languages.length > 0 ? `
                           </button>
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Institution Name</label>
-                            <input 
+                            <input
                               type="text"
                               value={edu.institution}
                               onChange={(e) => handleUpdateEducation(eduIdx, 'institution', e.target.value)}
@@ -1368,7 +1343,7 @@ ${tailoredData.languages.length > 0 ? `
                           </div>
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Degree obtained</label>
-                            <input 
+                            <input
                               type="text"
                               value={edu.degree}
                               onChange={(e) => handleUpdateEducation(eduIdx, 'degree', e.target.value)}
@@ -1378,7 +1353,7 @@ ${tailoredData.languages.length > 0 ? `
                           </div>
                           <div className="space-y-1">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Graduation / Details</label>
-                            <input 
+                            <input
                               type="text"
                               value={edu.details}
                               onChange={(e) => handleUpdateEducation(eduIdx, 'details', e.target.value)}
@@ -1400,7 +1375,7 @@ ${tailoredData.languages.length > 0 ? `
                         <h4 className="text-sm font-bold text-slate-800">Certifications & Honors</h4>
                         <span className="text-xs text-slate-400">One item per line</span>
                       </div>
-                      <textarea 
+                      <textarea
                         value={tailoredData.accomplishments.join('\n')}
                         onChange={(e) => handleUpdateAccomplishments(e.target.value)}
                         className="w-full text-sm text-slate-600 bg-white border border-slate-200 rounded-xl p-4 leading-relaxed shadow-sm focus:border-blue-500 outline-none min-h-[140px]"
@@ -1412,7 +1387,7 @@ ${tailoredData.languages.length > 0 ? `
                         <h4 className="text-sm font-bold text-slate-800">Languages Spoken</h4>
                         <span className="text-xs text-slate-400">Separate with commas</span>
                       </div>
-                      <input 
+                      <input
                         type="text"
                         value={tailoredData.languages.join(', ')}
                         onChange={(e) => handleUpdateLanguages(e.target.value)}
@@ -1426,12 +1401,12 @@ ${tailoredData.languages.length > 0 ? `
                 {/* Footnote indicating that edits sync to the download */}
                 <div className="pt-6 border-t border-slate-200 mt-6 flex items-center justify-between text-[11px] text-slate-400 font-semibold">
                   <span>Edits made here are reflected live in your PDF and Markdown downloads.</span>
-                  <button 
+                  <button
                     onClick={() => {
-                      const text = activeTab === 'summary' ? tailoredData.summary 
-                                : activeTab === 'skills' ? tailoredData.skills.join(', ')
-                                : activeTab === 'experience' ? tailoredData.employment.map(emp => `### ${emp.title} | ${emp.company}\n*${emp.duration}*\n${emp.description.map(d => `- ${d}`).join('\n')}`).join('\n\n')
-                                : tailoredData.projects.map(p => `### ${p.title}\n${p.description.map(d => `- ${d}`).join('\n')}`).join('\n\n');
+                      const text = activeTab === 'summary' ? tailoredData.summary
+                        : activeTab === 'skills' ? tailoredData.skills.join(', ')
+                          : activeTab === 'experience' ? tailoredData.employment.map(emp => `### ${emp.title} | ${emp.company}\n*${emp.duration}*\n${emp.description.map(d => `- ${d}`).join('\n')}`).join('\n\n')
+                            : tailoredData.projects.map(p => `### ${p.title}\n${p.description.map(d => `- ${d}`).join('\n')}`).join('\n\n');
                       copyToClipboard(text, activeTab);
                     }}
                     className="text-blue-600 hover:underline flex items-center gap-1"
@@ -1448,7 +1423,7 @@ ${tailoredData.languages.length > 0 ? `
         {/* Footer actions (when result is present) */}
         {tailoredData && (
           <div className="px-6 py-4.5 border-t border-slate-100 bg-slate-50/50 flex flex-wrap items-center justify-between gap-3">
-            <button 
+            <button
               onClick={handleTailorResume}
               className="px-4.5 py-2.5 border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5"
             >
@@ -1456,22 +1431,22 @@ ${tailoredData.languages.length > 0 ? `
             </button>
 
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={() => copyToClipboard(getFullMarkdown(), 'Full Resume')}
                 className="px-5 py-2.5 border border-[#e2e8f0] text-slate-700 hover:bg-slate-50 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5"
               >
-                <Copy className="w-3.5 h-3.5" /> 
+                <Copy className="w-3.5 h-3.5" />
                 {copiedSection === 'Full Resume' ? 'Copied Full!' : 'Copy Full (MD)'}
               </button>
-              
-              <button 
+
+              <button
                 onClick={downloadTextFile}
                 className="px-5 py-2.5 border border-[#e2e8f0] text-slate-700 hover:bg-slate-50 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5"
               >
                 <Download className="w-3.5 h-3.5" /> Download (.md)
               </button>
 
-              <button 
+              <button
                 onClick={generatePdf}
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-sm transition-all flex items-center gap-1.5 active:scale-[0.98]"
               >

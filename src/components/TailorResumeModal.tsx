@@ -689,63 +689,38 @@ ${tailoredData.languages.length > 0 ? `
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     if (isMobile) {
-      // Create mobile print container in current document context
-      const printContainer = document.createElement('div');
-      printContainer.id = 'mobile-print-area';
-      printContainer.innerHTML = htmlContent;
-      document.body.appendChild(printContainer);
+      const downloadPdfMobile = async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/resume/generate-pdf`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ html: htmlContent })
+          });
 
-      // Create temporary styles to isolate printing to the print container
-      const style = document.createElement('style');
-      style.id = 'mobile-print-styles';
-      style.innerHTML = `
-        #mobile-print-area {
-          display: none;
-        }
-        @media print {
-          body > *:not(#mobile-print-area) {
-            display: none !important;
+          if (!response.ok) {
+            throw new Error("Failed to generate PDF on server");
           }
-          .no-print-modal {
-            display: none !important;
-          }
-          #mobile-print-area {
-            display: block !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            height: auto !important;
-            z-index: 999999 !important;
-            background: white !important;
-            font-family: Arial, sans-serif !important;
-            color: #111111 !important;
-          }
-          body {
-            background: white !important;
-            color: black !important;
-            overflow: visible !important;
-          }
-        }
-      `;
-      document.head.appendChild(style);
 
-      // Trigger printing and schedule clean up on finish
-      const cleanup = () => {
-        if (document.getElementById('mobile-print-area')) {
-          document.body.removeChild(printContainer);
-        }
-        if (document.getElementById('mobile-print-styles')) {
-          document.head.removeChild(style);
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `Tailored_Resume_${selectedJob.company_raw.replace(/\s+/g, '_')}_${selectedJob.title.replace(/\s+/g, '_')}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          
+          // Cleanup URL reference and DOM child
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+        } catch (err: any) {
+          console.error(err);
+          alert("Failed to download PDF. Please try again.");
         }
       };
 
-      setTimeout(() => {
-        window.addEventListener('afterprint', cleanup, { once: true });
-        window.print();
-        // Fallback cleanup in case browser does not support afterprint event
-        setTimeout(cleanup, 2000);
-      }, 500);
+      downloadPdfMobile();
     } else {
       // Desktop: Hidden iframe printing
       const iframe = document.createElement('iframe');

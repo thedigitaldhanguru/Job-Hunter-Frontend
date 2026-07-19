@@ -689,22 +689,55 @@ ${tailoredData.languages.length > 0 ? `
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     if (isMobile) {
-      const printWindow = window.open('', '_blank');
-      if (!printWindow) {
-        alert("Please allow popups to download/print the PDF.");
-        return;
-      }
-      printWindow.document.write(htmlContent);
-      printWindow.document.write(`
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.print();
-            }, 500);
+      // Create mobile print container in current document context
+      const printContainer = document.createElement('div');
+      printContainer.id = 'mobile-print-area';
+      printContainer.innerHTML = htmlContent;
+      document.body.appendChild(printContainer);
+
+      // Create temporary styles to isolate printing to the print container
+      const style = document.createElement('style');
+      style.id = 'mobile-print-styles';
+      style.innerHTML = `
+        #mobile-print-area {
+          display: none;
+        }
+        @media print {
+          body > *:not(#mobile-print-area) {
+            display: none !important;
           }
-        </script>
-      `);
-      printWindow.document.close();
+          #mobile-print-area {
+            display: block !important;
+            width: 100% !important;
+            height: auto !important;
+            position: static !important;
+            overflow: visible !important;
+          }
+          body {
+            background: white !important;
+            color: black !important;
+            overflow: visible !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Trigger printing and schedule clean up on finish
+      const cleanup = () => {
+        if (document.getElementById('mobile-print-area')) {
+          document.body.removeChild(printContainer);
+        }
+        if (document.getElementById('mobile-print-styles')) {
+          document.head.removeChild(style);
+        }
+      };
+
+      setTimeout(() => {
+        window.addEventListener('afterprint', cleanup, { once: true });
+        window.print();
+        // Fallback cleanup in case browser does not support afterprint event
+        setTimeout(cleanup, 2000);
+      }, 500);
     } else {
       // Desktop: Hidden iframe printing
       const iframe = document.createElement('iframe');

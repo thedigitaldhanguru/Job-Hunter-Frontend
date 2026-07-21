@@ -5,7 +5,8 @@ export const EMPTY_PROFILE = {
   header: { name: '', degree: '', university: '', location: '', experience: '', phone: '', email: '', gender: '', dob: '', avatar: '' },
   summary: '', resumeName: '', resumeUrl: '', employment: [] as any[], internships: [] as any[], education: [] as any[], skills: [] as string[], projects: [] as any[], 
   languages: [] as string[], academicAchievements: [] as any[], accomplishments: [] as any[], exams: [] as any[], 
-  preferences: { jobType: '', availability: '', location: '', currentCTC: '', expectedCTC: '' }
+  preferences: { jobType: '', availability: '', location: '', currentCTC: '', expectedCTC: '' },
+  emailVerified: null as string | null
 };
 
 interface ProfileStore {
@@ -69,7 +70,8 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
           academicAchievements: Array.isArray(extended.academicAchievements) ? extended.academicAchievements : [],
           accomplishments: Array.isArray(extended.accomplishments) ? extended.accomplishments : [],
           exams: Array.isArray(extended.exams) ? extended.exams : [],
-          preferences: extended.preferences || EMPTY_PROFILE.preferences
+          preferences: extended.preferences || EMPTY_PROFILE.preferences,
+          emailVerified: res.emailVerified || res.email_verified || null
         };
 
         const isComplete = Boolean(

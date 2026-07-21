@@ -62,46 +62,6 @@ export default function SmartFillModal() {
         resumeUrl: s3FileUrl
       };
 
-      // 3. Construct backend profile update payload
-      const payload = {
-        full_name: updatedProfile.header.name || session?.user?.name || '',
-        email: updatedProfile.header.email || userEmail,
-        degree: updatedProfile.header.degree || '',
-        university: updatedProfile.header.university || '',
-        location: updatedProfile.header.location || '',
-        experience: updatedProfile.header.experience || '',
-        phone: updatedProfile.header.phone || '',
-        gender: updatedProfile.header.gender || '',
-        dob: updatedProfile.header.dob || '',
-        profile_summary: updatedProfile.summary || '',
-        avatar_url: updatedProfile.header.avatar || session?.user?.image || '',
-        current_ctc: updatedProfile.preferences.currentCTC || '',
-        expected_ctc: updatedProfile.preferences.expectedCTC || '',
-        extended_profile: {
-          employment: updatedProfile.employment,
-          internships: updatedProfile.internships,
-          education: updatedProfile.education,
-          skills: updatedProfile.skills,
-          projects: updatedProfile.projects,
-          languages: updatedProfile.languages,
-          academicAchievements: updatedProfile.academicAchievements,
-          accomplishments: updatedProfile.accomplishments,
-          exams: updatedProfile.exams,
-          preferences: updatedProfile.preferences,
-          resumeName: file.name,
-          resumeUrl: s3FileUrl
-        }
-      };
-
-      // 4. Update the backend database profile with the new resumeUrl
-      const response = await fetch(`${API_BASE_URL}/profile/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) throw new Error("Failed to save resume URL to profile database");
-
       // Set pending verification flag for Profile page
       localStorage.setItem('pending_profile_verification', 'true');
       window.dispatchEvent(new Event('pending_profile_updated'));

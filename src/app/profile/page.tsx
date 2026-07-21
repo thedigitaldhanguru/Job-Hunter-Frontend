@@ -25,6 +25,43 @@ const PROFILE_SECTIONS = [
   { label: 'Projects', id: 'projects', icon: LayoutGrid }
 ];
 
+const mapBackendToProfile = (res: any, email: string, sessionName?: string | null, sessionImage?: string | null) => {
+  let extended = res.extended_profile;
+  while (typeof extended === 'string') {
+    try { extended = JSON.parse(extended); } catch { break; }
+  }
+  if (!extended || typeof extended !== 'object') extended = {};
+
+  return {
+    header: {
+      name: res.full_name || sessionName || '',
+      email: res.email || email,
+      degree: res.degree || '',
+      university: res.university || '',
+      location: res.location || '',
+      experience: res.experience || '',
+      phone: res.phone || '',
+      gender: res.gender || '',
+      dob: res.dob || '',
+      avatar: res.avatar_url && res.avatar_url !== 'null' ? res.avatar_url : (sessionImage || '')
+    },
+    summary: res.profile_summary || '',
+    resumeName: extended.resumeName || '',
+    resumeUrl: extended.resumeUrl || res.resume_url || '',
+    employment: Array.isArray(extended.employment) ? extended.employment : [],
+    internships: Array.isArray(extended.internships) ? extended.internships : [],
+    education: Array.isArray(extended.education) ? extended.education : [],
+    skills: Array.isArray(extended.skills) ? extended.skills : [],
+    projects: Array.isArray(extended.projects) ? extended.projects : [],
+    languages: Array.isArray(extended.languages) ? extended.languages : [],
+    academicAchievements: Array.isArray(extended.academicAchievements) ? extended.academicAchievements : [],
+    accomplishments: Array.isArray(extended.accomplishments) ? extended.accomplishments : [],
+    exams: Array.isArray(extended.exams) ? extended.exams : [],
+    preferences: extended.preferences || { jobType: '', availability: '', location: '', currentCTC: '', expectedCTC: '' },
+    emailVerified: res.emailVerified || res.email_verified || null
+  };
+};
+
 export default function ProfilePage() {
   const { data: session, status: sessionStatus } = useSession();
   const { profileData, hasFetched, isFetching, fetchProfile, setProfileData } = useProfileStore();
@@ -44,12 +81,13 @@ export default function ProfilePage() {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [resumeVersion, setResumeVersion] = useState(0);
   const [showVerifyBanner, setShowVerifyBanner] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const smartFillInputRef = useRef<HTMLInputElement>(null);
 
-  // --- FETCH DATA FROM ZUSTAND STORE ---
+  // --- FETCH DATA FROM ZUSTAND STORE & HANDLE POLLING ---
   useEffect(() => {
     if (sessionStatus === 'loading') return;
 
@@ -59,35 +97,111 @@ export default function ProfilePage() {
       return;
     }
 
+    const isPendingVerify = localStorage.getItem('pending_profile_verification') === 'true';
+
+    // 1. Initial fetch (or force refetch if pending verification)
     if (!hasFetched && !isFetching) {
       fetchProfile(email, session?.user?.name, session?.user?.image);
+    } else if (isPendingVerify && !isPolling) {
+      fetchProfile(email, session?.user?.name, session?.user?.image, true);
     }
-  }, [session, sessionStatus, hasFetched, isFetching, fetchProfile]);
+  }, [session, sessionStatus, hasFetched, isFetching, fetchProfile, isPolling]);
+
+  // Polling effect for pending verification/parsing
+  useEffect(() => {
+    if (!isPolling || !session?.user?.email) return;
+
+    const email = session.user.email;
+    let attempts = 0;
+    const maxAttempts = 10; // Poll for up to 30 seconds
+
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const response = await fetch(`${API_BASE_URL}/profile/${email}`);
+        if (response.ok) {
+          const res = await response.json();
+          let extended = res.extended_profile;
+          while (typeof extended === 'string') {
+            try { extended = JSON.parse(extended); } catch { break; }
+          }
+          if (!extended || typeof extended !== 'object') extended = {};
+
+          const hasParsedData = (extended.skills && extended.skills.length > 0) ||
+            (extended.employment && extended.employment.length > 0) ||
+            (extended.projects && extended.projects.length > 0);
+
+          if (hasParsedData || attempts >= maxAttempts) {
+            clearInterval(interval);
+            setIsPolling(false);
+            
+            const formatted = mapBackendToProfile(res, email, session?.user?.name, session?.user?.image);
+            setData(formatted);
+            setInitialData(formatted);
+            setProfileData(formatted);
+          }
+        }
+      } catch (err) {
+        console.error("Polling error on mount:", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isPolling, session, setProfileData]);
 
   // Sync Zustand to local draft
   useEffect(() => {
     if (hasFetched && session?.user?.email) {
-      if (localStorage.getItem('pending_profile_verification') === 'true') {
+      const isPendingVerify = localStorage.getItem('pending_profile_verification') === 'true';
+      if (isPendingVerify) {
         setShowVerifyBanner(true);
-      }
-      const draftKey = `profile_draft_${session.user.email}`;
-      const localDraft = localStorage.getItem(draftKey);
-      if (localDraft) {
-        try {
-          const parsedDraft = JSON.parse(localDraft);
-          setData(parsedDraft);
+
+        // If a local draft exists, load the draft (handles refresh during review)
+        const draftKey = `profile_draft_${session.user.email}`;
+        const localDraft = localStorage.getItem(draftKey);
+        if (localDraft) {
+          try {
+            const parsedDraft = JSON.parse(localDraft);
+            setData(parsedDraft);
+            setInitialData(profileData);
+          } catch (e) {
+            setData(profileData);
+            setInitialData(profileData);
+          }
+        } else {
+          // If no draft, load parsed data directly
+          setData(profileData);
           setInitialData(profileData);
-        } catch (e) {
+
+          // Start polling if we don't have parsed data yet
+          const hasParsedData = (profileData.skills && profileData.skills.length > 0) ||
+            (profileData.employment && profileData.employment.length > 0) ||
+            (profileData.projects && profileData.projects.length > 0);
+
+          if (!hasParsedData && !isPolling) {
+            setIsPolling(true);
+          }
+        }
+      } else {
+        const draftKey = `profile_draft_${session.user.email}`;
+        const localDraft = localStorage.getItem(draftKey);
+        if (localDraft) {
+          try {
+            const parsedDraft = JSON.parse(localDraft);
+            setData(parsedDraft);
+            setInitialData(profileData);
+          } catch (e) {
+            setData(profileData);
+            setInitialData(profileData);
+          }
+        } else {
           setData(profileData);
           setInitialData(profileData);
         }
-      } else {
-        setData(profileData);
-        setInitialData(profileData);
       }
       setMounted(true);
     }
-  }, [hasFetched, profileData, session]);
+  }, [hasFetched, profileData, session, isPolling]);
 
   // Local draft auto-saver
   useEffect(() => {
@@ -194,41 +308,7 @@ export default function ProfilePage() {
 
   const { score, checklist } = getProfileCompleteness();
 
-  const mapBackendToProfile = (res: any, email: string, sessionName?: string | null, sessionImage?: string | null) => {
-    let extended = res.extended_profile;
-    while (typeof extended === 'string') {
-      try { extended = JSON.parse(extended); } catch { break; }
-    }
-    if (!extended || typeof extended !== 'object') extended = {};
 
-    return {
-      header: {
-        name: res.full_name || sessionName || '',
-        email: res.email || email,
-        degree: res.degree || '',
-        university: res.university || '',
-        location: res.location || '',
-        experience: res.experience || '',
-        phone: res.phone || '',
-        gender: res.gender || '',
-        dob: res.dob || '',
-        avatar: res.avatar_url && res.avatar_url !== 'null' ? res.avatar_url : (sessionImage || '')
-      },
-      summary: res.profile_summary || '',
-      resumeName: extended.resumeName || '',
-      resumeUrl: extended.resumeUrl || res.resume_url || '',
-      employment: Array.isArray(extended.employment) ? extended.employment : [],
-      internships: Array.isArray(extended.internships) ? extended.internships : [],
-      education: Array.isArray(extended.education) ? extended.education : [],
-      skills: Array.isArray(extended.skills) ? extended.skills : [],
-      projects: Array.isArray(extended.projects) ? extended.projects : [],
-      languages: Array.isArray(extended.languages) ? extended.languages : [],
-      academicAchievements: Array.isArray(extended.academicAchievements) ? extended.academicAchievements : [],
-      accomplishments: Array.isArray(extended.accomplishments) ? extended.accomplishments : [],
-      exams: Array.isArray(extended.exams) ? extended.exams : [],
-      preferences: extended.preferences || { jobType: '', availability: '', location: '', currentCTC: '', expectedCTC: '' }
-    };
-  };
 
   const toggleEdit = (section: string) => setEditMode(prev => ({ ...prev, [section]: !prev[section] }));
 
@@ -286,49 +366,11 @@ export default function ProfilePage() {
         // Update database profile with the new resumeUrl (triggers parsing in bg)
         setUploadingType('parsing');
         localStorage.setItem('pending_profile_verification', 'true');
-
-        const payload = {
-          full_name: data.header.name || session?.user?.name || '',
-          email: email,
-          degree: data.header.degree,
-          university: data.header.university,
-          location: data.header.location,
-          experience: data.header.experience,
-          phone: data.header.phone,
-          gender: data.header.gender,
-          dob: data.header.dob,
-          profile_summary: data.summary,
-          avatar_url: data.header.avatar,
-          current_ctc: data.preferences.currentCTC,
-          expected_ctc: data.preferences.expectedCTC,
-          extended_profile: {
-            ...data.preferences,
-            employment: data.employment,
-            internships: data.internships,
-            education: data.education,
-            skills: data.skills,
-            projects: data.projects,
-            languages: data.languages,
-            academicAchievements: data.academicAchievements,
-            accomplishments: data.accomplishments,
-            exams: data.exams,
-            preferences: data.preferences,
-            resumeName: file.name,
-            resumeUrl: s3FileUrl
-          }
-        };
-
-        const response = await fetch(`${API_BASE_URL}/profile/update`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) throw new Error("Failed to save resume url");
+        setIsPolling(true);
 
         // Now, poll for background parsing results
         let attempts = 0;
-        const maxAttempts = 4; // poll for 12 seconds
+        const maxAttempts = 10; // poll for up to 30 seconds
         const interval = setInterval(async () => {
           attempts++;
           try {
@@ -348,6 +390,7 @@ export default function ProfilePage() {
 
               if (hasParsedData || attempts >= maxAttempts) {
                 clearInterval(interval);
+                setIsPolling(false);
 
                 // Format and load profile data
                 const formatted = mapBackendToProfile(res, email, session?.user?.name, session?.user?.image);
@@ -513,14 +556,21 @@ export default function ProfilePage() {
                 <div className="bg-gradient-to-r from-blue-50/90 to-indigo-50/85 border border-blue-100 rounded-3xl p-5 shadow-sm flex items-start justify-between gap-4 animate-fade-in-up">
                   <div className="flex gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center text-blue-600 shrink-0">
-                      <Sparkles className="w-5 h-5 animate-pulse text-blue-600" />
+                      {isPolling ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                      ) : (
+                        <Sparkles className="w-5 h-5 animate-pulse text-blue-600" />
+                      )}
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                        Verify Profile Details
+                        {isPolling ? 'AI Resume Parsing in Progress...' : 'Verify Profile Details'}
                       </h4>
                       <p className="text-xs text-slate-600 leading-relaxed font-semibold">
-                        We successfully parsed your resume using AI! Please review the auto-filled details below, make any corrections, and click <strong className="text-blue-600">"Save Profile"</strong> to lock them in.
+                        {isPolling 
+                          ? 'Our AWS AI engine is currently extracting your experience, skills, and projects. This page will update automatically in a few seconds...'
+                          : 'We successfully parsed your resume using AI! Please review the auto-filled details below, make any corrections, and click "Save Profile" to lock them in.'
+                        }
                       </p>
                     </div>
                   </div>
@@ -678,36 +728,42 @@ export default function ProfilePage() {
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
                           <h2 className="text-2xl font-extrabold text-slate-900 leading-tight">{data.header.name || "Your Name"}</h2>
-                          <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-0.5">
-                            <Check className="w-3 h-3" /> Verified
-                          </span>
+                          {data.emailVerified && (
+                            <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-0.5">
+                              <Check className="w-3 h-3" /> Verified
+                            </span>
+                          )}
                         </div>
-                        <p className="text-sm font-semibold text-slate-500">
-                          {data.header.degree || "Full-Stack Web Developer · React, Next.js, Node.js, TypeScript"}
-                        </p>
-                        <div className="flex items-center gap-1 text-xs text-slate-400 font-semibold pt-1">
-                          <MapPin className="w-3.5 h-3.5 opacity-70" />
-                          <span>{data.header.location || "Guwahati, India"}</span>
-                        </div>
+                        {data.header.degree && (
+                          <p className="text-sm font-semibold text-slate-500">
+                            {data.header.degree}
+                          </p>
+                        )}
+                        {data.header.location && (
+                          <div className="flex items-center gap-1 text-xs text-slate-400 font-semibold pt-1">
+                            <MapPin className="w-3.5 h-3.5 opacity-70" />
+                            <span>{data.header.location}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Specs grids */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Experience</div>
-                          <div className="text-xs font-extrabold text-slate-800 truncate">{data.header.experience || "3 Years"}</div>
+                          <div className="text-xs font-extrabold text-slate-800 truncate">{data.header.experience || "-"}</div>
                         </div>
                         <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Current</div>
-                          <div className="text-xs font-extrabold text-slate-800 truncate">{data.preferences.jobType || "Self-Employed"}</div>
+                          <div className="text-xs font-extrabold text-slate-800 truncate">{data.preferences.jobType || "-"}</div>
                         </div>
                         <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Education</div>
-                          <div className="text-xs font-extrabold text-slate-800 truncate">{data.header.university || "BCA - ADTU"}</div>
+                          <div className="text-xs font-extrabold text-slate-800 truncate">{data.header.university || "-"}</div>
                         </div>
                         <div className="p-3.5 bg-slate-50 border border-slate-200/50 rounded-2xl text-center space-y-0.5 shadow-sm">
                           <div className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Notice</div>
-                          <div className="text-xs font-extrabold text-orange-600 truncate">{data.preferences.availability || "Immediate"}</div>
+                          <div className="text-xs font-extrabold text-orange-600 truncate">{data.preferences.availability || "-"}</div>
                         </div>
                       </div>
                     </div>
@@ -743,7 +799,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-semibold">
-                    {data.summary || "Full-Stack Web Developer specializing in building scalable, production-ready web applications. Experienced with React, Node.js, and API system architecture."}
+                    {data.summary || ""}
                   </p>
                 )}
               </article>
